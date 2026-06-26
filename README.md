@@ -186,7 +186,7 @@ Contributions, suggestions, and improvements are welcome.
 
 # 👨‍💻 Author
 
-## **Raaj Husain**
+## **Rahmat Husain**
 
 🎓 Bachelor of Information Technology (BIT) Student  
 💻 Python Developer | Software Development Enthusiast  
