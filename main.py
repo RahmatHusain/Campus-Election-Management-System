@@ -9,6 +9,8 @@ import hashlib
 
 CANDIDATE_FILE = "candidates.json"
 
+STUDENT_FILE = "students.json"
+
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
 
