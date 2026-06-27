@@ -3,30 +3,13 @@
 > A Python-based command-line application for managing university elections with secure administration, candidate management, and scalable architecture.
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python)
-![Version](https://img.shields.io/badge/Version-v0.2-blue)
-![Status](https://img.shields.io/badge/Status-Day%202%20Completed-success)
-
+![Version](https://img.shields.io/badge/Version-v0.3-blue)
 
 ---
 
 # 📖 Overview
 
 The **University Election Voting System** is a real-world Python project that simulates the election process in a university. It is designed to evolve into a complete voting platform with authentication, secure voting, reporting, analytics, a GUI, and a web application.
-
-**Day 1** focuses on building the foundation of the project by implementing secure admin authentication, candidate management, and JSON-based data storage.
-
----
-
-# ✨ Day 1 Features
-
-- 🔐 Secure Admin Login
-- 👨‍💼 Role-Based Admin Access
-- ➕ Register New Candidates
-- 📋 View Registered Candidates
-- 💾 Store Candidate Data in JSON
-- ⚠️ Basic Error Handling
-- 🧩 Modular Python Functions
-- 📂 Clean Project Structure
 
 ---
 
@@ -45,7 +28,8 @@ university-election-voting-system/
 │
 ├── data/
 │   ├── candidates.json
-│   └── students.json
+│   ├── students.json
+│   └── audit_log.json
 │
 ├── requirements.txt
 ├── .gitignore
@@ -88,11 +72,12 @@ python main.py
 ---
 # 📸 Project Preview
 
+
 ## 🏠 Main Menu
 
 ```text
 ==================================================
-      UNIVERSITY ELECTION VOTING SYSTEM
+        UNIVERSITY ELECTION VOTING SYSTEM
 ==================================================
 
 1. Admin Login
@@ -141,22 +126,22 @@ Department     : Computer Science
 
 ---
 
-## 📋 View Candidates
+## 📋 Registered Candidates
 
 ```text
 =============== REGISTERED CANDIDATES ===============
 
-Name       : Rahmat Husain
-Department : Computer Science
-Votes      : 0
+1. Rahmat Husain
+   Department : Computer Science
+   Votes      : 0
 
-------------------------------------------
+--------------------------------------------
 
-Name       : Sarah Khan
-Department : Information Technology
-Votes      : 0
+2. Sarah Khan
+   Department : Information Technology
+   Votes      : 0
 
-------------------------------------------
+--------------------------------------------
 ```
 
 ---
@@ -165,7 +150,7 @@ Votes      : 0
 
 ```text
 Student ID : BIT2025001
-Name       : Rahul kumar
+Name       : Rahmat Husain
 Department : BIT
 Password   : ********
 
@@ -180,59 +165,113 @@ Password   : ********
 Student ID : BIT2025001
 Password   : ********
 
-✅ Welcome Rahul Husain
+✅ Welcome, Rahmat Husain!
 ```
 
 ---
 
-## 📂 Data Storage
+## 👨‍🎓 Student Dashboard
 
-### candidates.json
+```text
+=============== STUDENT DASHBOARD ===============
 
-```json
-[
-    {
-        "name": "Rahmat Husain",
-        "department": "Computer Science",
-        "votes": 0
-    },
-    {
-        "name": "Sarah Khan",
-        "department": "Information Technology",
-        "votes": 0
-    }
-]
+1. Cast Vote
+2. Logout
+
+Choose:
 ```
 
-### students.json
+---
+
+## 🗳️ Cast Vote
+
+```text
+=============== CANDIDATES ===============
+
+1. Rahmat Husain (Computer Science)
+2. Sarah Khan (Information Technology)
+
+Choose Candidate: 2
+
+✅ Vote Cast Successfully!
+```
+
+---
+
+## 🚫 Duplicate Vote Prevention
+
+```text
+=============== STUDENT DASHBOARD ===============
+
+1. Cast Vote
+2. Logout
+
+Choose: 1
+
+❌ You have already voted.
+```
+
+---
+
+## 📊 Vote Count
+
+```text
+=============== REGISTERED CANDIDATES ===============
+
+1. Rahmat Husain
+   Department : Computer Science
+   Votes      : 0
+
+--------------------------------------------
+
+2. Sarah Khan
+   Department : Information Technology
+   Votes      : 1
+
+--------------------------------------------
+```
+
+---
+
+## 📝 Audit Log (audit_log.json)
 
 ```json
 [
     {
-        "student_id": "BIT2026001",
-        "name": "Rahul kumar",
-        "department": "BIT",
-        "password": "e3b0c44298fc1c149afbf4c8996fb924...",
-        "has_voted": false
+        "student_id": "BIT2025001",
+        "candidate": "Sarah Khan"
     }
 ]
 ```
 
 ---
 
-## ✅ Current Features
+# ✅ Features Completed
 
 - 🔐 Admin Login
-- 👨‍💼 Candidate Registration
-- 📋 View Candidates
+- 👨‍💼 Role-Based Admin Access
+- ➕ Candidate Registration
+- 📋 Candidate Management
 - 🎓 Student Registration
 - 🔑 Student Authentication
 - 🔒 SHA-256 Password Hashing
+- 🗳️ Secure Voting System
+- 🚫 One Vote Per Student
+- 📊 Vote Counting
+- 📝 Audit Log
 - 💾 JSON Data Storage
-- ⚠️ Input Validation
-- 📂 Modular Project Structure
+- ⚠️ Input Validation & Error Handling
+- 🧩 Modular Python Architecture
 
-> 
+---
+
+## 🚀 Next Update 
+
+- 🗄️ SQLite Database Integration
+- 🔄 Migrate JSON Data to SQLite
+- 📊 Improved Vote Counting
+- 🏆 Winner Declaration
+- ⚡ Faster Data Access
 ---
 
 # 🛠️ Technologies Used
