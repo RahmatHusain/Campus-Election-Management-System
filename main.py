@@ -77,3 +77,18 @@ def cast_vote(student):
     candidates[choice - 1]["votes"] += 1
 
     save_data(CANDIDATE_FILE, candidates)
+
+    if student["has_voted"]:
+
+    print("❌ You have already voted.")
+
+    return
+    students = load_data(STUDENT_FILE)
+
+    for s in students:
+
+        if s["student_id"] == student["student_id"]:
+
+            s["has_voted"] = True
+
+    save_data(STUDENT_FILE, students)
