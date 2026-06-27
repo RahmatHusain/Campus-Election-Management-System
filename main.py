@@ -90,6 +90,19 @@ def view_candidates():
         print(f"Department: {candidate['department']}")
 
         print("-" * 30)
+        
+def load_students():
+
+    if os.path.exists(STUDENT_FILE):
+
+        try:
+            with open(STUDENT_FILE, "r") as file:
+                return json.load(file)
+
+        except json.JSONDecodeError:
+            return []
+
+    return []
 
 def admin_menu():
 
