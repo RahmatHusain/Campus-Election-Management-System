@@ -5,7 +5,7 @@ from admin import register_candidate
 from admin import view_candidates
 
 from student import register_student
-
+from student import student_dashboard
 
 def admin_menu():
 
@@ -50,7 +50,10 @@ while True:
         register_student()
 
     elif choice == "3":
-        student_login()
+        student = student_login()
+
+if student:
+    student_dashboard(student)
 
     elif choice == "4":
         print("Thank you for using the system.")
