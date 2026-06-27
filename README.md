@@ -3,8 +3,8 @@
 > A Python-based command-line application for managing university elections with secure administration, candidate management, and scalable architecture.
 
 ![Python](https://img.shields.io/badge/Python-3.x-blue?logo=python)
-![Status](https://img.shields.io/badge/Status-Day%201%20Completed-success)
-![Version](https://img.shields.io/badge/Version-v0.1-orange)
+![Version](https://img.shields.io/badge/Version-v0.2-blue)
+![Status](https://img.shields.io/badge/Status-Day%202%20Completed-success)
 
 
 ---

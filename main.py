@@ -239,4 +239,7 @@ while True:
     elif choice == "2":
 
         register_student()
+    
+    elif choice == "3":
         
+        student_login()
