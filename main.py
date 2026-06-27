@@ -109,6 +109,10 @@ def save_students(students):
     with open(STUDENT_FILE, "w") as file:
         json.dump(students, file, indent=4)
 
+def hash_password(password):
+
+    return hashlib.sha256(password.encode()).hexdigest()
+
 def admin_menu():
 
     while True:
