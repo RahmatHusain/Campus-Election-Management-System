@@ -198,3 +198,27 @@ def admin_menu():
 
 if admin_login():
     admin_menu()
+
+    def student_menu():
+
+    while True:
+
+        print("\n===== STUDENT MENU =====")
+
+        print("1. Login")
+
+        print("2. Back")
+
+        choice = input("Choose: ")
+
+        if choice == "1":
+
+            student_login()
+
+        elif choice == "2":
+
+            break
+
+        else:
+
+            print("Invalid Choice")
