@@ -102,3 +102,4 @@ append_data(
         "candidate": candidates[choice - 1]["name"]
     }
 )
+print("\n✅ Vote Cast Successfully!")
