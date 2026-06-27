@@ -34,8 +34,22 @@ The **University Election Voting System** is a real-world Python project that si
 
 ```text
 university-election-voting-system/
-│── main.py
-│── candidates.json
+│
+├── main.py                 # Application entry point
+├── config.py               # Constants and configuration
+├── database.py             # JSON database operations
+├── auth.py                 # Admin & student authentication
+├── admin.py                # Admin features
+├── student.py              # Student features
+├── utils.py                # Helper functions
+│
+├── data/
+│   ├── candidates.json
+│   └── students.json
+│
+├── requirements.txt
+├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
