@@ -44,3 +44,22 @@ def register_student():
     save_data(STUDENT_FILE, students)
 
     print("Student Registered Successfully")
+
+def student_dashboard(student):
+
+    while True:
+
+        print("\n===== STUDENT DASHBOARD =====")
+        print("1. Cast Vote")
+        print("2. Logout")
+
+        choice = input("Choose: ")
+
+        if choice == "1":
+            cast_vote(student)
+
+        elif choice == "2":
+            break
+
+        else:
+            print("Invalid Choice")
