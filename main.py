@@ -113,6 +113,37 @@ def hash_password(password):
 
     return hashlib.sha256(password.encode()).hexdigest()
 
+def register_student():
+
+    students = load_students()
+
+    student_id = input("Student ID: ")
+    name = input("Student Name: ")
+    department = input("Department: ")
+    password = input("Password: ")
+
+    for student in students:
+
+        if student["student_id"] == student_id:
+
+            print("❌ Student ID already exists.")
+
+            return
+
+    students.append({
+
+        "student_id": student_id,
+        "name": name,
+        "department": department,
+        "password": hash_password(password),
+        "has_voted": False
+
+    })
+
+    save_students(students)
+
+    print("✅ Student Registered Successfully")
+    
 def admin_menu():
 
     while True:
