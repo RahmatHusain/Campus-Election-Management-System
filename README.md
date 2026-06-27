@@ -86,29 +86,108 @@ python main.py
 > ⚠️ These credentials are for development purposes only. Secure authentication will be added in future updates.
 
 ---
+# 📸 Project Preview
 
-# 📸 Preview
+## 🏠 Main Menu
 
 ```text
-===================================
- UNIVERSITY ELECTION VOTING SYSTEM
-===================================
+==================================================
+      UNIVERSITY ELECTION VOTING SYSTEM
+==================================================
 
-Username:
-Password:
+1. Admin Login
+2. Student Registration
+3. Student Login
+4. Exit
 
-✅ Login Successful
-
-===== ADMIN MENU =====
-
-1. Register Candidate
-2. View Candidates
-3. Logout
+Choose an option:
 ```
 
 ---
 
-# 📁 Candidate Data Example
+## 🔐 Admin Login
+
+```text
+Username: admin
+Password: ********
+
+✅ Login Successful
+```
+
+---
+
+## 👨‍💼 Admin Dashboard
+
+```text
+=============== ADMIN MENU ===============
+
+1. Register Candidate
+2. View Candidates
+3. Logout
+
+Choose:
+```
+
+---
+
+## ➕ Register Candidate
+
+```text
+Candidate Name : Rahmat Husain
+Department     : Computer Science
+
+✅ Candidate Registered Successfully
+```
+
+---
+
+## 📋 View Candidates
+
+```text
+=============== REGISTERED CANDIDATES ===============
+
+Name       : Rahmat Husain
+Department : Computer Science
+Votes      : 0
+
+------------------------------------------
+
+Name       : Sarah Khan
+Department : Information Technology
+Votes      : 0
+
+------------------------------------------
+```
+
+---
+
+## 🎓 Student Registration
+
+```text
+Student ID : BIT2025001
+Name       : Rahul kumar
+Department : BIT
+Password   : ********
+
+✅ Student Registered Successfully
+```
+
+---
+
+## 🔑 Student Login
+
+```text
+Student ID : BIT2025001
+Password   : ********
+
+✅ Welcome Rahul Husain
+```
+
+---
+
+## 📂 Data Storage
+
+### candidates.json
 
 ```json
 [
@@ -119,12 +198,41 @@ Password:
     },
     {
         "name": "Sarah Khan",
-        "department": "Business Administration",
+        "department": "Information Technology",
         "votes": 0
     }
 ]
 ```
 
+### students.json
+
+```json
+[
+    {
+        "student_id": "BIT2026001",
+        "name": "Rahul kumar",
+        "department": "BIT",
+        "password": "e3b0c44298fc1c149afbf4c8996fb924...",
+        "has_voted": false
+    }
+]
+```
+
+---
+
+## ✅ Current Features
+
+- 🔐 Admin Login
+- 👨‍💼 Candidate Registration
+- 📋 View Candidates
+- 🎓 Student Registration
+- 🔑 Student Authentication
+- 🔒 SHA-256 Password Hashing
+- 💾 JSON Data Storage
+- ⚠️ Input Validation
+- 📂 Modular Project Structure
+
+> 
 ---
 
 # 🛠️ Technologies Used
