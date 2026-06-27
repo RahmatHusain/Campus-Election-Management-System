@@ -231,3 +231,12 @@ while True:
     print("2. Student Registration")
     print("3. Student Login")
     print("4. Exit")
+
+    if choice == "1":
+
+        admin_login()
+
+    elif choice == "2":
+
+        register_student()
+        
