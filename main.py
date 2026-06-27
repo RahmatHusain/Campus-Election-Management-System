@@ -61,3 +61,13 @@ if student:
 
     else:
         print("Invalid Choice")
+
+def cast_vote(student):
+
+    candidates = load_data(CANDIDATE_FILE)
+
+    print("\n===== Candidates =====")
+
+    for index, candidate in enumerate(candidates, start=1):
+
+        print(f"{index}. {candidate['name']} ({candidate['department']})")
