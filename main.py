@@ -71,3 +71,9 @@ def cast_vote(student):
     for index, candidate in enumerate(candidates, start=1):
 
         print(f"{index}. {candidate['name']} ({candidate['department']})")
+
+        choice = int(input("Choose Candidate: "))
+
+    candidates[choice - 1]["votes"] += 1
+
+    save_data(CANDIDATE_FILE, candidates)
