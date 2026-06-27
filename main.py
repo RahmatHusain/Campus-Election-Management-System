@@ -143,7 +143,29 @@ def register_student():
     save_students(students)
 
     print("✅ Student Registered Successfully")
-    
+
+def student_login():
+
+    student_id = input("Student ID: ")
+    password = input("Password: ")
+
+    students = load_students()
+
+    for student in students:
+
+        if (
+            student["student_id"] == student_id
+            and student["password"] == hash_password(password)
+        ):
+
+            print(f"✅ Welcome {student['name']}")
+
+            return student
+
+    print("❌ Invalid Student ID or Password")
+
+    return None
+
 def admin_menu():
 
     while True:
