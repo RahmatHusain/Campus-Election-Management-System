@@ -222,3 +222,12 @@ if admin_login():
         else:
 
             print("Invalid Choice")
+
+while True:
+
+    print("\n===== UNIVERSITY ELECTION SYSTEM =====")
+
+    print("1. Admin Login")
+    print("2. Student Registration")
+    print("3. Student Login")
+    print("4. Exit")
