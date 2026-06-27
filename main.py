@@ -72,9 +72,21 @@ def cast_vote(student):
 
         print(f"{index}. {candidate['name']} ({candidate['department']})")
 
-        choice = int(input("Choose Candidate: "))
+        try:
 
-    candidates[choice - 1]["votes"] += 1
+    choice = int(input("Choose Candidate: "))
+
+except ValueError:
+
+    print("Invalid Choice")
+
+    return
+
+    if choice < 1 or choice > len(candidates):
+
+    print("Candidate does not exist.")
+
+    return
 
     save_data(CANDIDATE_FILE, candidates)
 
@@ -93,13 +105,13 @@ def cast_vote(student):
 
     save_data(STUDENT_FILE, students)
 
-append_data(
+    append_data(
 
-    AUDIT_LOG_FILE,
+        AUDIT_LOG_FILE,
 
-    {
-        "student_id": student["student_id"],
-        "candidate": candidates[choice - 1]["name"]
-    }
-)
-print("\n✅ Vote Cast Successfully!")
+        {
+            "student_id": student["student_id"],
+            "candidate": candidates[choice - 1]["name"]
+        }
+    )
+    print("\n✅ Vote Cast Successfully!")
