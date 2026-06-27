@@ -92,3 +92,13 @@ def cast_vote(student):
             s["has_voted"] = True
 
     save_data(STUDENT_FILE, students)
+
+append_data(
+
+    AUDIT_LOG_FILE,
+
+    {
+        "student_id": student["student_id"],
+        "candidate": candidates[choice - 1]["name"]
+    }
+)
