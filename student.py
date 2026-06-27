@@ -5,6 +5,11 @@ from database import save_data
 
 from utils import hash_password
 
+from config import CANDIDATE_FILE
+from config import AUDIT_LOG_FILE
+
+from database import append_data
+
 
 def register_student():
 
