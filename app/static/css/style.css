@@ -1,0 +1,20 @@
+body{
+    background:#f8f9fa;
+}
+
+.navbar-brand{
+    font-weight:bold;
+    font-size:24px;
+}
+
+footer{
+    margin-top:80px;
+}
+
+h1{
+    font-weight:700;
+}
+
+.btn{
+    margin:5px;
+}
