@@ -1,41 +1,103 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}
-Home
-{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 
-<div class="text-center mt-5">
+<!-- Hero Section -->
+<section class="hero text-center py-5">
+    <div class="container">
+        <h1 class="display-4 fw-bold">
+            🏛️ Campus Election Management System
+        </h1>
 
-<h1>
+        <p class="lead mt-3">
+            Secure, Transparent, and Modern Digital Voting Platform for Universities.
+        </p>
 
-🏛️ Campus Election Management System
+        <div class="mt-4">
+            <a href="#" class="btn btn-primary btn-lg me-2">Login</a>
+            <a href="#" class="btn btn-success btn-lg">Register</a>
+        </div>
+    </div>
+</section>
 
-</h1>
+<!-- Features -->
+<section class="container py-5">
+    <h2 class="text-center mb-5">Key Features</h2>
 
-<p class="lead">
+    <div class="row">
 
-Secure • Transparent • Reliable University Elections
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h4>🔒 Secure Voting</h4>
+                    <p>Every student can vote only once using secure authentication.</p>
+                </div>
+            </div>
+        </div>
 
-</p>
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h4>📊 Live Results</h4>
+                    <p>View election statistics and vote counts in real time.</p>
+                </div>
+            </div>
+        </div>
 
-<div class="mt-4">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h4>⚡ Fast & Reliable</h4>
+                    <p>Quick, accurate, and user-friendly election management.</p>
+                </div>
+            </div>
+        </div>
 
-<a href="#" class="btn btn-primary btn-lg">
+    </div>
+</section>
 
-Login
+<!-- Technology Stack -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Technology Stack</h2>
 
-</a>
+        <div class="row text-center">
 
-<a href="#" class="btn btn-success btn-lg">
+            <div class="col-md-3">
+                <h5>🐍 Python</h5>
+            </div>
 
-Register
+            <div class="col-md-3">
+                <h5>🌐 Flask</h5>
+            </div>
 
-</a>
+            <div class="col-md-3">
+                <h5>🗄️ SQLite</h5>
+            </div>
 
-</div>
+            <div class="col-md-3">
+                <h5>🎨 Bootstrap 5</h5>
+            </div>
 
-</div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="text-center py-5">
+    <div class="container">
+        <h2>Ready to Modernize Campus Elections?</h2>
+
+        <p class="mt-3">
+            Join us in creating a secure and transparent voting experience.
+        </p>
+
+        <a href="#" class="btn btn-warning btn-lg mt-3">
+            Get Started
+        </a>
+    </div>
+</section>
 
 {% endblock %}
