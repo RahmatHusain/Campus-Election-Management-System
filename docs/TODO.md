@@ -1,27 +1,36 @@
-# Project TODO
+# TODO
 
-## Day 1
+## ✅ Completed
 
-- [x] Initialize project
-- [x] Configure Flask
-- [x] Configure SQLite
-- [x] Create landing page
-- [x] Create base template
-- [x] Add error pages
-- [x] Initialize documentation
+### Day 1
+- Project structure
+- Flask initialization
+- SQLite setup
+- Bootstrap integration
+- Base template
+- Error pages
+- Documentation
+- GitHub repository
+
+### Day 2
+- User Model
+- Database integration
+- Registration Form
+- Password Hashing
+- Email Validation
+- Student ID Validation
+- Flash Messages
+- Registration UI
+- Registration Testing
 
 ---
 
-## Day 2
+## 🔜 Next (Day 3)
 
-- [ ] User model
-- [ ] Login
-- [ ] Registration
-- [ ] Password hashing
-
----
-
-## Day 3
-
-- [ ] Student Dashboard
-- [ ] Admin Dashboard
+- Login Form
+- Login Route
+- Logout
+- Dashboard
+- Protected Routes
+- User Profile
+- Session Management
