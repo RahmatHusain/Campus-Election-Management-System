@@ -4,68 +4,71 @@
 
 {% block content %}
 
-<div class="container py-5">
+<div class="container">
 
-    <div class="row justify-content-center">
+    <div class="text-center mb-5">
 
-        <div class="col-lg-10">
+        <h1 class="fw-bold">
+            Welcome, {{ current_user.full_name }}
+        </h1>
 
-            <div class="card shadow-lg border-0 rounded-4">
+        <p class="text-muted">
+            Campus Election Management System Dashboard
+        </p>
 
-                <div class="card-body p-5">
+    </div>
 
-                    <h2 class="fw-bold text-primary">
-                        👋 Welcome, {{ current_user.full_name }}
-                    </h2>
+    <div class="row g-4">
 
-                    <hr>
+        <div class="col-md-4">
 
-                    <div class="row mt-4">
+            <div class="card shadow border-0 text-center">
 
-                        <div class="col-md-6">
+                <div class="card-body">
 
-                            <div class="card border-primary mb-3">
+                    <h2>🗳️</h2>
 
-                                <div class="card-body">
+                    <h5>Election Status</h5>
 
-                                    <h5>🎓 Student ID</h5>
+                    <p>No active election.</p>
 
-                                    <h4>{{ current_user.student_id }}</h4>
+                </div>
 
-                                </div>
+            </div>
 
-                            </div>
+        </div>
 
-                        </div>
+        <div class="col-md-4">
 
-                        <div class="col-md-6">
+            <div class="card shadow border-0 text-center">
 
-                            <div class="card border-success mb-3">
+                <div class="card-body">
 
-                                <div class="card-body">
+                    <h2>👤</h2>
 
-                                    <h5>📧 Email</h5>
+                    <h5>My Profile</h5>
 
-                                    <h5>{{ current_user.email }}</h5>
+                    <a href="{{ url_for('main.profile') }}" class="btn btn-primary">
+                        View Profile
+                    </a>
 
-                                </div>
+                </div>
 
-                            </div>
+            </div>
 
-                        </div>
+        </div>
 
-                    </div>
+        <div class="col-md-4">
 
-                    <div class="mt-4">
+            <div class="card shadow border-0 text-center">
 
-                        <a href="{{ url_for('main.logout') }}"
-                           class="btn btn-danger">
+                <div class="card-body">
 
-                            Logout
+                    <h2>📊</h2>
 
-                        </a>
+                    <h5>Voting Result</h5>
 
-                    </div>
+                    <p>Coming Soon</p>
 
                 </div>
 
