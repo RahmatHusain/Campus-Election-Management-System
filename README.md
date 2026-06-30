@@ -6,7 +6,7 @@
 ![Flask](https://img.shields.io/badge/Flask-Web_Framework-black?style=for-the-badge&logo=flask)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-blue?style=for-the-badge&logo=sqlite)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple?style=for-the-badge&logo=bootstrap)
-![Status](https://img.shields.io/badge/Status-Day_1-success?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Day_2-success?style=for-the-badge)
 
 ---
 
