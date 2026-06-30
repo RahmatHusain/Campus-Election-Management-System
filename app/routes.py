@@ -1,17 +1,18 @@
-from app.forms.auth_forms import RegisterForm, LoginForm
 from flask import Blueprint, render_template, redirect, url_for, flash
-from flask_login import login_user
+
+from flask_login import (
+    login_user,
+    logout_user,
+    login_required,
+    current_user
+)
+
 from app import db
-from app.forms.auth_forms import RegisterForm
+from app.forms.auth_forms import RegisterForm, LoginForm
 from app.models.user import User
 
+# Create Blueprint HERE
 main = Blueprint("main", __name__)
-
-
-@main.route("/")
-def home():
-    return render_template("index.html")
-
 
 @main.route("/register", methods=["GET", "POST"])
 def register():
@@ -67,7 +68,7 @@ def login():
 
             flash("Login Successful!", "success")
 
-            return redirect(url_for("main.home"))
+            return redirect(url_for("main.dashboard"))
 
         flash("Invalid Email or Password", "danger")
 
@@ -75,3 +76,26 @@ def login():
         "auth/login.html",
         form=form
     )
+
+@main.route("/logout")
+@login_required
+def logout():
+
+    logout_user()
+
+    flash(
+        "You have been logged out successfully.",
+        "success"
+    )
+
+    return redirect(url_for("main.login"))
+@main.route("/dashboard")
+@login_required
+def dashboard():
+
+    return render_template("dashboard.html")
+
+
+@main.route("/")
+def home():
+    return render_template("index.html")
