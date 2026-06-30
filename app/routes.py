@@ -1,3 +1,4 @@
+from app.forms.auth_forms import RegisterForm, LoginForm
 from flask import Blueprint, render_template, redirect, url_for, flash
 
 from app import db
@@ -46,5 +47,14 @@ def register():
 
     return render_template(
         "auth/register.html",
+        form=form
+    )
+@main.route("/login", methods=["GET", "POST"])
+def login():
+
+    form = LoginForm()
+
+    return render_template(
+        "auth/login.html",
         form=form
     )
