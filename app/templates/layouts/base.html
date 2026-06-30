@@ -76,17 +76,26 @@ data-bs-target="#navbarNav">
 
 <div class="container mt-3">
 
-{% with messages = get_flashed_messages() %}
-
+{% with messages = get_flashed_messages(with_categories=true) %}
 {% if messages %}
 
 {% for message in messages %}
 
-<div class="alert alert-success">
+{% for category, message in messages %}
 
-{{ message }}
+<div class="alert alert-{{ category }} alert-dismissible fade show">
+
+    {{ message }}
+
+    <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="alert">
+    </button>
 
 </div>
+
+{% endfor %}
 
 {% endfor %}
 

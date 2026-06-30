@@ -1,6 +1,6 @@
 from app.forms.auth_forms import RegisterForm, LoginForm
 from flask import Blueprint, render_template, redirect, url_for, flash
-
+from flask_login import login_user
 from app import db
 from app.forms.auth_forms import RegisterForm
 from app.models.user import User
@@ -53,6 +53,23 @@ def register():
 def login():
 
     form = LoginForm()
+
+    if form.validate_on_submit():
+
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if user and user.check_password(form.password.data):
+
+            login_user(
+                user,
+                remember=form.remember.data
+            )
+
+            flash("Login Successful!", "success")
+
+            return redirect(url_for("main.home"))
+
+        flash("Invalid Email or Password", "danger")
 
     return render_template(
         "auth/login.html",
