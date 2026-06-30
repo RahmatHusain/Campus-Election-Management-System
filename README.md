@@ -45,8 +45,17 @@ Day 2/45 Completed ✅
 ✔ WTForms Validation
 ✔ Bootstrap UI
 
-Next Milestone:
-🔐 User Authentication & Dashboard
+## ✅ Day 3
+
+- User Login
+- Logout
+- Flask-Login Authentication
+- Protected Dashboard
+- Profile Page
+- Dynamic Navigation
+- Flash Messages
+- Session Management
+- Responsive UI Improvements
 ---
 
 # 🛠️ Technology Stack
