@@ -34,8 +34,8 @@ def register():
         user = User(
             full_name=form.full_name.data,
             student_id=form.student_id.data,
-            email=form.email.data,
-        )
+            email=form.email.data.strip().lower(),
+            )
 
         user.set_password(form.password.data)
 
@@ -53,11 +53,16 @@ def register():
 @main.route("/login", methods=["GET", "POST"])
 def login():
 
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
+
     form = LoginForm()
 
     if form.validate_on_submit():
 
-        user = User.query.filter_by(email=form.email.data).first()
+        email = form.email.data.strip().lower()
+
+        user = User.query.filter_by(email=email).first()
 
         if user and user.check_password(form.password.data):
 
@@ -66,11 +71,17 @@ def login():
                 remember=form.remember.data
             )
 
-            flash("Login Successful!", "success")
+            flash(
+                "Welcome back!",
+                "success"
+            )
 
             return redirect(url_for("main.dashboard"))
 
-        flash("Invalid Email or Password", "danger")
+        flash(
+            "Invalid email or password.",
+            "danger"
+        )
 
     return render_template(
         "auth/login.html",
