@@ -1,125 +1,62 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}My Profile{% endblock %}
 
 {% block content %}
 
-<div class="container py-5">
+<div class="container mt-5">
 
-    <div class="row justify-content-center">
+    <div class="card shadow-lg">
 
-        <div class="col-lg-8">
+        <div class="card-header bg-primary text-white">
+            <h3>👤 My Profile</h3>
+        </div>
 
-            <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body">
 
-                <div class="card-header bg-primary text-white text-center">
+            <table class="table table-bordered">
 
-                    <h2>👤 My Profile</h2>
+                <tr>
+                    <th>Full Name</th>
+                    <td>{{ current_user.full_name }}</td>
+                </tr>
 
-                </div>
+                <tr>
+                    <th>Student ID</th>
+                    <td>{{ current_user.student_id }}</td>
+                </tr>
 
-                <div class="card-body p-5">
+                <tr>
+                    <th>Email</th>
+                    <td>{{ current_user.email }}</td>
+                </tr>
 
-                    <div class="text-center mb-4">
+                <tr>
+                    <th>Role</th>
+                    <td>{{ current_user.role|title }}</td>
+                </tr>
 
-                        <img
-                            src="https://ui-avatars.com/api/?name={{ current_user.full_name }}"
-                            class="rounded-circle shadow"
-                            width="120">
+                <tr>
+                    <th>Registered</th>
+                    <td>{{ current_user.created_at }}</td>
+                </tr>
 
-                    </div>
+                <tr>
+                    <th>Last Login</th>
+                    <td>{{ current_user.last_login or "Never" }}</td>
+                </tr>
 
-                    <table class="table table-bordered">
+                <tr>
+                    <th>Last Logout</th>
+                    <td>{{ current_user.last_logout or "Never" }}</td>
+                </tr>
 
-                        <tr>
-                            <th>Full Name</th>
-                            <td>{{ current_user.full_name }}</td>
-                        </tr>
+                <tr>
+                    <th>Total Logins</th>
+                    <td>{{ current_user.login_count }}</td>
+                </tr>
 
-                        <tr>
-                            <th>Student ID</th>
-                            <td>{{ current_user.student_id }}</td>
-                        </tr>
-
-                        <tr>
-                            <th>Email</th>
-                            <td>{{ current_user.email }}</td>
-                        </tr>
-
-                        <tr>
-                            <th>Role</th>
-                            <td>{{ current_user.role }}</td>
-                        </tr>
-
-                        <tr>
-                            <th>Joined</th>
-                            <td>{{ current_user.created_at.strftime('%d %B %Y') }}</td>
-                        </tr>
-                        <div class="card mt-3">
-    <div class="card-body">
-
-        <h5>Last Login</h5>
-
-        <p>
-
-            {% if current_user.last_login %}
-
-                {{ current_user.last_login }}
-
-            {% else %}
-
-                First Login
-
-            {% endif %}
-
-        </p>
-
-    </div>
-</div>
-<div class="card mt-3">
-    <div class="card-body">
-
-        <h5>Account Status</h5>
-
-        {% if current_user.is_active_user %}
-
-            <span class="badge bg-success">
-                Active
-            </span>
-
-        {% else %}
-
-            <span class="badge bg-danger">
-                Inactive
-            </span>
-
-        {% endif %}
-
-    </div>
-</div>
-                    </table>
-
-                    <div class="text-center mt-4">
-
-                        <a href="#"
-                           class="btn btn-warning me-2">
-
-                            Edit Profile
-
-                        </a>
-
-                        <a href="#"
-                           class="btn btn-secondary">
-
-                            Change Password
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </div>
+            </table>
 
         </div>
 
