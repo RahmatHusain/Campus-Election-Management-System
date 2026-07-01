@@ -28,6 +28,12 @@
 
 {{ form.full_name(class="form-control") }}
 
+{% for error in form.full_name.errors %}
+<div class="text-danger small mt-1">
+    {{ error }}
+</div>
+{% endfor %}
+
 </div>
 
 <div class="mb-3">
@@ -35,6 +41,12 @@
 {{ form.student_id.label(class="form-label") }}
 
 {{ form.student_id(class="form-control") }}
+
+{% for error in form.student_id.errors %}
+<div class="text-danger small mt-1">
+    {{ error }}
+</div>
+{% endfor %}
 
 </div>
 
@@ -44,6 +56,11 @@
 
 {{ form.email(class="form-control") }}
 
+{% for error in form.email.errors %}
+<div class="text-danger small mt-1">
+    {{ error }}
+</div>
+{% endfor %}
 </div>
 
 <div class="mb-3">
@@ -52,6 +69,11 @@
 
 {{ form.password(class="form-control") }}
 
+{% for error in form.password.errors %}
+<div class="text-danger small mt-1">
+    {{ error }}
+</div>
+{% endfor %}
 </div>
 
 <div class="mb-3">
@@ -60,6 +82,11 @@
 
 {{ form.confirm_password(class="form-control") }}
 
+{% for error in form.confirm_password.errors %}
+<div class="text-danger small mt-1">
+    {{ error }}
+</div>
+{% endfor %}
 </div>
 
 <div class="d-grid">
