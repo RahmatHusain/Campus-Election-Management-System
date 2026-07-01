@@ -18,6 +18,9 @@ main = Blueprint("main", __name__)
 @main.route("/register", methods=["GET", "POST"])
 def register():
 
+    if current_user.is_authenticated:
+     return redirect(url_for("main.dashboard"))
+
     form = RegisterForm()
 
     if form.validate_on_submit():
@@ -104,11 +107,11 @@ def logout():
     logout_user()
 
     flash(
-        "You have been logged out successfully.",
+        "You have successfully logged out.",
         "success"
     )
 
-    return redirect(url_for("main.login"))
+    return redirect(url_for("main.home"))
 @main.route("/dashboard")
 @login_required
 def dashboard():
