@@ -64,6 +64,12 @@ def login():
         email = form.email.data.strip().lower()
 
         user = User.query.filter_by(email=email).first()
+        if user and not user.is_active_user:
+            flash(
+                "Your account has been disabled. Please contact the administrator.",
+                "danger"
+                )
+            return redirect(url_for("main.login"))
 
         if user and user.check_password(form.password.data):
 
