@@ -11,7 +11,8 @@ from flask_login import (
 from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
 from app.models.user import User
-
+from flask import request
+from app.models.audit_log import AuditLog
 main = Blueprint("main", __name__)
 
 
@@ -53,6 +54,14 @@ def register():
         user.set_password(form.password.data)
 
         db.session.add(user)
+        db.session.commit()
+        log = AuditLog(
+            user_id=user.id,
+            action="User Registered",
+            ip_address=request.remote_addr
+        )
+
+        db.session.add(log)
         db.session.commit()
 
         flash("Registration successful!", "success")
@@ -127,6 +136,14 @@ def login():
                 user,
                 remember=form.remember.data
             )
+            log = AuditLog(
+            user_id=user.id,
+            action="User Logged In",
+            ip_address=request.remote_addr
+            )
+
+            db.session.add(log)
+            db.session.commit()
 
             flash(
                 "Welcome back!",
@@ -203,6 +220,14 @@ def profile():
 def logout():
 
     current_user.last_logout = datetime.utcnow()
+
+    log = AuditLog(
+        user_id=current_user.id,
+        action="User Logged Out",
+        ip_address=request.remote_addr
+    )
+
+    db.session.add(log)
     db.session.commit()
 
     logout_user()
