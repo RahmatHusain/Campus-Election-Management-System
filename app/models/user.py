@@ -22,14 +22,21 @@ class User(UserMixin, db.Model):
     role = db.Column(db.String(20), default="student")
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    last_login = db.Column(
-    db.DateTime,
-    nullable=True
-    )
-    is_active_user = db.Column(
-    db.Boolean,
-    default=True
-    )
+
+    # Login Tracking
+    last_login = db.Column(db.DateTime, nullable=True)
+
+    last_logout = db.Column(db.DateTime, nullable=True)
+
+    login_count = db.Column(db.Integer, default=0)
+
+    # Account Status
+    is_active_user = db.Column(db.Boolean, default=True)
+
+    # Security
+    failed_login_attempts = db.Column(db.Integer, default=0)
+
+    account_locked_until = db.Column(db.DateTime, nullable=True)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

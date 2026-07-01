@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, flash
 
 from flask_login import (
@@ -12,25 +12,34 @@ from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
 from app.models.user import User
 
-# Create Blueprint HERE
 main = Blueprint("main", __name__)
 
+
+# ==========================
+# Home
+# ==========================
+@main.route("/")
+def home():
+    return render_template("index.html")
+
+
+# ==========================
+# Register
+# ==========================
 @main.route("/register", methods=["GET", "POST"])
 def register():
 
     if current_user.is_authenticated:
-     return redirect(url_for("main.dashboard"))
+        return redirect(url_for("main.dashboard"))
 
     form = RegisterForm()
 
     if form.validate_on_submit():
 
-        # Check duplicate email
-        if User.query.filter_by(email=form.email.data).first():
+        if User.query.filter_by(email=form.email.data.strip().lower()).first():
             flash("Email already exists.", "danger")
             return redirect(url_for("main.register"))
 
-        # Check duplicate student ID
         if User.query.filter_by(student_id=form.student_id.data).first():
             flash("Student ID already exists.", "danger")
             return redirect(url_for("main.register"))
@@ -39,7 +48,7 @@ def register():
             full_name=form.full_name.data,
             student_id=form.student_id.data,
             email=form.email.data.strip().lower(),
-            )
+        )
 
         user.set_password(form.password.data)
 
@@ -48,12 +57,17 @@ def register():
 
         flash("Registration successful!", "success")
 
-        return redirect(url_for("main.home"))
+        return redirect(url_for("main.login"))
 
     return render_template(
         "auth/register.html",
         form=form
     )
+
+
+# ==========================
+# Login
+# ==========================
 @main.route("/login", methods=["GET", "POST"])
 def login():
 
@@ -65,19 +79,50 @@ def login():
     if form.validate_on_submit():
 
         email = form.email.data.strip().lower()
-
         user = User.query.filter_by(email=email).first()
-        if user and not user.is_active_user:
-            flash(
-                "Your account has been disabled. Please contact the administrator.",
-                "danger"
+
+        # Account locked
+        if user and user.account_locked_until:
+
+            if user.account_locked_until > datetime.utcnow():
+
+                remaining = (
+                    user.account_locked_until - datetime.utcnow()
+                ).seconds // 60
+
+                flash(
+                    f"Account locked. Try again in {remaining} minutes.",
+                    "danger"
                 )
+
+                return redirect(url_for("main.login"))
+
+            else:
+
+                user.failed_login_attempts = 0
+                user.account_locked_until = None
+                db.session.commit()
+
+        # Inactive account
+        if user and hasattr(user, "is_active_user") and not user.is_active_user:
+
+            flash(
+                "Your account has been disabled.",
+                "danger"
+            )
+
             return redirect(url_for("main.login"))
 
+        # Correct password
         if user and user.check_password(form.password.data):
 
+            user.failed_login_attempts = 0
+            user.account_locked_until = None
             user.last_login = datetime.utcnow()
+            user.login_count += 1
+
             db.session.commit()
+
             login_user(
                 user,
                 remember=form.remember.data
@@ -90,19 +135,75 @@ def login():
 
             return redirect(url_for("main.dashboard"))
 
-        flash(
-            "Invalid email or password.",
-            "danger"
-        )
+        # Wrong password
+        else:
+
+            if user:
+
+                user.failed_login_attempts += 1
+
+                if user.failed_login_attempts >= 5:
+
+                    user.account_locked_until = (
+                        datetime.utcnow() + timedelta(minutes=15)
+                    )
+
+                    flash(
+                        "Too many failed login attempts. Account locked for 15 minutes.",
+                        "danger"
+                    )
+
+                else:
+
+                    remaining = 5 - user.failed_login_attempts
+
+                    flash(
+                        f"Invalid credentials. {remaining} attempts remaining.",
+                        "warning"
+                    )
+
+                db.session.commit()
+
+            else:
+
+                flash(
+                    "Invalid email or password.",
+                    "danger"
+                )
 
     return render_template(
         "auth/login.html",
         form=form
     )
 
+
+# ==========================
+# Dashboard
+# ==========================
+@main.route("/dashboard")
+@login_required
+def dashboard():
+    return render_template("dashboard.html")
+
+
+# ==========================
+# Profile
+# ==========================
+@main.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
+
+
+# ==========================
+# Logout
+# ==========================
 @main.route("/logout")
 @login_required
 def logout():
+
+    current_user.last_logout = datetime.utcnow()
+    db.session.commit()
 
     logout_user()
 
@@ -112,20 +213,3 @@ def logout():
     )
 
     return redirect(url_for("main.home"))
-@main.route("/dashboard")
-@login_required
-def dashboard():
-
-    return render_template("dashboard.html")
-
-@main.route("/profile")
-@login_required
-def profile():
-
-    return render_template(
-        "profile.html"
-    )
-
-@main.route("/")
-def home():
-    return render_template("index.html")
