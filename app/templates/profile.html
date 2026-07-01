@@ -55,7 +55,27 @@
                             <th>Joined</th>
                             <td>{{ current_user.created_at.strftime('%d %B %Y') }}</td>
                         </tr>
+                        <div class="card mt-3">
+    <div class="card-body">
 
+        <h5>Last Login</h5>
+
+        <p>
+
+            {% if current_user.last_login %}
+
+                {{ current_user.last_login }}
+
+            {% else %}
+
+                First Login
+
+            {% endif %}
+
+        </p>
+
+    </div>
+</div>
                     </table>
 
                     <div class="text-center mt-4">

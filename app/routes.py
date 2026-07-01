@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, render_template, redirect, url_for, flash
 
 from flask_login import (
@@ -66,6 +67,8 @@ def login():
 
         if user and user.check_password(form.password.data):
 
+            user.last_login = datetime.utcnow()
+            db.session.commit()
             login_user(
                 user,
                 remember=form.remember.data
