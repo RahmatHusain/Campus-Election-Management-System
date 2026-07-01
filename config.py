@@ -1,15 +1,27 @@
 import os
-from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
 
-BASE_DIR = Path(__file__).resolve().parent
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY", "my_super_secret_key_123456")
 
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{BASE_DIR / 'cems.db'}"
+    SECRET_KEY = os.getenv(
+        "SECRET_KEY",
+        "fallback_secret_key"
+    )
+
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        "DATABASE_URL",
+        "sqlite:///cems.db"
+    )
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+
+    SESSION_COOKIE_HTTPONLY = True
+
+    SESSION_COOKIE_SAMESITE = "Lax"
+
+    SESSION_COOKIE_SECURE = False  # Change to True in production
+
+    PERMANENT_SESSION_LIFETIME = 1800  # 30 minutes
