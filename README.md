@@ -56,6 +56,47 @@ Day 2/45 Completed ✅
 - Flash Messages
 - Session Management
 - Responsive UI Improvements
+
+
+## ✅ Day 4 — Security Enhancement
+
+### Security
+
+- Strong Password Validation
+- Confirm Password Validation
+- Case-insensitive Login
+- Email Normalization
+- Failed Login Protection
+- Account Lock (5 Attempts)
+- Automatic Unlock
+- Audit Logging
+- Login Activity Tracking
+- Environment Variables (.env)
+- Session Security
+- HTTPOnly Cookies
+- SameSite Protection
+- Permanent Sessions
+
+### User Features
+
+- Profile Information
+- Login Count
+- Last Login
+- Last Logout
+
+---
+
+## 🚀 Current Progress
+
+✔ Day 1 Completed
+
+✔ Day 2 Completed
+
+✔ Day 3 Completed
+
+✔ Day 4 Completed
+
+➡️ Next: Day 5 — Role-Based Access Control (RBAC)
 ---
 
 # 🛠️ Technology Stack
