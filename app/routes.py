@@ -143,6 +143,7 @@ def login():
                 user,
                 remember=form.remember.data
             )
+
             session.permanent = True
             log = AuditLog(
             user_id=user.id,
@@ -157,6 +158,11 @@ def login():
                 "Welcome back!",
                 "success"
             )
+
+            if user.role == User.SUPER_ADMIN:
+                return redirect(url_for("main.admin_dashboard"))
+            elif user.role == User.ELECTION_OFFICER:
+                return redirect(url_for("main.officer_dashboard"))
 
             return redirect(url_for("main.dashboard"))
 
@@ -209,6 +215,20 @@ def login():
 @login_required
 def dashboard():
     return render_template("dashboard.html")
+
+@main.route("/admin/dashboard")
+@login_required
+@super_admin_required
+def admin_dashboard():
+
+    return render_template("admin_dashboard.html")
+
+@main.route("/officer/dashboard")
+@login_required
+@election_officer_required
+def officer_dashboard():
+
+    return render_template("officer_dashboard.html")
 
 
 # ==========================
@@ -267,3 +287,4 @@ def officer_test():
 def student_test():
 
     return "<h2>✅ Student Access Granted</h2>"
+   

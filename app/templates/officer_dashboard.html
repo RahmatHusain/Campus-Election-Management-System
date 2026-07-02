@@ -1,0 +1,23 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Election Officer Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="alert alert-warning">
+
+        <h2>🗳 Election Officer Dashboard</h2>
+
+        <hr>
+
+        <h5>Welcome {{ current_user.full_name }}</h5>
+
+        <p>You can manage elections and candidates.</p>
+
+    </div>
+
+</div>
+
+{% endblock %}
