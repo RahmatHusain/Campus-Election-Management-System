@@ -7,6 +7,12 @@ from flask_login import (
     login_required,
     current_user
 )
+
+from app.decorators import (
+    super_admin_required,
+    election_officer_required,
+    student_required,
+)
 from flask import session
 from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
@@ -241,3 +247,23 @@ def logout():
     )
 
     return redirect(url_for("main.home"))
+
+@main.route("/admin-test")
+@super_admin_required
+def admin_test():
+
+    return "<h2>✅ Super Admin Access Granted</h2>"
+
+
+@main.route("/officer-test")
+@election_officer_required
+def officer_test():
+
+    return "<h2>✅ Election Officer Access Granted</h2>"
+
+
+@main.route("/student-test")
+@student_required
+def student_test():
+
+    return "<h2>✅ Student Access Granted</h2>"

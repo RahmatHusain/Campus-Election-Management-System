@@ -21,6 +21,11 @@ ROLE_STUDENT = "STUDENT"
 
 
 class User(UserMixin, db.Model):
+
+    SUPER_ADMIN = "super_admin"
+    ELECTION_OFFICER = "election_officer"
+    STUDENT = "student"
+
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -35,8 +40,8 @@ class User(UserMixin, db.Model):
 
     role = db.Column(
     db.String(30),
-    nullable=False,
-    default=ROLE_STUDENT
+    default=STUDENT,
+    nullable=False
     )
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
