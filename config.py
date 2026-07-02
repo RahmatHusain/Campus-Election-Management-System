@@ -1,3 +1,4 @@
+from datetime import timedelta
 import os
 from dotenv import load_dotenv
 
@@ -16,12 +17,20 @@ class Config:
         "sqlite:///cems.db"
     )
 
+    # Flask Session Security
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_COOKIE_HTTPONLY = True
 
+    SESSION_COOKIE_SECURE = False      # Change to True after HTTPS deployment
+
     SESSION_COOKIE_SAMESITE = "Lax"
 
-    SESSION_COOKIE_SECURE = False  # Change to True in production
+    REMEMBER_COOKIE_HTTPONLY = True
 
-    PERMANENT_SESSION_LIFETIME = 1800  # 30 minutes
+    REMEMBER_COOKIE_SECURE = False
+
+    REMEMBER_COOKIE_DURATION = timedelta(days=7)
+
+    PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)

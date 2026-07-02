@@ -7,7 +7,7 @@ from flask_login import (
     login_required,
     current_user
 )
-
+from flask import session
 from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
 from app.models.user import User
@@ -136,6 +136,7 @@ def login():
                 user,
                 remember=form.remember.data
             )
+            session.permanent = True
             log = AuditLog(
             user_id=user.id,
             action="User Logged In",
@@ -229,7 +230,8 @@ def logout():
 
     db.session.add(log)
     db.session.commit()
-
+    
+    session.clear()
     logout_user()
 
     flash(

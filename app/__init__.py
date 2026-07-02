@@ -1,3 +1,4 @@
+from datetime import timedelta
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
@@ -11,6 +12,7 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.permanent_session_lifetime = timedelta(minutes=30)
 
     # Debug information
     print("SECRET_KEY:", app.config["SECRET_KEY"])
