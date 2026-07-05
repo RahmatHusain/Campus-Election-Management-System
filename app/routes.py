@@ -373,6 +373,35 @@ def toggle_user_status(user_id):
         )
 
     return redirect(url_for("main.manage_users"))
+
+@main.route("/admin/users/<int:user_id>/delete")
+@login_required
+@super_admin_required
+def delete_user(user_id):
+
+    user = User.query.get_or_404(user_id)
+
+    # Prevent deleting yourself
+    if user.id == current_user.id:
+
+        flash(
+            "You cannot delete your own account.",
+            "danger"
+        )
+
+        return redirect(url_for("main.manage_users"))
+
+    db.session.delete(user)
+    db.session.commit()
+
+    flash(
+        "User deleted successfully.",
+        "success"
+    )
+
+    return redirect(url_for("main.manage_users"))
+
+    
 @main.route("/officer/dashboard")
 @login_required
 @election_officer_required
