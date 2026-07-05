@@ -4,7 +4,7 @@ from flask import flash, redirect, url_for
 from flask_login import current_user, login_required
 
 from app.models.user import User
-
+from flask import abort
 
 def role_required(*roles):
     """
@@ -21,14 +21,7 @@ def role_required(*roles):
         def wrapped_view(*args, **kwargs):
 
             if current_user.role not in roles:
-
-                flash(
-                    "Access denied. You don't have permission to access this page.",
-                    "danger"
-                )
-
-                return redirect(url_for("main.dashboard"))
-
+                abort(403)
             return view(*args, **kwargs)
 
         return wrapped_view
