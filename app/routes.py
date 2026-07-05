@@ -259,7 +259,6 @@ def admin_dashboard():
         "admin_dashboard.html",
         stats=stats
     )
-    
 from sqlalchemy import or_
 
 @main.route("/admin/users")
@@ -269,9 +268,13 @@ def manage_users():
 
     search = request.args.get("search", "").strip()
 
+    role = request.args.get("role", "").strip()
+
+    query = User.query
+
     if search:
 
-        users = User.query.filter(
+        query = query.filter(
 
             or_(
                 User.full_name.ilike(f"%{search}%"),
@@ -279,16 +282,20 @@ def manage_users():
                 User.student_id.ilike(f"%{search}%")
             )
 
-        ).order_by(User.id).all()
+        )
 
-    else:
+    if role:
 
-        users = User.query.order_by(User.id).all()
+        query = query.filter(User.role == role)
+
+    users = query.order_by(User.id.desc()).all()
 
     return render_template(
         "admin/users.html",
         users=users,
-        search=search
+        search=search,
+        role=role,
+        User=User
     )
 
 @main.route("/officer/dashboard")

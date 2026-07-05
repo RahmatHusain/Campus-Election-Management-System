@@ -1,172 +1,248 @@
 {% extends "layouts/admin_base.html" %}
 
-{% block title %}User Management{% endblock %}
+{% block title %}
+
+User Management
+
+{% endblock %}
 
 {% block content %}
 
 <div class="container-fluid py-4">
 
-    <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-        <div>
-            <h2 class="fw-bold">👥 User Management</h2>
-            <div class="card shadow border-0 mb-4">
+<div>
 
-    <div class="card-body">
+<h2 class="fw-bold">
 
-        <form method="GET">
+👥 User Management
 
-            <div class="row">
+</h2>
 
-                <div class="col-md-10">
+<p class="text-muted">
 
-                    <input
-                        type="text"
-                        name="search"
-                        class="form-control"
-                        placeholder="Search by Name, Email or Student ID..."
-                        value="{{ search }}"
-                    >
+Manage all registered users
 
-                </div>
-
-                <div class="col-md-2">
-
-                    <button
-                        class="btn btn-primary w-100"
-                        type="submit"
-                    >
-                        🔍 Search
-                    </button>
-
-                </div>
-
-            </div>
-
-        </form>
-
-    </div>
+</p>
 
 </div>
-            <p class="text-muted mb-0">
-                View all registered users
-            </p>
-        </div>
 
-    </div>
+</div>
 
-    <!-- User Table -->
-    <div class="card shadow border-0">
+<div class="card shadow">
 
-        <div class="card-header bg-dark text-white">
-            <h5 class="mb-0">Registered Users</h5>
-        </div>
+<div class="card-body">
 
-        <div class="card-body">
+<form method="GET">
 
-            <div class="table-responsive">
+<div class="row g-3">
 
-                <table class="table table-hover align-middle">
+<div class="col-md-6">
 
-                    <thead class="table-light">
+<input
+type="text"
+class="form-control"
+name="search"
+placeholder="Search Name, Email or Student ID"
+value="{{ search }}">
 
-                        <tr>
-                            <th>ID</th>
-                            <th>Full Name</th>
-                            <th>Student ID</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Status</th>
-                        </tr>
+</div>
 
-                    </thead>
+<div class="col-md-4">
 
-                    <tbody>
+<select
+class="form-select"
+name="role">
 
-                        {% if users %}
+<option value="">All Roles</option>
 
-                        {% for user in users %}
+<option
+value="{{ User.STUDENT }}"
+{% if role==User.STUDENT %}selected{% endif %}>
+Student
+</option>
 
-                        <tr>
+<option
+value="{{ User.ELECTION_OFFICER }}"
+{% if role==User.ELECTION_OFFICER %}selected{% endif %}>
+Election Officer
+</option>
 
-                            <td>{{ user.id }}</td>
+<option
+value="{{ User.SUPER_ADMIN }}"
+{% if role==User.SUPER_ADMIN %}selected{% endif %}>
+Super Admin
+</option>
 
-                            <td>{{ user.full_name }}</td>
+</select>
 
-                            <td>{{ user.student_id }}</td>
+</div>
 
-                            <td>{{ user.email }}</td>
+<div class="col-md-2">
 
-                            <td>
+<button
+class="btn btn-primary w-100">
 
-                                {% if user.role == User.SUPER_ADMIN %}
+Search
 
-                                    <span class="badge bg-danger">
-                                        Super Admin
-                                    </span>
+</button>
 
-                                {% elif user.role == User.ELECTION_OFFICER %}
+</div>
 
-                                    <span class="badge bg-warning text-dark">
-                                        Election Officer
-                                    </span>
+</div>
 
-                                {% else %}
+</form>
 
-                                    <span class="badge bg-primary">
-                                        Student
-                                    </span>
+</div>
 
-                                {% endif %}
+</div>
 
-                            </td>
+<div class="card shadow mt-4">
 
-                            <td>
+<div class="card-body">
 
-                                {% if user.is_active_user %}
+<div class="table-responsive">
 
-                                    <span class="badge bg-success">
-                                        Active
-                                    </span>
+<table class="table table-hover align-middle">
 
-                                {% else %}
+<thead class="table-dark">
 
-                                    <span class="badge bg-secondary">
-                                        Inactive
-                                    </span>
+<tr>
 
-                                {% endif %}
+<th>ID</th>
 
-                            </td>
+<th>Name</th>
 
-                        </tr>
+<th>Student ID</th>
 
-                        {% endfor %}
+<th>Email</th>
 
-                        {% else %}
+<th>Role</th>
 
-                        <tr>
+<th>Status</th>
 
-                            <td colspan="6" class="text-center text-muted py-4">
+<th>Actions</th>
 
-                                No users found.
+</tr>
 
-                            </td>
+</thead>
 
-                        </tr>
+<tbody>
 
-                        {% endif %}
+{% if users %}
 
-                    </tbody>
+{% for user in users %}
 
-                </table>
+<tr>
 
-            </div>
+<td>{{ user.id }}</td>
 
-        </div>
+<td>{{ user.full_name }}</td>
 
-    </div>
+<td>{{ user.student_id }}</td>
+
+<td>{{ user.email }}</td>
+
+<td>
+
+{% if user.role==User.SUPER_ADMIN %}
+
+<span class="badge bg-danger">
+
+Super Admin
+
+</span>
+
+{% elif user.role==User.ELECTION_OFFICER %}
+
+<span class="badge bg-warning text-dark">
+
+Officer
+
+</span>
+
+{% else %}
+
+<span class="badge bg-primary">
+
+Student
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+{% if user.is_active_user %}
+
+<span class="badge bg-success">
+
+Active
+
+</span>
+
+{% else %}
+
+<span class="badge bg-secondary">
+
+Inactive
+
+</span>
+
+{% endif %}
+
+</td>
+
+<td>
+
+<a
+href="#"
+class="btn btn-sm btn-outline-primary">
+
+Edit
+
+</a>
+
+<a
+href="#"
+class="btn btn-sm btn-outline-danger">
+
+Delete
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+{% else %}
+
+<tr>
+
+<td colspan="7" class="text-center">
+
+No users found.
+
+</td>
+
+</tr>
+
+{% endif %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
 
 </div>
 
