@@ -213,8 +213,21 @@ def login():
 # ==========================
 @main.route("/dashboard")
 @login_required
+@student_required
 def dashboard():
-    return render_template("dashboard.html")
+
+    stats = {
+        "upcoming": 0,
+        "active": 0,
+        "completed": 0,
+        "voted": False
+    }
+
+    return render_template(
+        "dashboard.html",
+        stats=stats
+    )
+
 @main.route("/admin/dashboard")
 @login_required
 @super_admin_required
