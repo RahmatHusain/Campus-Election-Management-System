@@ -85,6 +85,42 @@ Day 2/45 Completed ✅
 - Last Logout
 
 ---
+## 👥 Role-Based Access Control (RBAC)
+
+## Three different user roles are supported:
+
+### 👑 Super Admin
+### 👨‍💼 Election Officer
+### 👨‍🎓 Student
+
+- Each role has access only to authorized pages.
+
+## 👑 Super Admin
+- Admin Dashboard
+- User Management
+- Search Users
+- Filter Users
+- Edit User Role
+- Activate / Deactivate Accounts
+- Delete Users
+- View System Statistics
+## 👨‍💼 Election Officer
+- Officer Dashboard
+- Manage Elections
+- Manage Candidates
+- Candidate Approvals
+- Reports
+## 👨‍🎓 Student
+- Student Dashboard
+- View Election Information
+- Profile Management
+## 🛡️ Security Features
+- Password Hashing
+- Login Attempt Limiting
+- Account Lock Protection
+- Audit Logs
+- Role-Based Authorization
+- Protected Routes
 
 ## 🚀 Current Progress
 
@@ -96,7 +132,9 @@ Day 2/45 Completed ✅
 
 ✔ Day 4 Completed
 
-➡️ Next: Day 5 — Role-Based Access Control (RBAC)
+✔ Day 5 Completed
+
+➡️ Next: Day 6 - Election Management
 ---
 
 # 🛠️ Technology Stack
