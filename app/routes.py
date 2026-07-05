@@ -297,7 +297,44 @@ def manage_users():
         role=role,
         User=User
     )
+@main.route("/admin/users/<int:user_id>/edit", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def edit_user(user_id):
 
+    user = User.query.get_or_404(user_id)
+
+    if request.method == "POST":
+
+        role = request.form.get("role")
+
+        if role in [
+            User.STUDENT,
+            User.ELECTION_OFFICER,
+            User.SUPER_ADMIN
+        ]:
+
+            user.role = role
+
+            db.session.commit()
+
+            flash(
+                "User role updated successfully.",
+                "success"
+            )
+
+            return redirect(url_for("main.manage_users"))
+
+        flash(
+            "Invalid role selected.",
+            "danger"
+        )
+
+    return render_template(
+        "admin/edit_user.html",
+        user=user,
+        User=User
+    )
 @main.route("/officer/dashboard")
 @login_required
 @election_officer_required

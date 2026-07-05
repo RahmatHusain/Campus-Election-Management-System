@@ -1,0 +1,144 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}
+Edit User
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+<div class="card shadow">
+
+<div class="card-header bg-primary text-white">
+
+<h4>Edit User</h4>
+
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Full Name
+
+</label>
+
+<input
+class="form-control"
+value="{{ user.full_name }}"
+readonly>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Email
+
+</label>
+
+<input
+class="form-control"
+value="{{ user.email }}"
+readonly>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Student ID
+
+</label>
+
+<input
+class="form-control"
+value="{{ user.student_id }}"
+readonly>
+
+</div>
+
+<div class="mb-3">
+
+<label class="form-label">
+
+Role
+
+</label>
+
+<select
+name="role"
+class="form-select">
+
+<option
+value="{{ User.STUDENT }}"
+{% if user.role==User.STUDENT %}
+selected
+{% endif %}
+>
+
+Student
+
+</option>
+
+<option
+value="{{ User.ELECTION_OFFICER }}"
+{% if user.role==User.ELECTION_OFFICER %}
+selected
+{% endif %}
+>
+
+Election Officer
+
+</option>
+
+<option
+value="{{ User.SUPER_ADMIN }}"
+{% if user.role==User.SUPER_ADMIN %}
+selected
+{% endif %}
+>
+
+Super Admin
+
+</option>
+
+</select>
+
+</div>
+
+<div class="mt-4">
+
+<button
+class="btn btn-success">
+
+Save Changes
+
+</button>
+
+<a
+href="{{ url_for('main.manage_users') }}"
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
