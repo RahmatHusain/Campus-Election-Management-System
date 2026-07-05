@@ -1,248 +1,202 @@
 {% extends "layouts/admin_base.html" %}
 
 {% block title %}
-
 User Management
-
 {% endblock %}
 
 {% block content %}
 
 <div class="container-fluid py-4">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-<div>
+        <div>
 
-<h2 class="fw-bold">
+            <h2 class="fw-bold">
+                👥 User Management
+            </h2>
 
-👥 User Management
+            <p class="text-muted">
+                Manage all registered users
+            </p>
 
-</h2>
+        </div>
 
-<p class="text-muted">
+    </div>
 
-Manage all registered users
+    <div class="card shadow">
 
-</p>
+        <div class="card-body">
 
-</div>
+            <form method="GET">
 
-</div>
+                <div class="row g-3">
 
-<div class="card shadow">
+                    <div class="col-md-6">
 
-<div class="card-body">
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="search"
+                            placeholder="Search..."
+                            value="{{ search }}">
 
-<form method="GET">
+                    </div>
 
-<div class="row g-3">
+                    <div class="col-md-4">
 
-<div class="col-md-6">
+                        <select
+                            class="form-select"
+                            name="role">
 
-<input
-type="text"
-class="form-control"
-name="search"
-placeholder="Search Name, Email or Student ID"
-value="{{ search }}">
+                            <option value="">All Roles</option>
 
-</div>
+                            <option value="{{ User.STUDENT }}"
+                            {% if role==User.STUDENT %}selected{% endif %}>
+                                Student
+                            </option>
 
-<div class="col-md-4">
+                            <option value="{{ User.ELECTION_OFFICER }}"
+                            {% if role==User.ELECTION_OFFICER %}selected{% endif %}>
+                                Election Officer
+                            </option>
 
-<select
-class="form-select"
-name="role">
+                            <option value="{{ User.SUPER_ADMIN }}"
+                            {% if role==User.SUPER_ADMIN %}selected{% endif %}>
+                                Super Admin
+                            </option>
 
-<option value="">All Roles</option>
+                        </select>
 
-<option
-value="{{ User.STUDENT }}"
-{% if role==User.STUDENT %}selected{% endif %}>
-Student
-</option>
+                    </div>
 
-<option
-value="{{ User.ELECTION_OFFICER }}"
-{% if role==User.ELECTION_OFFICER %}selected{% endif %}>
-Election Officer
-</option>
+                    <div class="col-md-2">
 
-<option
-value="{{ User.SUPER_ADMIN }}"
-{% if role==User.SUPER_ADMIN %}selected{% endif %}>
-Super Admin
-</option>
+                        <button class="btn btn-primary w-100">
+                            Search
+                        </button>
 
-</select>
+                    </div>
 
-</div>
+                </div>
 
-<div class="col-md-2">
+            </form>
 
-<button
-class="btn btn-primary w-100">
+        </div>
 
-Search
+    </div>
 
-</button>
+    <div class="card shadow mt-4">
 
-</div>
+        <div class="card-body">
 
-</div>
+            <div class="table-responsive">
 
-</form>
+                <table class="table table-hover align-middle">
 
-</div>
+                    <thead class="table-dark">
 
-</div>
+                        <tr>
 
-<div class="card shadow mt-4">
+                            <th>ID</th>
 
-<div class="card-body">
+                            <th>Name</th>
 
-<div class="table-responsive">
+                            <th>Student ID</th>
 
-<table class="table table-hover align-middle">
+                            <th>Email</th>
 
-<thead class="table-dark">
+                            <th>Role</th>
 
-<tr>
+                            <th>Status</th>
 
-<th>ID</th>
+                            <th>Actions</th>
 
-<th>Name</th>
+                        </tr>
 
-<th>Student ID</th>
+                    </thead>
 
-<th>Email</th>
+                    <tbody>
 
-<th>Role</th>
+                    {% for user in users %}
 
-<th>Status</th>
+                    <tr>
 
-<th>Actions</th>
+                        <td>{{ user.id }}</td>
 
-</tr>
+                        <td>{{ user.full_name }}</td>
 
-</thead>
+                        <td>{{ user.student_id }}</td>
 
-<tbody>
+                        <td>{{ user.email }}</td>
 
-{% if users %}
+                        <td>{{ user.role }}</td>
 
-{% for user in users %}
+                        <td>
 
-<tr>
+                            {% if user.is_active_user %}
 
-<td>{{ user.id }}</td>
+                                <span class="badge bg-success">
+                                    Active
+                                </span>
 
-<td>{{ user.full_name }}</td>
+                            {% else %}
 
-<td>{{ user.student_id }}</td>
+                                <span class="badge bg-danger">
+                                    Inactive
+                                </span>
 
-<td>{{ user.email }}</td>
+                            {% endif %}
 
-<td>
+                        </td>
 
-{% if user.role==User.SUPER_ADMIN %}
+                        <td>
 
-<span class="badge bg-danger">
+                            <a
+                            href="{{ url_for('main.edit_user', user_id=user.id) }}"
+                            class="btn btn-primary btn-sm">
 
-Super Admin
+                                Edit
 
-</span>
+                            </a>
 
-{% elif user.role==User.ELECTION_OFFICER %}
+                            {% if user.is_active_user %}
 
-<span class="badge bg-warning text-dark">
+                            <a
+                            href="{{ url_for('main.toggle_user_status', user_id=user.id) }}"
+                            class="btn btn-danger btn-sm">
 
-Officer
+                                Deactivate
 
-</span>
+                            </a>
 
-{% else %}
+                            {% else %}
 
-<span class="badge bg-primary">
+                            <a
+                            href="{{ url_for('main.toggle_user_status', user_id=user.id) }}"
+                            class="btn btn-success btn-sm">
 
-Student
+                                Activate
 
-</span>
+                            </a>
 
-{% endif %}
+                            {% endif %}
 
-</td>
+                        </td>
 
-<td>
+                    </tr>
 
-{% if user.is_active_user %}
+                    {% endfor %}
 
-<span class="badge bg-success">
+                    </tbody>
 
-Active
+                </table>
 
-</span>
+            </div>
 
-{% else %}
+        </div>
 
-<span class="badge bg-secondary">
-
-Inactive
-
-</span>
-
-{% endif %}
-
-</td>
-
-<td>
-
-<a
-href="{{ url_for('main.edit_user', user_id=user.id) }}"
-class="btn btn-sm btn-primary">
-
-Edit
-
-</a>
-
-<a
-href="#"
-class="btn btn-sm btn-outline-danger">
-
-Delete
-
-</a>
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-{% else %}
-
-<tr>
-
-<td colspan="7" class="text-center">
-
-No users found.
-
-</td>
-
-</tr>
-
-{% endif %}
-
-</tbody>
-
-</table>
-
-</div>
-
-</div>
-
-</div>
+    </div>
 
 </div>
 

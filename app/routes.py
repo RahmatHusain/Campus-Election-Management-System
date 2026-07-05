@@ -335,6 +335,44 @@ def edit_user(user_id):
         user=user,
         User=User
     )
+
+@main.route("/admin/users/<int:user_id>/toggle-status")
+@login_required
+@super_admin_required
+def toggle_user_status(user_id):
+
+    user = User.query.get_or_404(user_id)
+
+    # Prevent admin from disabling own account
+    if user.id == current_user.id:
+
+        flash(
+            "You cannot deactivate your own account.",
+            "danger"
+        )
+
+        return redirect(url_for("main.manage_users"))
+
+    # Toggle status
+    user.is_active_user = not user.is_active_user
+
+    db.session.commit()
+
+    if user.is_active_user:
+
+        flash(
+            "User activated successfully.",
+            "success"
+        )
+
+    else:
+
+        flash(
+            "User deactivated successfully.",
+            "warning"
+        )
+
+    return redirect(url_for("main.manage_users"))
 @main.route("/officer/dashboard")
 @login_required
 @election_officer_required
