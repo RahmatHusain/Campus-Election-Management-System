@@ -232,6 +232,122 @@
 
     </div>
 
+    <!-- Dashboard Charts -->
+
+    <div class="row mt-4">
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow border-0">
+
+                <div class="card-header bg-success text-white">
+
+                    <h5 class="mb-0">
+                        👥 User Distribution
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="userChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow border-0">
+
+                <div class="card-header bg-info text-white">
+
+                    <h5 class="mb-0">
+                        📊 Election Statistics
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <canvas id="electionChart"></canvas>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+    
+
 </div>
 
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+
+const userCtx = document.getElementById('userChart');
+
+new Chart(userCtx, {
+
+    type: 'doughnut',
+
+    data: {
+
+        labels: [
+            'Students',
+            'Election Officers',
+            'Super Admins'
+        ],
+
+        datasets: [{
+
+            data: [
+                {{ stats.students }},
+                {{ stats.officers }},
+                {{ stats.admins }}
+            ]
+
+        }]
+
+    }
+
+});
+
+const electionCtx = document.getElementById('electionChart');
+
+new Chart(electionCtx, {
+
+    type: 'bar',
+
+    data: {
+
+        labels: [
+            'Elections',
+            'Candidates',
+            'Votes'
+        ],
+
+        datasets: [{
+
+            label: 'System Statistics',
+
+            data: [
+                {{ stats.elections }},
+                {{ stats.candidates }},
+                {{ stats.votes }}
+            ]
+
+        }]
+
+    }
+
+});
+
+</script>
 {% endblock %}
