@@ -215,15 +215,12 @@ def login():
 @login_required
 def dashboard():
     return render_template("dashboard.html")
-
 @main.route("/admin/dashboard")
 @login_required
 @super_admin_required
 def admin_dashboard():
 
-    total_students = User.query.filter_by(
-        role=User.STUDENT
-    ).count()
+    total_students = User.query.filter_by(role=User.STUDENT).count()
 
     total_officers = User.query.filter_by(
         role=User.ELECTION_OFFICER
@@ -233,11 +230,18 @@ def admin_dashboard():
         role=User.SUPER_ADMIN
     ).count()
 
+    stats = {
+        "students": total_students,
+        "officers": total_officers,
+        "admins": total_admins,
+        "elections": 0,
+        "candidates": 0,
+        "votes": 0
+    }
+
     return render_template(
         "admin_dashboard.html",
-        total_students=total_students,
-        total_officers=total_officers,
-        total_admins=total_admins
+        stats=stats
     )
 @main.route("/officer/dashboard")
 @login_required
