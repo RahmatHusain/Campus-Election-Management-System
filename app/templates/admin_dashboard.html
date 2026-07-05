@@ -1,37 +1,48 @@
 {% extends "layouts/base.html" %}
 
-{% block title %}
-Super Admin Dashboard
-{% endblock %}
+{% block title %}Super Admin Dashboard{% endblock %}
 
 {% block content %}
 
 <div class="container-fluid py-4">
 
-    <h2 class="mb-4">
-        👑 Super Admin Dashboard
-    </h2>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-    <p class="text-muted">
-        Welcome,
-        <strong>{{ current_user.full_name }}</strong>
-    </p>
+        <div>
+            <h2 class="fw-bold">
+                👑 Super Admin Dashboard
+            </h2>
+
+            <p class="text-muted mb-0">
+                Welcome back,
+                <strong>{{ current_user.full_name }}</strong>
+            </p>
+        </div>
+
+        <div>
+            <span class="badge bg-danger fs-6">
+                Super Admin
+            </span>
+        </div>
+
+    </div>
+
+    <!-- Statistics -->
 
     <div class="row">
 
         <div class="col-lg-4 col-md-6 mb-4">
 
-            <div class="card shadow border-0">
+            <div class="card border-0 shadow">
 
                 <div class="card-body text-center">
+
+                    <h1>👨‍🎓</h1>
 
                     <h5>Total Students</h5>
 
-                    <h1 class="display-4">
-
-                        {{ total_students }}
-
-                    </h1>
+                    <h2>{{ total_students }}</h2>
 
                 </div>
 
@@ -41,17 +52,15 @@ Super Admin Dashboard
 
         <div class="col-lg-4 col-md-6 mb-4">
 
-            <div class="card shadow border-0">
+            <div class="card border-0 shadow">
 
                 <div class="card-body text-center">
+
+                    <h1>👨‍💼</h1>
 
                     <h5>Election Officers</h5>
 
-                    <h1 class="display-4">
-
-                        {{ total_officers }}
-
-                    </h1>
+                    <h2>{{ total_officers }}</h2>
 
                 </div>
 
@@ -61,21 +70,107 @@ Super Admin Dashboard
 
         <div class="col-lg-4 col-md-6 mb-4">
 
-            <div class="card shadow border-0">
+            <div class="card border-0 shadow">
 
                 <div class="card-body text-center">
 
+                    <h1>👑</h1>
+
                     <h5>Super Admins</h5>
 
-                    <h1 class="display-4">
-
-                        {{ total_admins }}
-
-                    </h1>
+                    <h2>{{ total_admins }}</h2>
 
                 </div>
 
             </div>
+
+        </div>
+
+    </div>
+
+    <!-- Quick Actions -->
+
+    <div class="card shadow border-0 mt-3">
+
+        <div class="card-header bg-dark text-white">
+
+            <h5 class="mb-0">
+                ⚡ Quick Actions
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3 mb-3">
+
+                    <a href="#" class="btn btn-primary w-100">
+                        👥 Manage Users
+                    </a>
+
+                </div>
+
+                <div class="col-md-3 mb-3">
+
+                    <a href="#" class="btn btn-success w-100">
+                        🏫 Faculties
+                    </a>
+
+                </div>
+
+                <div class="col-md-3 mb-3">
+
+                    <a href="#" class="btn btn-warning w-100">
+                        🏢 Departments
+                    </a>
+
+                </div>
+
+                <div class="col-md-3 mb-3">
+
+                    <a href="#" class="btn btn-danger w-100">
+                        🗳 Elections
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Recent Activity -->
+
+    <div class="card shadow border-0 mt-4">
+
+        <div class="card-header bg-primary text-white">
+
+            <h5 class="mb-0">
+                📈 Recent Activity
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <ul class="list-group">
+
+                <li class="list-group-item">
+                    ✅ System initialized successfully.
+                </li>
+
+                <li class="list-group-item">
+                    👤 Logged in as Super Admin.
+                </li>
+
+                <li class="list-group-item">
+                    📊 Dashboard loaded successfully.
+                </li>
+
+            </ul>
 
         </div>
 
