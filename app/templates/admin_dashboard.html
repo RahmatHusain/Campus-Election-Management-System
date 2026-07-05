@@ -88,64 +88,33 @@
     </div>
 
     <!-- Additional Statistics -->
-    <div class="row mt-2">
+   <div class="row g-4">
 
-        <div class="col-lg-4 col-md-6 mb-4">
-
-            <div class="card border-0 shadow">
-
-                <div class="card-body text-center">
-
-                    <h1>🗳️</h1>
-
-                    <h5>Total Elections</h5>
-
-                    <h2>{{ stats.elections }}</h2>
-
-                </div>
-
-            </div>
-
+    <div class="col-md-4">
+        <div class="card shadow border-0 text-center p-3">
+            <h1>👨‍🎓</h1>
+            <h5>Total Students</h5>
+            <h2>{{ stats.students }}</h2>
         </div>
-
-        <div class="col-lg-4 col-md-6 mb-4">
-
-            <div class="card border-0 shadow">
-
-                <div class="card-body text-center">
-
-                    <h1>🧑‍💼</h1>
-
-                    <h5>Total Candidates</h5>
-
-                    <h2>{{ stats.candidates }}</h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-lg-4 col-md-6 mb-4">
-
-            <div class="card border-0 shadow">
-
-                <div class="card-body text-center">
-
-                    <h1>🗳</h1>
-
-                    <h5>Total Votes</h5>
-
-                    <h2>{{ stats.votes }}</h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
     </div>
 
+    <div class="col-md-4">
+        <div class="card shadow border-0 text-center p-3">
+            <h1>👨‍💼</h1>
+            <h5>Election Officers</h5>
+            <h2>{{ stats.officers }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow border-0 text-center p-3">
+            <h1>👑</h1>
+            <h5>Super Admins</h5>
+            <h2>{{ stats.admins }}</h2>
+        </div>
+    </div>
+
+</div>
     <!-- Quick Actions -->
     <div class="card shadow border-0 mt-3">
 

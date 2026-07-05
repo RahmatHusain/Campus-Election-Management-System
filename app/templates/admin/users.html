@@ -130,7 +130,15 @@ User Management
 
                         <td>{{ user.email }}</td>
 
-                        <td>{{ user.role }}</td>
+                        <td>{% if user.role == 'super_admin' %}
+                            <span class="badge bg-danger">Super Admin</span>
+
+                            {% elif user.role == 'election_officer' %}
+                            <span class="badge bg-warning text-dark">Election Officer</span>
+
+                            {% else %}
+                            <span class="badge bg-primary">Student</span>
+                            {% endif %}</td>
 
                         <td>
 
