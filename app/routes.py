@@ -259,6 +259,18 @@ def admin_dashboard():
         "admin_dashboard.html",
         stats=stats
     )
+@main.route("/admin/users")
+@login_required
+@super_admin_required
+def manage_users():
+
+    users = User.query.order_by(User.id).all()
+
+    return render_template(
+        "admin/users.html",
+        users=users
+    )
+
 @main.route("/officer/dashboard")
 @login_required
 @election_officer_required

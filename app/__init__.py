@@ -22,6 +22,9 @@ def create_app():
     db.init_app(app)
 
     login_manager.init_app(app)
+    from app.models.user import User
+
+    app.jinja_env.globals["User"] = User
     login_manager.login_view = "main.login"
 
     login_manager.login_message = "Please login to continue."
