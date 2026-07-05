@@ -259,6 +259,39 @@ def officer_dashboard():
         "officer_dashboard.html",
         stats=stats
     )
+
+@main.route("/officer/elections")
+@login_required
+@election_officer_required
+def manage_elections():
+
+    return render_template("officer/manage_elections.html")
+
+
+@main.route("/officer/candidates")
+@login_required
+@election_officer_required
+def manage_candidates():
+
+    return render_template("officer/manage_candidates.html")
+
+
+@main.route("/officer/approvals")
+@login_required
+@election_officer_required
+def candidate_approvals():
+
+    return render_template("officer/candidate_approvals.html")
+
+
+@main.route("/officer/reports")
+@login_required
+@election_officer_required
+def officer_reports():
+
+    return render_template("officer/reports.html")
+
+
 # ==========================
 # Profile
 # ==========================
