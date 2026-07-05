@@ -221,8 +221,24 @@ def dashboard():
 @super_admin_required
 def admin_dashboard():
 
-    return render_template("admin_dashboard.html")
+    total_students = User.query.filter_by(
+        role=User.STUDENT
+    ).count()
 
+    total_officers = User.query.filter_by(
+        role=User.ELECTION_OFFICER
+    ).count()
+
+    total_admins = User.query.filter_by(
+        role=User.SUPER_ADMIN
+    ).count()
+
+    return render_template(
+        "admin_dashboard.html",
+        total_students=total_students,
+        total_officers=total_officers,
+        total_admins=total_admins
+    )
 @main.route("/officer/dashboard")
 @login_required
 @election_officer_required
