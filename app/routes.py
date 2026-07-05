@@ -248,9 +248,17 @@ def admin_dashboard():
 @election_officer_required
 def officer_dashboard():
 
-    return render_template("officer_dashboard.html")
+    stats = {
+        "elections": 0,
+        "candidates": 0,
+        "approved": 0,
+        "pending": 0
+    }
 
-
+    return render_template(
+        "officer_dashboard.html",
+        stats=stats
+    )
 # ==========================
 # Profile
 # ==========================
