@@ -11,6 +11,44 @@
 
         <div>
             <h2 class="fw-bold">👥 User Management</h2>
+            <div class="card shadow border-0 mb-4">
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row">
+
+                <div class="col-md-10">
+
+                    <input
+                        type="text"
+                        name="search"
+                        class="form-control"
+                        placeholder="Search by Name, Email or Student ID..."
+                        value="{{ search }}"
+                    >
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <button
+                        class="btn btn-primary w-100"
+                        type="submit"
+                    >
+                        🔍 Search
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
             <p class="text-muted mb-0">
                 View all registered users
             </p>
@@ -45,6 +83,8 @@
                     </thead>
 
                     <tbody>
+
+                        {% if users %}
 
                         {% for user in users %}
 
@@ -103,6 +143,20 @@
                         </tr>
 
                         {% endfor %}
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="6" class="text-center text-muted py-4">
+
+                                No users found.
+
+                            </td>
+
+                        </tr>
+
+                        {% endif %}
 
                     </tbody>
 

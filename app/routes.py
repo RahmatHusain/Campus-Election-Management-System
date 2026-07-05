@@ -259,16 +259,36 @@ def admin_dashboard():
         "admin_dashboard.html",
         stats=stats
     )
+    
+from sqlalchemy import or_
+
 @main.route("/admin/users")
 @login_required
 @super_admin_required
 def manage_users():
 
-    users = User.query.order_by(User.id).all()
+    search = request.args.get("search", "").strip()
+
+    if search:
+
+        users = User.query.filter(
+
+            or_(
+                User.full_name.ilike(f"%{search}%"),
+                User.email.ilike(f"%{search}%"),
+                User.student_id.ilike(f"%{search}%")
+            )
+
+        ).order_by(User.id).all()
+
+    else:
+
+        users = User.query.order_by(User.id).all()
 
     return render_template(
         "admin/users.html",
-        users=users
+        users=users,
+        search=search
     )
 
 @main.route("/officer/dashboard")
