@@ -158,11 +158,14 @@ def login():
                 "Welcome back!",
                 "success"
             )
-
             if user.role == User.SUPER_ADMIN:
                 return redirect(url_for("main.admin_dashboard"))
+            
             elif user.role == User.ELECTION_OFFICER:
                 return redirect(url_for("main.officer_dashboard"))
+
+            elif user.role == User.STUDENT:
+                return redirect(url_for("main.dashboard"))
 
             return redirect(url_for("main.dashboard"))
 

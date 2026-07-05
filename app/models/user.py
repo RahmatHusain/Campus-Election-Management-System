@@ -3,30 +3,23 @@ from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
-from datetime import datetime
-
-from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
-
 from app import db
-
-# ==========================
-# User Role Constants
-# ==========================
-
-ROLE_SUPER_ADMIN = "SUPER_ADMIN"
-ROLE_ELECTION_OFFICER = "ELECTION_OFFICER"
-ROLE_STUDENT = "STUDENT"
 
 
 class User(UserMixin, db.Model):
+    __tablename__ = "users"
+
+    # ==========================
+    # Role Constants
+    # ==========================
 
     SUPER_ADMIN = "super_admin"
     ELECTION_OFFICER = "election_officer"
     STUDENT = "student"
 
-    __tablename__ = "users"
+    # ==========================
+    # Columns
+    # ==========================
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -39,46 +32,70 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
 
     role = db.Column(
-    db.String(30),
-    default=STUDENT,
-    nullable=False
+        db.String(30),
+        default=STUDENT,
+        nullable=False
     )
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow
+    )
 
     # Login Tracking
-    last_login = db.Column(db.DateTime, nullable=True)
 
-    last_logout = db.Column(db.DateTime, nullable=True)
+    last_login = db.Column(db.DateTime)
 
-    login_count = db.Column(db.Integer, default=0)
+    last_logout = db.Column(db.DateTime)
+
+    login_count = db.Column(
+        db.Integer,
+        default=0
+    )
 
     # Account Status
-    is_active_user = db.Column(db.Boolean, default=True)
+
+    is_active_user = db.Column(
+        db.Boolean,
+        default=True
+    )
 
     # Security
-    failed_login_attempts = db.Column(db.Integer, default=0)
 
-    account_locked_until = db.Column(db.DateTime, nullable=True)
+    failed_login_attempts = db.Column(
+        db.Integer,
+        default=0
+    )
+
+    account_locked_until = db.Column(
+        db.DateTime
+    )
+
+    # ==========================
+    # Password Methods
+    # ==========================
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-    
+
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-       
+        return check_password_hash(
+            self.password_hash,
+            password
+        )
+
     # ==========================
-    # Role Helper Methods
+    # Role Helpers
     # ==========================
 
     def is_super_admin(self):
-        return self.role == ROLE_SUPER_ADMIN
+        return self.role == self.SUPER_ADMIN
 
     def is_election_officer(self):
-        return self.role == ROLE_ELECTION_OFFICER
+        return self.role == self.ELECTION_OFFICER
 
     def is_student(self):
-        return self.role == ROLE_STUDENT
-    
+        return self.role == self.STUDENT
+
     def __repr__(self):
         return f"<User {self.email}>"
