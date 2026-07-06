@@ -463,8 +463,21 @@ def officer_reports():
 def faculties():
 
     search = request.args.get("search", "")
+    search = request.args.get("search", "")
+    status = request.args.get("status", "")
 
     query = Faculty.query
+
+    if search:
+        query = query.filter(
+            Faculty.name.ilike(f"%{search}%")
+        )
+
+    if status == "active":
+        query = query.filter(Faculty.is_active == True)
+
+    elif status == "inactive":
+        query = query.filter(Faculty.is_active == False)
 
     if search:
         query = query.filter(
@@ -483,10 +496,11 @@ def faculties():
     }
 
     return render_template(
-        "admin/faculties/index.html",
-        faculties=faculties,
-        search=search,
-        stats=stats
+    "admin/faculties/index.html",
+    faculties=faculties,
+    search=search,
+    status=status,
+    stats=stats
     )
 
 @main.route("/admin/faculties/create", methods=["GET", "POST"])
@@ -594,12 +608,12 @@ def edit_faculty(faculty_id):
         faculty=faculty
     )
 
-@main.route("/admin/faculties/delete/<int:id>")
+@main.route("/admin/faculties/delete/<int:faculty_id>")
 @login_required
 @super_admin_required
-def delete_faculty(id):
+def delete_faculty(faculty_id):
 
-    faculty = Faculty.query.get_or_404(id)
+    faculty = Faculty.query.get_or_404(faculty_id)
 
     db.session.delete(faculty)
     db.session.commit()
@@ -612,6 +626,7 @@ def delete_faculty(id):
     return redirect(
         url_for("main.faculties")
     )
+
 @main.route("/admin/faculties/<int:faculty_id>/toggle")
 @login_required
 @super_admin_required
