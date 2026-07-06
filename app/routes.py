@@ -462,11 +462,21 @@ def officer_reports():
 @super_admin_required
 def faculties():
 
-    faculties = Faculty.query.order_by(Faculty.name).all()
+    search = request.args.get("search", "")
+
+    query = Faculty.query
+
+    if search:
+        query = query.filter(
+            Faculty.name.ilike(f"%{search}%")
+        )
+
+    faculties = query.order_by(Faculty.created_at.desc()).all()
 
     return render_template(
         "admin/faculties/index.html",
-        faculties=faculties
+        faculties=faculties,
+        search=search
     )
 
 @main.route("/admin/faculties/create", methods=["GET", "POST"])

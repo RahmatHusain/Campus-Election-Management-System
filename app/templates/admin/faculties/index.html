@@ -1,1 +1,107 @@
-<h1>Faculty Page</h1>
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Faculties{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between mb-4">
+
+        <h2>🏫 Faculty Management</h2>
+
+        <a href="{{ url_for('main.create_faculty') }}"
+           class="btn btn-primary">
+
+            + Add Faculty
+
+        </a>
+
+    </div>
+
+    <form method="GET" class="mb-3">
+
+        <input
+            type="text"
+            name="search"
+            value="{{ search }}"
+            class="form-control"
+            placeholder="Search Faculty">
+
+    </form>
+
+    <table class="table table-bordered table-hover">
+
+        <thead class="table-dark">
+
+        <tr>
+
+            <th>ID</th>
+            <th>Name</th>
+            <th>Code</th>
+            <th>Status</th>
+            <th>Actions</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for faculty in faculties %}
+
+        <tr>
+
+            <td>{{ faculty.id }}</td>
+
+            <td>{{ faculty.name }}</td>
+
+            <td>{{ faculty.code }}</td>
+
+            <td>
+
+                {% if faculty.is_active %}
+
+                    <span class="badge bg-success">
+                        Active
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-danger">
+                        Inactive
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                <a href="#"
+                   class="btn btn-sm btn-warning">
+
+                    Edit
+
+                </a>
+
+                <a href="#"
+                   class="btn btn-sm btn-danger">
+
+                    Delete
+
+                </a>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+{% endblock %}
