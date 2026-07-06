@@ -19,6 +19,8 @@ from app.forms.auth_forms import RegisterForm, LoginForm
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
+from app.models.faculty import Faculty
+
 main = Blueprint("main", __name__)
 
 
@@ -449,6 +451,59 @@ def candidate_approvals():
 def officer_reports():
 
     return render_template("officer/reports.html")
+
+# ==========================
+# Faculty Management
+# ==========================
+
+@main.route("/admin/faculties")
+@login_required
+@super_admin_required
+def faculties():
+
+    faculties = Faculty.query.order_by(Faculty.name).all()
+
+    return render_template(
+        "admin/faculties/index.html",
+        faculties=faculties
+    )
+@main.route("/admin/faculties/create", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def create_faculty():
+
+    return render_template(
+        "admin/faculties/create.html"
+    )
+@main.route("/admin/faculties/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def edit_faculty(id):
+
+    faculty = Faculty.query.get_or_404(id)
+
+    return render_template(
+        "admin/faculties/edit.html",
+        faculty=faculty
+    )
+@main.route("/admin/faculties/delete/<int:id>")
+@login_required
+@super_admin_required
+def delete_faculty(id):
+
+    faculty = Faculty.query.get_or_404(id)
+
+    db.session.delete(faculty)
+    db.session.commit()
+
+    flash(
+        "Faculty deleted successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.faculties")
+    )
 
 
 # ==========================
