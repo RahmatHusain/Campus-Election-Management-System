@@ -471,7 +471,10 @@ def faculties():
             Faculty.name.ilike(f"%{search}%")
         )
 
-    faculties = query.order_by(Faculty.created_at.desc()).all()
+    faculties = query.order_by(
+    Faculty.is_active.desc(),
+    Faculty.name.asc()
+    ).all()
 
     return render_template(
         "admin/faculties/index.html",
@@ -602,7 +605,23 @@ def delete_faculty(id):
     return redirect(
         url_for("main.faculties")
     )
+@main.route("/admin/faculties/<int:faculty_id>/toggle")
+@login_required
+@super_admin_required
+def toggle_faculty(faculty_id):
 
+    faculty = Faculty.query.get_or_404(faculty_id)
+
+    faculty.is_active = not faculty.is_active
+
+    db.session.commit()
+
+    if faculty.is_active:
+        flash("Faculty activated successfully.", "success")
+    else:
+        flash("Faculty deactivated successfully.", "warning")
+
+    return redirect(url_for("main.faculties"))
 
 # ==========================
 # Profile

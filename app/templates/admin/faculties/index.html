@@ -60,21 +60,39 @@
 
             <td>
 
-                {% if faculty.is_active %}
+                   <!--- <a
+                        href="{{ url_for('main.edit_faculty', faculty_id=faculty.id) }}"
+                        class="btn btn-warning btn-sm">
 
-                    <span class="badge bg-success">
-                        Active
-                    </span>
+                        Edit
 
-                {% else %}
+                    </a>!-->
 
-                    <span class="badge bg-danger">
-                        Inactive
-                    </span>
+                    {% if faculty.is_active %}
 
-                {% endif %}
+                    <a
+                        href="{{ url_for('main.toggle_faculty', faculty_id=faculty.id) }}"
+                        class="btn btn-danger btn-sm"
+                        onclick="return confirm('Deactivate this faculty?')">
 
-            </td>
+                        Deactivate
+
+                    </a>
+
+                    {% else %}
+
+                    <a
+                        href="{{ url_for('main.toggle_faculty', faculty_id=faculty.id) }}"
+                        class="btn btn-success btn-sm"
+                        onclick="return confirm('Activate this faculty?')">
+
+                        Activate
+
+                    </a>
+
+                    {% endif %}
+
+                </td>
 
             <td>
 
