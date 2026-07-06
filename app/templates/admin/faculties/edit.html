@@ -1,1 +1,36 @@
-<h1>Faculty Page</h1>
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Add Faculty{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+<h2>Edit Faculty</h2>
+
+<form method="POST">
+
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+        {{ form.name.label }}
+        {{ form.name(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.code.label }}
+        {{ form.code(class="form-control") }}
+    </div>
+
+    <div class="mb-3">
+        {{ form.description.label }}
+        {{ form.description(class="form-control", rows=4) }}
+    </div>
+
+    {{ form.submit(class="btn btn-success") }}
+
+</form>
+
+</div>
+
+{% endblock %}

@@ -16,6 +16,7 @@ from app.decorators import (
 from flask import session
 from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
+from app.forms.faculty_forms import FacultyForm
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
@@ -467,14 +468,37 @@ def faculties():
         "admin/faculties/index.html",
         faculties=faculties
     )
+
 @main.route("/admin/faculties/create", methods=["GET", "POST"])
 @login_required
 @super_admin_required
 def create_faculty():
 
+    form = FacultyForm()
+
+    if form.validate_on_submit():
+
+        faculty = Faculty(
+            name=form.name.data,
+            code=form.code.data,
+            description=form.description.data
+        )
+
+        db.session.add(faculty)
+        db.session.commit()
+
+        flash(
+            "Faculty created successfully.",
+            "success"
+        )
+
+        return redirect(url_for("main.faculties"))
+
     return render_template(
-        "admin/faculties/create.html"
+        "admin/faculties/create.html",
+        form=form
     )
+
 @main.route("/admin/faculties/edit/<int:id>", methods=["GET", "POST"])
 @login_required
 @super_admin_required
@@ -482,10 +506,29 @@ def edit_faculty(id):
 
     faculty = Faculty.query.get_or_404(id)
 
+    form = FacultyForm(obj=faculty)
+
+    if form.validate_on_submit():
+
+        faculty.name = form.name.data
+        faculty.code = form.code.data
+        faculty.description = form.description.data
+
+        db.session.commit()
+
+        flash(
+            "Faculty updated successfully.",
+            "success"
+        )
+
+        return redirect(url_for("main.faculties"))
+
     return render_template(
         "admin/faculties/edit.html",
+        form=form,
         faculty=faculty
     )
+
 @main.route("/admin/faculties/delete/<int:id>")
 @login_required
 @super_admin_required
