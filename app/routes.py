@@ -484,6 +484,25 @@ def create_faculty():
             description=form.description.data
         )
 
+        existing = Faculty.query.filter_by(name=form.name.data).first()
+
+        if existing:
+
+            flash(
+                "Faculty already exists.",
+                "warning"
+            )
+
+            return render_template(
+                "admin/faculties/create.html",
+                form=form
+            )
+
+        faculty = Faculty(
+            name=form.name.data,
+            code=form.code.data,
+            description=form.description.data
+        )
         db.session.add(faculty)
         db.session.commit()
 
@@ -493,7 +512,6 @@ def create_faculty():
         )
 
         return redirect(url_for("main.faculties"))
-
     return render_template(
         "admin/faculties/create.html",
         form=form
