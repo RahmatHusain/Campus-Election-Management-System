@@ -6,7 +6,7 @@
 ![Flask](https://img.shields.io/badge/Flask-Web_Framework-black?style=for-the-badge&logo=flask)
 ![SQLite](https://img.shields.io/badge/SQLite-Database-blue?style=for-the-badge&logo=sqlite)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple?style=for-the-badge&logo=bootstrap)
-![Status](https://img.shields.io/badge/Status-Day_2-success?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Day_6-success?style=for-the-badge)
 
 ---
 
@@ -89,9 +89,9 @@ Day 2/45 Completed ✅
 
 ## Three different user roles are supported:
 
-### 👑 Super Admin
-### 👨‍💼 Election Officer
-### 👨‍🎓 Student
+- 👑 Super Admin
+- 👨‍💼 Election Officer
+- 👨‍🎓 Student
 
 - Each role has access only to authorized pages.
 
@@ -104,16 +104,19 @@ Day 2/45 Completed ✅
 - Activate / Deactivate Accounts
 - Delete Users
 - View System Statistics
+
 ## 👨‍💼 Election Officer
 - Officer Dashboard
 - Manage Elections
 - Manage Candidates
 - Candidate Approvals
 - Reports
+
 ## 👨‍🎓 Student
 - Student Dashboard
 - View Election Information
 - Profile Management
+
 ## 🛡️ Security Features
 - Password Hashing
 - Login Attempt Limiting
@@ -121,6 +124,19 @@ Day 2/45 Completed ✅
 - Audit Logs
 - Role-Based Authorization
 - Protected Routes
+
+## 📅 Day 6 – Faculty Management (CRUD)
+
+# Features
+✅ Faculty CRUD (Create, Read, Update, Delete)
+✅ Activate / Deactivate Faculty
+✅ Search Faculty
+✅ Filter by Status
+✅ Faculty Statistics Dashboard
+✅ Responsive Bootstrap UI
+✅ Form Validation
+✅ Duplicate Name & Code Protection
+✅ Role-Based Access Control
 
 ## 🚀 Current Progress
 
@@ -134,7 +150,9 @@ Day 2/45 Completed ✅
 
 ✔ Day 5 Completed
 
-➡️ Next: Day 6 - Election Management
+✔ Day 6 Completed
+
+➡️ Next: Day 7 - Department Management
 ---
 
 # 🛠️ Technology Stack
@@ -253,6 +271,6 @@ Contributions, suggestions, and improvements are welcome. Feel free to fork the 
 
 ## ⭐ Development Status
 
-**Day 4 Completed Successfully** ✅
+**Day 6 Completed Successfully** ✅
 
 **Next Milestone:** Build the complete authentication system with secure login, registration, and role-based access control.
