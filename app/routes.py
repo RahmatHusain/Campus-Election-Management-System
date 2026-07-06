@@ -472,14 +472,21 @@ def faculties():
         )
 
     faculties = query.order_by(
-    Faculty.is_active.desc(),
-    Faculty.name.asc()
+        Faculty.is_active.desc(),
+        Faculty.name.asc()
     ).all()
+
+    stats = {
+        "total": Faculty.query.count(),
+        "active": Faculty.query.filter_by(is_active=True).count(),
+        "inactive": Faculty.query.filter_by(is_active=False).count()
+    }
 
     return render_template(
         "admin/faculties/index.html",
         faculties=faculties,
-        search=search
+        search=search,
+        stats=stats
     )
 
 @main.route("/admin/faculties/create", methods=["GET", "POST"])

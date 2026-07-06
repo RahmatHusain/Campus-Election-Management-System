@@ -18,21 +18,91 @@
         </a>
 
     </div>
+    <div class="row mb-4">
 
-    <form method="GET" class="mb-3">
+    <div class="col-md-4">
+
+        <div class="card shadow border-0">
+
+            <div class="card-body text-center">
+
+                <h2>🏫</h2>
+
+                <h5>Total Faculties</h5>
+
+                <h2>{{ stats.total }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow border-0">
+
+            <div class="card-body text-center">
+
+                <h2>✅</h2>
+
+                <h5>Active</h5>
+
+                <h2>{{ stats.active }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-md-4">
+
+        <div class="card shadow border-0">
+
+            <div class="card-body text-center">
+
+                <h2>❌</h2>
+
+                <h5>Inactive</h5>
+
+                <h2>{{ stats.inactive }}</h2>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+  <form method="GET" class="row g-2 mb-4">
+
+    <div class="col-md-10">
 
         <input
             type="text"
-            name="search"
-            value="{{ search }}"
             class="form-control"
-            placeholder="Search Faculty">
+            name="search"
+            placeholder="Search Faculty..."
+            value="{{ search }}">
 
-    </form>
+    </div>
+
+    <div class="col-md-2">
+
+        <button class="btn btn-primary w-100">
+
+            🔍 Search
+
+        </button>
+
+    </div>
+
+</form>
 
     <table class="table table-bordered table-hover">
 
-        <thead class="table-dark">
+        <thead class="table-primary">
 
         <tr>
 
@@ -48,7 +118,9 @@
 
         <tbody>
 
-        {% for faculty in faculties %}
+            {% if faculties %}
+
+            {% for faculty in faculties %}
 
         <tr>
 
@@ -117,6 +189,39 @@
         {% endfor %}
 
         </tbody>
+
+        {% else %}
+
+<tr>
+
+    <td colspan="5" class="text-center">
+
+        No faculties found.
+
+    </td>
+
+</tr>
+
+{% endif %}
+<div class="card shadow">
+
+    <div class="card-header bg-primary text-white">
+
+        <h5 class="mb-0">
+
+            Faculty List
+
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <!-- table -->
+
+    </div>
+
+</div>
 
     </table>
 
