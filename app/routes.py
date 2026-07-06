@@ -527,16 +527,46 @@ def create_faculty():
         form=form
     )
 
-@main.route("/admin/faculties/edit/<int:id>", methods=["GET", "POST"])
+@main.route("/admin/faculties/<int:faculty_id>/edit", methods=["GET", "POST"])
 @login_required
 @super_admin_required
-def edit_faculty(id):
+def edit_faculty(faculty_id):
 
-    faculty = Faculty.query.get_or_404(id)
+    faculty = Faculty.query.get_or_404(faculty_id)
 
     form = FacultyForm(obj=faculty)
 
     if form.validate_on_submit():
+
+        existing_name = Faculty.query.filter(
+            Faculty.name == form.name.data,
+            Faculty.id != faculty.id
+        ).first()
+
+        if existing_name:
+
+            flash("Faculty name already exists.", "warning")
+
+            return render_template(
+                "admin/faculties/edit.html",
+                form=form,
+                faculty=faculty
+            )
+
+        existing_code = Faculty.query.filter(
+            Faculty.code == form.code.data,
+            Faculty.id != faculty.id
+        ).first()
+
+        if existing_code:
+
+            flash("Faculty code already exists.", "warning")
+
+            return render_template(
+                "admin/faculties/edit.html",
+                form=form,
+                faculty=faculty
+            )
 
         faculty.name = form.name.data
         faculty.code = form.code.data
@@ -544,10 +574,7 @@ def edit_faculty(id):
 
         db.session.commit()
 
-        flash(
-            "Faculty updated successfully.",
-            "success"
-        )
+        flash("Faculty updated successfully.", "success")
 
         return redirect(url_for("main.faculties"))
 

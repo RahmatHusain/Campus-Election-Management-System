@@ -1,35 +1,63 @@
 {% extends "layouts/admin_base.html" %}
 
-{% block title %}Add Faculty{% endblock %}
+{% block title %}Edit Faculty{% endblock %}
 
 {% block content %}
 
 <div class="container py-4">
 
-<h2>Edit Faculty</h2>
+    <div class="card shadow">
 
-<form method="POST">
+        <div class="card-header bg-warning text-dark">
 
-    {{ form.hidden_tag() }}
+            <h4>Edit Faculty</h4>
 
-    <div class="mb-3">
-        {{ form.name.label }}
-        {{ form.name(class="form-control") }}
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+
+                    {{ form.name.label }}
+
+                    {{ form.name(class="form-control") }}
+
+                </div>
+
+                <div class="mb-3">
+
+                    {{ form.code.label }}
+
+                    {{ form.code(class="form-control") }}
+
+                </div>
+
+                <div class="mb-3">
+
+                    {{ form.description.label }}
+
+                    {{ form.description(class="form-control", rows=4) }}
+
+                </div>
+
+                {{ form.submit(class="btn btn-success") }}
+
+                <a href="{{ url_for('main.faculties') }}"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
     </div>
-
-    <div class="mb-3">
-        {{ form.code.label }}
-        {{ form.code(class="form-control") }}
-    </div>
-
-    <div class="mb-3">
-        {{ form.description.label }}
-        {{ form.description(class="form-control", rows=4) }}
-    </div>
-
-    {{ form.submit(class="btn btn-success") }}
-
-</form>
 
 </div>
 
