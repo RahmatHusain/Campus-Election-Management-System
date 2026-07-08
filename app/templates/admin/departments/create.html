@@ -1,0 +1,68 @@
+<div class="card shadow border-0">
+
+<div class="card-header bg-primary text-white">
+
+<h4>Add Department</h4>
+
+</div>
+
+<div class="card-body">
+
+<form method="POST">
+
+{{ form.hidden_tag() }}
+
+<div class="mb-3">
+
+{{ form.name.label(class="form-label") }}
+
+{{ form.name(class="form-control") }}
+
+</div>
+
+<div class="mb-3">
+
+{{ form.code.label(class="form-label") }}
+
+{{ form.code(class="form-control") }}
+
+</div>
+
+<div class="mb-3">
+
+{{ form.faculty_id.label(class="form-label") }}
+
+{{ form.faculty_id(class="form-select") }}
+
+</div>
+
+<div class="mb-3">
+
+{{ form.description.label(class="form-label") }}
+
+{{ form.description(class="form-control") }}
+
+</div>
+
+<div class="form-check mb-3">
+
+{{ form.is_active(class="form-check-input") }}
+
+{{ form.is_active.label(class="form-check-label") }}
+
+</div>
+
+{{ form.submit(class="btn btn-primary") }}
+
+<a href="{{ url_for('main.departments') }}"
+class="btn btn-secondary">
+
+Cancel
+
+</a>
+
+</form>
+
+</div>
+
+</div>
