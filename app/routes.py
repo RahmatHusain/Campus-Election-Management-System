@@ -22,6 +22,9 @@ from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
 from app.models.faculty import Faculty
+from app.models.department import Department
+from sqlalchemy import or_
+
 
 main = Blueprint("main", __name__)
 
@@ -645,6 +648,165 @@ def toggle_faculty(faculty_id):
         flash("Faculty deactivated successfully.", "warning")
 
     return redirect(url_for("main.faculties"))
+
+# ==========================
+# DEPARTMENT
+# ==========================
+
+@main.route("/admin/departments")
+@login_required
+@super_admin_required
+def departments():
+
+    search = request.args.get("search", "")
+    status = request.args.get("status", "")
+
+    query = Department.query
+
+    if search:
+        query = query.filter(
+            or_(
+                Department.name.ilike(f"%{search}%"),
+                Department.code.ilike(f"%{search}%")
+            )
+        )
+
+    if status == "active":
+        query = query.filter_by(is_active=True)
+
+    elif status == "inactive":
+        query = query.filter_by(is_active=False)
+
+    departments = query.order_by(
+        Department.created_at.desc()
+    ).all()
+
+    stats = {
+        "total": Department.query.count(),
+        "active": Department.query.filter_by(is_active=True).count(),
+        "inactive": Department.query.filter_by(is_active=False).count()
+    }
+
+    return render_template(
+        "admin/departments/index.html",
+        departments=departments,
+        search=search,
+        status=status,
+        stats=stats
+    )
+
+@main.route("/admin/departments/create", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def create_department():
+
+    form = DepartmentForm()
+    form.load_faculties()
+
+    if form.validate_on_submit():
+
+        department = Department(
+            name=form.name.data,
+            code=form.code.data,
+            description=form.description.data,
+            faculty_id=form.faculty_id.data,
+            is_active=form.is_active.data
+        )
+
+        db.session.add(department)
+        db.session.commit()
+
+        flash(
+            "Department created successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("main.departments")
+        )
+
+    return render_template(
+        "admin/departments/create.html",
+        form=form
+    )
+
+@main.route("/admin/departments/edit/<int:department_id>", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def edit_department(department_id):
+
+    department = Department.query.get_or_404(department_id)
+
+    form = DepartmentForm(obj=department)
+    form.load_faculties()
+
+    if form.validate_on_submit():
+
+        department.name = form.name.data
+        department.code = form.code.data
+        department.description = form.description.data
+        department.faculty_id = form.faculty_id.data
+        department.is_active = form.is_active.data
+
+        db.session.commit()
+
+        flash(
+            "Department updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("main.departments")
+        )
+
+    form.faculty_id.data = department.faculty_id
+
+    return render_template(
+        "admin/departments/edit.html",
+        form=form,
+        department=department
+    )
+
+@main.route("/admin/departments/delete/<int:id>")
+@login_required
+@super_admin_required
+def delete_department(id):
+
+    department = Department.query.get_or_404(id)
+
+    db.session.delete(department)
+    db.session.commit()
+
+    flash(
+        "Department deleted successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.departments")
+    )
+
+@main.route("/admin/departments/toggle/<int:department_id>")
+@login_required
+@super_admin_required
+def toggle_department(department_id):
+
+    department = Department.query.get_or_404(department_id)
+
+    department.is_active = not department.is_active
+
+    db.session.commit()
+
+    flash(
+        "Department status updated.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.departments")
+    )
+
+
 
 # ==========================
 # Profile
