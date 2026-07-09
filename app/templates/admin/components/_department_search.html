@@ -1,0 +1,118 @@
+<form method="GET">
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-5">
+
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search Department..."
+            value="{{ search }}">
+
+    </div>
+
+    <div class="col-md-3">
+
+        <select
+            name="status"
+            class="form-select">
+
+            <option value="">All Status</option>
+
+            <option value="active"
+            {% if status=="active" %}selected{% endif %}>
+                Active
+            </option>
+
+            <option value="inactive"
+            {% if status=="inactive" %}selected{% endif %}>
+                Inactive
+            </option>
+
+        </select>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <button class="btn btn-primary w-100">
+
+            Search
+
+        </button>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <a href="{{ url_for('main.departments') }}"
+           class="btn btn-secondary w-100">
+
+            Reset
+
+        </a>
+
+    </div>
+
+</div>
+
+</form>
+<div class="row mb-4">
+
+<div class="col-md-4">
+
+<div class="card shadow border-0">
+
+<div class="card-body text-center">
+
+<h2>🏢</h2>
+
+<h5>Total Departments</h5>
+
+<h2>{{ stats.total }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card shadow border-0">
+
+<div class="card-body text-center">
+
+<h2>✅</h2>
+
+<h5>Active</h5>
+
+<h2>{{ stats.active }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="col-md-4">
+
+<div class="card shadow border-0">
+
+<div class="card-body text-center">
+
+<h2>❌</h2>
+
+<h5>Inactive</h5>
+
+<h2>{{ stats.inactive }}</h2>
+
+</div>
+
+</div>
+
+</div>
+
+</div>

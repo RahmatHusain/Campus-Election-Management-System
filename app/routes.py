@@ -658,27 +658,27 @@ def toggle_faculty(faculty_id):
 @super_admin_required
 def departments():
 
-    search = request.args.get("search", "")
+    search = request.args.get("search", "").strip()
     status = request.args.get("status", "")
 
     query = Department.query
 
     if search:
         query = query.filter(
-            or_(
+            db.or_(
                 Department.name.ilike(f"%{search}%"),
                 Department.code.ilike(f"%{search}%")
             )
         )
 
     if status == "active":
-        query = query.filter_by(is_active=True)
+        query = query.filter(Department.is_active == True)
 
     elif status == "inactive":
-        query = query.filter_by(is_active=False)
+        query = query.filter(Department.is_active == False)
 
     departments = query.order_by(
-        Department.created_at.desc()
+        Department.name.asc()
     ).all()
 
     stats = {
