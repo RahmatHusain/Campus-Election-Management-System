@@ -1,0 +1,86 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Edit Department{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="card shadow border-0">
+
+        <div class="card-header bg-warning text-dark">
+
+            <h4 class="mb-0">
+                ✏️ Edit Department
+            </h4>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+
+                    {{ form.name.label(class="form-label") }}
+
+                    {{ form.name(class="form-control") }}
+
+                </div>
+
+                <div class="mb-3">
+
+                    {{ form.code.label(class="form-label") }}
+
+                    {{ form.code(class="form-control") }}
+
+                </div>
+
+                <div class="mb-3">
+
+                    {{ form.faculty_id.label(class="form-label") }}
+
+                    {{ form.faculty_id(class="form-select") }}
+
+                </div>
+
+                <div class="mb-3">
+
+                    {{ form.description.label(class="form-label") }}
+
+                    {{ form.description(class="form-control", rows="4") }}
+
+                </div>
+
+                <div class="form-check mb-4">
+
+                    {{ form.is_active(class="form-check-input") }}
+
+                    {{ form.is_active.label(class="form-check-label") }}
+
+                </div>
+
+                <button class="btn btn-warning">
+
+                    💾 Update Department
+
+                </button>
+
+                <a href="{{ url_for('main.departments') }}"
+                   class="btn btn-secondary">
+
+                    Cancel
+
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
