@@ -660,8 +660,13 @@ def departments():
 
     search = request.args.get("search", "").strip()
     status = request.args.get("status", "")
+    faculty_id = request.args.get("faculty", "")
 
     query = Department.query
+
+    # ------------------------
+    # Search
+    # ------------------------
 
     if search:
         query = query.filter(
@@ -671,28 +676,51 @@ def departments():
             )
         )
 
+    # ------------------------
+    # Status Filter
+    # ------------------------
+
     if status == "active":
         query = query.filter(Department.is_active == True)
 
     elif status == "inactive":
         query = query.filter(Department.is_active == False)
 
+    # ------------------------
+    # Faculty Filter
+    # ------------------------
+
+    if faculty_id:
+        query = query.filter(
+            Department.faculty_id == int(faculty_id)
+        )
+
     departments = query.order_by(
-        Department.name.asc()
+        Department.name
+    ).all()
+
+    faculties = Faculty.query.order_by(
+        Faculty.name
     ).all()
 
     stats = {
         "total": Department.query.count(),
-        "active": Department.query.filter_by(is_active=True).count(),
-        "inactive": Department.query.filter_by(is_active=False).count()
+        "active": Department.query.filter_by(
+            is_active=True
+        ).count(),
+        "inactive": Department.query.filter_by(
+            is_active=False
+        ).count(),
     }
 
     return render_template(
         "admin/departments/index.html",
         departments=departments,
+        faculties=faculties,
+        stats=stats,
         search=search,
         status=status,
-        stats=stats
+        faculty_id=faculty_id
     )
 
 @main.route("/admin/departments/create", methods=["GET", "POST"])
