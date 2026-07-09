@@ -37,13 +37,13 @@ class Faculty(db.Model):
         db.DateTime,
         default=datetime.utcnow
     )
-    
+
     departments = db.relationship(
-    "Department",
-    backref="faculty",
-    lazy=True,
-    cascade="all, delete-orphan"
+        "Department",
+        back_populates="faculty",
+        cascade="all, delete-orphan",
+        lazy=True
     )
-    
+
     def __repr__(self):
         return f"<Faculty {self.name}>"

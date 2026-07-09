@@ -6,7 +6,10 @@ from app import db
 class Department(db.Model):
     __tablename__ = "departments"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     faculty_id = db.Column(
         db.Integer,
@@ -40,11 +43,7 @@ class Department(db.Model):
 
     faculty = db.relationship(
         "Faculty",
-        backref=db.backref(
-            "departments",
-            lazy=True,
-            cascade="all, delete-orphan"
-        )
+        back_populates="departments"
     )
 
     __table_args__ = (

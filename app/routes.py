@@ -806,17 +806,16 @@ def delete_department(id):
 
     department = Department.query.get_or_404(id)
 
-    db.session.delete(department)
+    department.is_active = False
+
     db.session.commit()
 
     flash(
-        "Department deleted successfully.",
+        "Department has been archived successfully.",
         "success"
     )
 
-    return redirect(
-        url_for("main.departments")
-    )
+    return redirect(url_for("main.departments"))
 
 @main.route("/admin/departments/toggle/<int:department_id>")
 @login_required
