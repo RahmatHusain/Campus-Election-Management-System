@@ -406,24 +406,13 @@
 
                                 </a>
 
-                                {% if department.is_active %}
+                                <a href="{{ url_for('main.delete_department', id=department.id) }}"
+                                   class="btn btn-outline-danger btn-sm"
+                                   onclick="return confirm('Delete this department?')">
 
-                                <a
-                                    href="{{ url_for('main.delete_department', id=department.id) }}"
-                                    class="btn btn-outline-danger btn-sm"
-                                    onclick="return confirm('Archive this department?')">
-
-                                    Archive
+                                    Delete
 
                                 </a>
-
-                                {% else %}
-
-                                <span class="badge bg-secondary">
-                                    Archived
-                                </span>
-
-                                {% endif %}
 
                             </td>
 

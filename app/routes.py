@@ -798,7 +798,6 @@ def edit_department(department_id):
         form=form,
         department=department
     )
-
 @main.route("/admin/departments/delete/<int:id>")
 @login_required
 @super_admin_required
@@ -806,16 +805,27 @@ def delete_department(id):
 
     department = Department.query.get_or_404(id)
 
-    department.is_active = False
+    try:
+        db.session.delete(department)
+        db.session.commit()
 
-    db.session.commit()
+        flash(
+            "Department deleted successfully.",
+            "success"
+        )
 
-    flash(
-        "Department has been archived successfully.",
-        "success"
+    except Exception:
+
+        db.session.rollback()
+
+        flash(
+            "Unable to delete department. It may be linked with other records.",
+            "danger"
+        )
+
+    return redirect(
+        url_for("main.departments")
     )
-
-    return redirect(url_for("main.departments"))
 
 @main.route("/admin/departments/toggle/<int:department_id>")
 @login_required
