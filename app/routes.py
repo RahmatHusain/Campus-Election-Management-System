@@ -705,12 +705,16 @@ def departments():
 
     stats = {
         "total": Department.query.count(),
+
         "active": Department.query.filter_by(
             is_active=True
         ).count(),
+
         "inactive": Department.query.filter_by(
             is_active=False
         ).count(),
+
+        "faculties": Faculty.query.count(),
     }
 
     return render_template(

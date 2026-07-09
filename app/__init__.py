@@ -6,6 +6,8 @@ from flask_migrate import Migrate
 from config import Config
 from pathlib import Path
 
+
+
 db = SQLAlchemy()
 login_manager = LoginManager()
 migrate = Migrate()

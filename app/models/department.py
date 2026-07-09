@@ -8,25 +8,24 @@ class Department(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
+    faculty_id = db.Column(
+        db.Integer,
+        db.ForeignKey("faculties.id"),
+        nullable=False
+    )
+
     name = db.Column(
-        db.String(120),
+        db.String(150),
         nullable=False
     )
 
     code = db.Column(
         db.String(20),
-        nullable=False,
-        unique=True
+        nullable=False
     )
 
     description = db.Column(
         db.Text
-    )
-
-    faculty_id = db.Column(
-        db.Integer,
-        db.ForeignKey("faculties.id"),
-        nullable=False
     )
 
     is_active = db.Column(
@@ -37,6 +36,28 @@ class Department(db.Model):
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow
+    )
+
+    faculty = db.relationship(
+        "Faculty",
+        backref=db.backref(
+            "departments",
+            lazy=True,
+            cascade="all, delete-orphan"
+        )
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "faculty_id",
+            "name",
+            name="uq_department_name_per_faculty"
+        ),
+        db.UniqueConstraint(
+            "faculty_id",
+            "code",
+            name="uq_department_code_per_faculty"
+        ),
     )
 
     def __repr__(self):
