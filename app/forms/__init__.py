@@ -3,3 +3,4 @@ from app.forms.academic_year_forms import (
     AcademicYearForm,
     EditAcademicYearForm
 )
+from app.forms.semester_form import SemesterForm
