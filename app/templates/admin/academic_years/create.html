@@ -1,0 +1,27 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Create Academic Year{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+
+<div class="card shadow-sm">
+
+<div class="card-header">
+
+<h4>Create Academic Year</h4>
+
+</div>
+
+<div class="card-body">
+
+{% include "admin/academic_years/_form.html" %}
+
+</div>
+
+</div>
+
+</div>
+
+{% endblock %}
