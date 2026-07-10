@@ -187,8 +187,7 @@ A complete production-ready Department Management system has been implemented.
 
 ✔ Day 6 Completed
 
-➡️ Next: Day 8 - Student Management System
----
+➡️ Next: Day 8 - Academic Year & Semester Management
 
 # 🛠️ Technology Stack
 
