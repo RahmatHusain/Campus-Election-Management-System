@@ -23,8 +23,15 @@ from flask import request
 from app.models.audit_log import AuditLog
 from app.models.faculty import Faculty
 from app.models.department import Department
-from sqlalchemy import or_
 
+from app.models.academic_year import AcademicYear
+
+from app.forms.academic_year_forms import (
+    AcademicYearForm,
+    EditAcademicYearForm
+)
+
+from sqlalchemy import or_
 
 main = Blueprint("main", __name__)
 
@@ -847,6 +854,222 @@ def toggle_department(department_id):
         url_for("main.departments")
     )
 
+# ==========================
+# Academic-Year
+# ==========================
+
+@main.route("/admin/academic-years")
+@login_required
+@super_admin_required
+def academic_years():
+
+    search = request.args.get("search", "").strip()
+
+    status = request.args.get("status", "")
+
+    query = AcademicYear.query
+
+    if search:
+        query = query.filter(
+            AcademicYear.name.ilike(f"%{search}%")
+        )
+
+    if status == "active":
+        query = query.filter_by(is_active=True)
+
+    elif status == "inactive":
+        query = query.filter_by(is_active=False)
+
+    academic_years = query.order_by(
+        AcademicYear.start_date.desc()
+    ).all()
+
+    stats = {
+        "total": AcademicYear.query.count(),
+        "active": AcademicYear.query.filter_by(
+            is_active=True
+        ).count(),
+        "inactive": AcademicYear.query.filter_by(
+            is_active=False
+        ).count(),
+        "current": AcademicYear.query.filter_by(
+            is_current=True
+        ).count()
+    }
+
+    return render_template(
+        "admin/academic_years/index.html",
+        academic_years=academic_years,
+        stats=stats,
+        search=search,
+        status=status
+    )
+
+@main.route("/admin/academic-years/create",methods=["GET", "POST"] )
+@login_required
+@super_admin_required
+def create_academic_year():
+
+    form = AcademicYearForm()
+
+    if form.validate_on_submit():
+
+        if form.is_current.data:
+
+            AcademicYear.query.update(
+                {
+                    "is_current": False
+                }
+            )
+
+        academic_year = AcademicYear(
+
+            name=form.name.data.strip(),
+
+            start_date=form.start_date.data,
+
+            end_date=form.end_date.data,
+
+            is_current=form.is_current.data,
+
+            is_active=form.is_active.data
+
+        )
+
+        db.session.add(academic_year)
+
+        db.session.commit()
+
+        flash(
+            "Academic Year created successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("main.academic_years")
+        )
+
+    return render_template(
+        "admin/academic_years/create.html",
+        form=form
+    )
+
+@main.route( "/admin/academic-years/edit/<int:id>", methods=["GET", "POST"] )
+@login_required
+@super_admin_required
+def edit_academic_year(id):
+
+    academic_year = AcademicYear.query.get_or_404(id)
+
+    form = EditAcademicYearForm(
+        original_name=academic_year.name,
+        obj=academic_year
+    )
+
+    if form.validate_on_submit():
+
+        academic_year.name = form.name.data.strip()
+
+        academic_year.start_date = form.start_date.data
+
+        academic_year.end_date = form.end_date.data
+
+        academic_year.is_active = form.is_active.data
+
+        if form.is_current.data:
+
+            AcademicYear.query.update(
+                {
+                    "is_current": False
+                }
+            )
+
+            academic_year.is_current = True
+
+        db.session.commit()
+
+        flash(
+            "Academic Year updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("main.academic_years")
+        )
+
+    return render_template(
+        "admin/academic_years/edit.html",
+        form=form,
+        academic_year=academic_year
+    )
+
+@main.route( "/admin/academic-years/delete/<int:id>" )
+@login_required
+@super_admin_required
+def delete_academic_year(id):
+
+    academic_year = AcademicYear.query.get_or_404(id)
+
+    db.session.delete(academic_year)
+
+    db.session.commit()
+
+    flash(
+        "Academic Year deleted successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.academic_years")
+    )
+
+@main.route( "/admin/academic-years/toggle/<int:id>" )
+@login_required
+@super_admin_required
+def toggle_academic_year(id):
+
+    academic_year = AcademicYear.query.get_or_404(id)
+
+    academic_year.is_active = not academic_year.is_active
+
+    db.session.commit()
+
+    flash(
+        "Status updated successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.academic_years")
+    )
+
+@main.route(
+    "/admin/academic-years/current/<int:id>"
+)
+@login_required
+@super_admin_required
+def set_current_academic_year(id):
+
+    AcademicYear.query.update(
+        {
+            "is_current": False
+        }
+    )
+
+    academic_year = AcademicYear.query.get_or_404(id)
+
+    academic_year.is_current = True
+
+    db.session.commit()
+
+    flash(
+        "Current Academic Year updated.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.academic_years")
+    )
 
 
 # ==========================
