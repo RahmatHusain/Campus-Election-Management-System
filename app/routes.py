@@ -1136,6 +1136,244 @@ def delete_academic_year(id):
     return redirect(
         url_for("main.academic_years")
     )
+
+# ==========================
+# Semesters
+# ==========================
+
+@main.route("/admin/semesters")
+@login_required
+@super_admin_required
+def semesters():
+
+    search = request.args.get("search", "").strip()
+
+    academic_year_id = request.args.get("academic_year", "")
+
+    status = request.args.get("status", "")
+
+    query = Semester.query
+
+    if search:
+        query = query.filter(
+            Semester.name.ilike(f"%{search}%")
+        )
+
+    if academic_year_id:
+        query = query.filter_by(
+            academic_year_id=academic_year_id
+        )
+
+    if status == "active":
+        query = query.filter_by(is_active=True)
+
+    elif status == "inactive":
+        query = query.filter_by(is_active=False)
+
+    semesters = query.order_by(
+        Semester.semester_number
+    ).all()
+
+    stats = {
+        "total": Semester.query.count(),
+        "active": Semester.query.filter_by(is_active=True).count(),
+        "inactive": Semester.query.filter_by(is_active=False).count(),
+        "current": Semester.query.filter_by(is_current=True).count()
+    }
+
+    return render_template(
+        "admin/semesters/index.html",
+        semesters=semesters,
+        stats=stats,
+        search=search,
+        status=status,
+        academic_year_id=academic_year_id,
+        academic_years=AcademicYear.query.all()
+    )
+
+@main.route("/admin/semesters/create", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def create_semester():
+
+    form = SemesterForm()
+
+    if form.validate_on_submit():
+
+        try:
+
+            if form.is_current.data:
+                Semester.query.update(
+                    {"is_current": False}
+                )
+
+            semester = Semester(
+                academic_year_id=form.academic_year_id.data,
+                name=form.name.data.strip(),
+                semester_number=form.semester_number.data,
+                start_date=form.start_date.data,
+                end_date=form.end_date.data,
+                is_current=form.is_current.data,
+                is_active=form.is_active.data
+            )
+
+            db.session.add(semester)
+
+            db.session.commit()
+
+            flash(
+                "Semester created successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for("main.semesters")
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(str(e), "danger")
+
+    return render_template(
+        "admin/semesters/create.html",
+        form=form
+    )
+@main.route("/admin/semesters/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def edit_semester(id):
+
+    semester = Semester.query.get_or_404(id)
+
+    form = SemesterForm(
+        original_id=semester.id,
+        obj=semester
+    )
+
+    if form.validate_on_submit():
+
+        try:
+
+            semester.academic_year_id = form.academic_year_id.data
+            semester.name = form.name.data.strip()
+            semester.semester_number = form.semester_number.data
+            semester.start_date = form.start_date.data
+            semester.end_date = form.end_date.data
+            semester.is_active = form.is_active.data
+
+            if form.is_current.data:
+
+                Semester.query.update(
+                    {"is_current": False}
+                )
+
+                semester.is_current = True
+
+            else:
+
+                semester.is_current = False
+
+            db.session.commit()
+
+            flash(
+                "Semester updated successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for("main.semesters")
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(str(e), "danger")
+
+    return render_template(
+        "admin/semesters/edit.html",
+        form=form,
+        semester=semester
+    )
+
+@main.route("/admin/semesters/current/<int:id>")
+@login_required
+@super_admin_required
+def set_current_semester(id):
+
+    Semester.query.update(
+        {"is_current": False}
+    )
+
+    semester = Semester.query.get_or_404(id)
+
+    semester.is_current = True
+
+    semester.is_active = True
+
+    db.session.commit()
+
+    flash(
+        "Current Semester updated.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.semesters")
+    )
+
+@main.route("/admin/semesters/toggle/<int:id>")
+@login_required
+@super_admin_required
+def toggle_semester(id):
+
+    semester = Semester.query.get_or_404(id)
+
+    semester.is_active = not semester.is_active
+
+    db.session.commit()
+
+    flash(
+        "Semester status updated.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.semesters")
+    )
+@main.route("/admin/semesters/delete/<int:id>")
+@login_required
+@super_admin_required
+def delete_semester(id):
+
+    semester = Semester.query.get_or_404(id)
+
+    if semester.is_current:
+
+        flash(
+            "Current Semester cannot be deleted.",
+            "danger"
+        )
+
+        return redirect(
+            url_for("main.semesters")
+        )
+
+    db.session.delete(semester)
+
+    db.session.commit()
+
+    flash(
+        "Semester deleted successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for("main.semesters")
+    )
+ 
 # ==========================
 # Profile
 # ==========================
