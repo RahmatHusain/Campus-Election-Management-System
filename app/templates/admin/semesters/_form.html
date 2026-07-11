@@ -1,0 +1,78 @@
+<form method="POST">
+
+    {{ form.hidden_tag() }}
+
+    <div class="row">
+
+        <div class="col-md-6 mb-3">
+
+            {{ form.academic_year_id.label(class="form-label fw-semibold") }}
+
+            {{ form.academic_year_id(class="form-select") }}
+
+        </div>
+
+        <div class="col-md-6 mb-3">
+
+            {{ form.name.label(class="form-label fw-semibold") }}
+
+            {{ form.name(class="form-control") }}
+
+        </div>
+
+        <div class="col-md-6 mb-3">
+
+            {{ form.semester_number.label(class="form-label fw-semibold") }}
+
+            {{ form.semester_number(class="form-control") }}
+
+        </div>
+
+        <div class="col-md-6 mb-3">
+
+            {{ form.start_date.label(class="form-label fw-semibold") }}
+
+            {{ form.start_date(class="form-control") }}
+
+        </div>
+
+        <div class="col-md-6 mb-3">
+
+            {{ form.end_date.label(class="form-label fw-semibold") }}
+
+            {{ form.end_date(class="form-control") }}
+
+        </div>
+
+    </div>
+
+    <div class="form-check mt-2">
+
+        {{ form.is_current(class="form-check-input") }}
+
+        {{ form.is_current.label(class="form-check-label") }}
+
+    </div>
+
+    <div class="form-check mb-4">
+
+        {{ form.is_active(class="form-check-input") }}
+
+        {{ form.is_active.label(class="form-check-label") }}
+
+    </div>
+
+    <button class="btn btn-primary">
+
+        Save Semester
+
+    </button>
+
+    <a href="{{ url_for('main.semesters') }}"
+       class="btn btn-outline-secondary">
+
+        Cancel
+
+    </a>
+
+</form>

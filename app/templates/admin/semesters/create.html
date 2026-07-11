@@ -1,0 +1,27 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Create Semester{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid py-4">
+
+    <div class="card shadow-sm border-0 rounded-4">
+
+        <div class="card-header bg-white">
+            <h4 class="fw-bold mb-0">
+                ➕ Create Semester
+            </h4>
+        </div>
+
+        <div class="card-body">
+
+            {% include "admin/semesters/_form.html" %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
