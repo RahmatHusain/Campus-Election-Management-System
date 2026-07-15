@@ -93,6 +93,47 @@ class SemesterForm(FlaskForm):
                 "Semester cannot start before Academic Year."
             )
 
+    def validate_semester_number(self, field):
+        existing = Semester.query.filter_by(
+            academic_year_id=self.academic_year.data,
+            semester_number=field.data
+            ).first()
+
+        if existing:
+            raise ValidationError(
+                "Semester Number already exists for this Academic Year."
+            )
+    def validate_name(self, field):
+
+        existing = Semester.query.filter_by(
+            academic_year_id=self.academic_year.data,
+            name=field.data.strip()
+        ).first()
+
+        if existing:
+            raise ValidationError(
+                "Semester already exists."
+            )
+
+    def validate_end_date(self, field):
+
+        if field.data <= self.start_date.data:
+
+            raise ValidationError(
+                "End Date must be greater than Start Date."
+            )
+
+    def validate_start_date(self, field):
+
+        if (
+            self.end_date.data and
+            (self.end_date.data - field.data).days > 366
+        ):
+
+            raise ValidationError(
+                "Semester duration cannot exceed one year."
+            )
+
     def validate(self, extra_validators=None):
 
         if not super().validate(extra_validators):
