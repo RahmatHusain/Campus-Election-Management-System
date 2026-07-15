@@ -1141,6 +1141,12 @@ def delete_academic_year(id):
 # ==========================
 # Semesters
 # ==========================
+semester.academic_year_id = form.academic_year_id.data
+semester.name = form.name.data
+semester.semester_number = form.semester_number.data
+semester.start_date = form.start_date.data
+semester.end_date = form.end_date.data
+semester.is_active = form.is_active.data
 
 @main.route("/admin/semesters")
 @login_required
@@ -1201,6 +1207,14 @@ def create_semester():
 
     if form.validate_on_submit():
 
+        if form.is_current.data:
+        Semester.query.update(
+            {
+                "is_current": False
+                }
+                )
+                form.is_active.data = True
+
         try:
 
             if form.is_current.data:
@@ -1254,6 +1268,22 @@ def edit_semester(id):
     )
 
     if form.validate_on_submit():
+
+        if form.is_current.data:
+            
+            Semester.query.update(
+                {
+                    "is_current": False
+                }
+
+            )
+            
+            semester.is_current = True
+            semester.is_active = True
+
+        else:
+
+        semester.is_current = False
 
         try:
 

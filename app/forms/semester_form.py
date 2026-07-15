@@ -3,15 +3,14 @@ from datetime import date
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
-    SelectField,
     IntegerField,
+    SelectField,
     DateField,
     BooleanField,
     SubmitField
 )
 from wtforms.validators import (
     DataRequired,
-    Length,
     NumberRange,
     ValidationError
 )
@@ -30,10 +29,7 @@ class SemesterForm(FlaskForm):
 
     name = StringField(
         "Semester Name",
-        validators=[
-            DataRequired(),
-            Length(min=3, max=50)
-        ]
+        validators=[DataRequired()]
     )
 
     semester_number = IntegerField(
@@ -54,58 +50,14 @@ class SemesterForm(FlaskForm):
         validators=[DataRequired()]
     )
 
-    is_current = BooleanField(
-        "Set as Current Semester"
-    )
+    is_current = BooleanField("Current Semester")
 
     is_active = BooleanField(
         "Active",
         default=True
     )
 
-    submit = SubmitField("Save Semester")
-
-    def __init__(self, original_id=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.original_id = original_id
-
-        self.academic_year_id.choices = [
-            (year.id, year.name)
-            for year in AcademicYear.query.order_by(
-                AcademicYear.start_date.desc()
-            ).all()
-        ]
-
-    def validate_name(self, field):
-
-        query = Semester.query.filter_by(
-            academic_year_id=self.academic_year_id.data,
-            name=field.data.strip()
-        )
-
-        if self.original_id:
-            query = query.filter(Semester.id != self.original_id)
-
-        if query.first():
-            raise ValidationError(
-                "Semester name already exists for this Academic Year."
-            )
-
-    def validate_semester_number(self, field):
-
-        query = Semester.query.filter_by(
-            academic_year_id=self.academic_year_id.data,
-            semester_number=field.data
-        )
-
-        if self.original_id:
-            query = query.filter(Semester.id != self.original_id)
-
-        if query.first():
-            raise ValidationError(
-                "Semester number already exists."
-            )
+    submit = SubmitField("Save")
 
     def validate_end_date(self, field):
 
@@ -114,9 +66,50 @@ class SemesterForm(FlaskForm):
                 "End Date must be after Start Date."
             )
 
+    def validate_semester_number(self, field):
+
+        semester = Semester.query.filter_by(
+            academic_year_id=self.academic_year_id.data,
+            semester_number=field.data
+        ).first()
+
+        if semester:
+            raise ValidationError(
+                "Semester Number already exists for this Academic Year."
+            )
+
     def validate_start_date(self, field):
 
-        if field.data < date(2000, 1, 1):
+        year = AcademicYear.query.get(
+            self.academic_year_id.data
+        )
+
+        if not year:
+            return
+
+        if field.data < year.start_date:
+
             raise ValidationError(
-                "Invalid Start Date."
+                "Semester cannot start before Academic Year."
             )
+
+    def validate(self, extra_validators=None):
+
+        if not super().validate(extra_validators):
+            return False
+
+        year = AcademicYear.query.get(
+            self.academic_year_id.data
+        )
+
+        if year:
+
+            if self.end_date.data > year.end_date:
+
+                self.end_date.errors.append(
+                    "Semester cannot end after Academic Year."
+                )
+
+                return False
+
+        return True
