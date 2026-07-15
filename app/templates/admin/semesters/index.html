@@ -471,31 +471,50 @@
 
                         <div class="btn-group btn-group-sm">
 
+                            <td>
+
                             <a
                                 href="{{ url_for('main.edit_semester', id=semester.id) }}"
-                                class="btn btn-warning">
+                                class="btn btn-warning btn-sm">
 
-                                Edit
+                                 Edit
 
                             </a>
 
                             <a
                                 href="{{ url_for('main.toggle_semester', id=semester.id) }}"
-                                class="btn btn-secondary">
+                                class="btn btn-secondary btn-sm">
 
-                                Toggle
+                                {% if semester.is_active %}
+                                Deactivate
+                                {% else %}
+                                Activate
+                                {% endif %}
 
                             </a>
 
-                            {% if not semester.is_current %}
+                                {% if not semester.is_current %}
 
                             <a
                                 href="{{ url_for('main.set_current_semester', id=semester.id) }}"
-                                class="btn btn-info">
+                                class="btn btn-info btn-sm">
 
-                                Current
+                                Set Current
 
                             </a>
+
+                                {% endif %}
+
+                            <button
+                                class="btn btn-danger btn-sm"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ semester.id }}">
+
+                                Delete
+
+                            </button>
+
+                    </td>
 
                             {% endif %}
 

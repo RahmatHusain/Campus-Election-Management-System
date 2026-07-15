@@ -1304,22 +1304,34 @@ def edit_semester(id):
 @super_admin_required
 def set_current_semester(id):
 
-    Semester.query.update(
-        {"is_current": False}
-    )
-
     semester = Semester.query.get_or_404(id)
 
-    semester.is_current = True
+    try:
 
-    semester.is_active = True
+        Semester.query.update(
+            {
+                "is_current": False
+            }
+        )
 
-    db.session.commit()
+        semester.is_current = True
+        semester.is_active = True
 
-    flash(
-        "Current Semester updated.",
-        "success"
-    )
+        db.session.commit()
+
+        flash(
+            "Current Semester updated successfully.",
+            "success"
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            f"Error : {e}",
+            "danger"
+        )
 
     return redirect(
         url_for("main.semesters")
@@ -1332,18 +1344,30 @@ def toggle_semester(id):
 
     semester = Semester.query.get_or_404(id)
 
-    semester.is_active = not semester.is_active
+    try:
 
-    db.session.commit()
+        semester.is_active = not semester.is_active
 
-    flash(
-        "Semester status updated.",
-        "success"
-    )
+        db.session.commit()
+
+        flash(
+            "Semester status updated.",
+            "success"
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            f"Error : {e}",
+            "danger"
+        )
 
     return redirect(
         url_for("main.semesters")
     )
+
 @main.route("/admin/semesters/delete/<int:id>")
 @login_required
 @super_admin_required
@@ -1351,30 +1375,41 @@ def delete_semester(id):
 
     semester = Semester.query.get_or_404(id)
 
-    if semester.is_current:
+    try:
+
+        if semester.is_current:
+
+            flash(
+                "Current Semester cannot be deleted.",
+                "warning"
+            )
+
+            return redirect(
+                url_for("main.semesters")
+            )
+
+        db.session.delete(semester)
+
+        db.session.commit()
 
         flash(
-            "Current Semester cannot be deleted.",
+            "Semester deleted successfully.",
+            "success"
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            f"Error : {e}",
             "danger"
         )
-
-        return redirect(
-            url_for("main.semesters")
-        )
-
-    db.session.delete(semester)
-
-    db.session.commit()
-
-    flash(
-        "Semester deleted successfully.",
-        "success"
-    )
 
     return redirect(
         url_for("main.semesters")
     )
- 
+
 # ==========================
 # Profile
 # ==========================
