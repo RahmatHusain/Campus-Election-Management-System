@@ -1405,6 +1405,278 @@ def delete_semester(id):
     )
 
 # ==========================
+# Programs
+# ==========================
+
+@main.route("/admin/programs")
+@login_required
+@super_admin_required
+def programs():
+
+    search = request.args.get("search", "").strip()
+
+    department_id = request.args.get("department", "")
+
+    status = request.args.get("status", "")
+
+    query = Program.query
+
+    if search:
+
+        query = query.filter(
+            Program.name.ilike(f"%{search}%")
+        )
+
+    if department_id:
+
+        query = query.filter_by(
+            department_id=department_id
+        )
+
+    if status == "active":
+
+        query = query.filter_by(
+            is_active=True
+        )
+
+    elif status == "inactive":
+
+        query = query.filter_by(
+            is_active=False
+        )
+
+    programs = query.order_by(
+        Program.name.asc()
+    ).all()
+
+    stats = {
+
+        "total": Program.query.count(),
+
+        "active": Program.query.filter_by(
+            is_active=True
+        ).count(),
+
+        "inactive": Program.query.filter_by(
+            is_active=False
+        ).count(),
+
+        "departments": Department.query.count()
+
+    }
+
+    return render_template(
+
+        "admin/programs/index.html",
+
+        programs=programs,
+
+        stats=stats,
+
+        departments=Department.query.order_by(
+            Department.name
+        ).all(),
+
+        search=search,
+
+        department_id=department_id,
+
+        status=status
+
+    )
+@main.route( "/admin/programs/create", methods=["GET", "POST"] )
+@login_required
+@super_admin_required
+def create_program():
+
+    form = ProgramForm()
+
+    if form.validate_on_submit():
+
+        try:
+
+            program = Program(
+
+                department_id=form.department_id.data,
+
+                name=form.name.data.strip(),
+
+                code=form.code.data.strip().upper(),
+
+                duration_years=form.duration_years.data,
+
+                total_semesters=form.total_semesters.data,
+
+                description=form.description.data,
+
+                is_active=form.is_active.data
+
+            )
+
+            db.session.add(program)
+
+            db.session.commit()
+
+            flash(
+
+                "Program created successfully.",
+
+                "success"
+
+            )
+
+            return redirect(
+                url_for("main.programs")
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(
+
+                f"Error : {e}",
+
+                "danger"
+
+            )
+
+    return render_template(
+
+        "admin/programs/create.html",
+
+        form=form
+
+    )
+
+@main.route( "/admin/programs/edit/<int:id>", methods=["GET", "POST"] )
+@login_required
+@super_admin_required
+def edit_program(id):
+
+    program = Program.query.get_or_404(id)
+
+    form = ProgramForm(obj=program)
+
+    if request.method == "GET":
+
+        form.department_id.data = program.department_id
+
+    if form.validate_on_submit():
+
+        try:
+
+            program.department_id = form.department_id.data
+
+            program.name = form.name.data.strip()
+
+            program.code = form.code.data.strip().upper()
+
+            program.duration_years = form.duration_years.data
+
+            program.total_semesters = form.total_semesters.data
+
+            program.description = form.description.data
+
+            program.is_active = form.is_active.data
+
+            db.session.commit()
+
+            flash(
+
+                "Program updated successfully.",
+
+                "success"
+
+            )
+
+            return redirect(
+                url_for("main.programs")
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(
+
+                f"Error : {e}",
+
+                "danger"
+
+            )
+
+    return render_template(
+
+        "admin/programs/edit.html",
+
+        form=form,
+
+        program=program
+
+    )
+
+@main.route( "/admin/programs/toggle/<int:id>" )
+@login_required
+@super_admin_required
+def toggle_program(id):
+
+    program = Program.query.get_or_404(id)
+
+    program.is_active = not program.is_active
+
+    db.session.commit()
+
+    flash(
+
+        "Program status updated successfully.",
+
+        "success"
+
+    )
+
+    return redirect(
+        url_for("main.programs")
+    )
+
+@main.route( "/admin/programs/delete/<int:id>" )
+@login_required
+@super_admin_required
+def delete_program(id):
+
+    program = Program.query.get_or_404(id)
+
+    try:
+
+        db.session.delete(program)
+
+        db.session.commit()
+
+        flash(
+
+            "Program deleted successfully.",
+
+            "success"
+
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+
+            f"Unable to delete Program : {e}",
+
+            "danger"
+
+        )
+
+    return redirect(
+        url_for("main.programs")
+    )
+
+# ==========================
 # Profile
 # ==========================
 @main.route("/profile")
