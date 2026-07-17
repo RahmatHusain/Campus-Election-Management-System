@@ -185,7 +185,7 @@ A complete production-ready Department Management system has been implemented.
 
 ✔ Day 6 Completed
 
-✔ Day 6 Completed
+✔ Day 7 Completed
 
 ➡️ Next: Day 8 - Academic Year & Semester Management
 
