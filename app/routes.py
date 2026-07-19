@@ -23,7 +23,7 @@ from app.forms.program_form import (
     ProgramForm,
     EditProgramForm
 )
-from app.forms.student_form import StudentForm
+
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
@@ -32,8 +32,16 @@ from app.models.department import Department
 from app.models.semester import Semester
 from app.models.academic_year import AcademicYear
 from app.models.program import Program
+from app.forms.student_form import StudentForm
 from app.models.student import Student
-
+from app.utils.student_id import (
+    generate_student_id,
+    generate_roll_number
+)
+from app.utils.file_upload import (
+    save_student_photo,
+    delete_student_photo
+)
 from app.forms.academic_year_forms import (
     AcademicYearForm,
     EditAcademicYearForm
@@ -1679,6 +1687,245 @@ def delete_program(id):
 
     return redirect(
         url_for("main.programs")
+    )
+# ==========================
+# Programs
+# ==========================
+
+@main.route("/admin/students")
+@login_required
+@super_admin_required
+def students():
+
+    search = request.args.get("search", "").strip()
+    program_id = request.args.get("program", "")
+    semester_id = request.args.get("semester", "")
+    status = request.args.get("status", "")
+
+    query = Student.query
+
+    # Search
+    if search:
+        query = query.filter(
+            db.or_(
+                Student.first_name.ilike(f"%{search}%"),
+                Student.last_name.ilike(f"%{search}%"),
+                Student.student_id.ilike(f"%{search}%"),
+                Student.roll_number.ilike(f"%{search}%"),
+                Student.email.ilike(f"%{search}%")
+            )
+        )
+
+    # Program filter
+    if program_id:
+        query = query.filter_by(program_id=program_id)
+
+    # Semester filter
+    if semester_id:
+        query = query.filter_by(semester_id=semester_id)
+
+    # Status filter
+    if status == "active":
+        query = query.filter_by(is_active=True)
+    elif status == "inactive":
+        query = query.filter_by(is_active=False)
+    elif status == "verified":
+        query = query.filter_by(is_verified=True)
+
+    students = query.order_by(Student.created_at.desc()).all()
+
+    stats = {
+        "total": Student.query.count(),
+        "active": Student.query.filter_by(is_active=True).count(),
+        "verified": Student.query.filter_by(is_verified=True).count(),
+        "voters": Student.query.filter_by(is_voter=True).count()
+    }
+
+    return render_template(
+        "admin/students/index.html",
+        students=students,
+        stats=stats,
+        search=search,
+        status=status,
+        program_id=program_id,
+        semester_id=semester_id
+    )
+
+@main.route("/admin/students/create", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def create_student():
+
+    form = StudentForm()
+
+    if form.validate_on_submit():
+
+        try:
+
+            # Auto-generate IDs
+            student_id = generate_student_id(
+                form.program_id.data,
+                form.admission_year.data
+            )
+
+            roll_number = generate_roll_number(
+                form.program_id.data,
+                form.admission_year.data
+            )
+
+            # Save photo
+            photo_filename = None
+
+            if form.photo.data:
+                photo_filename = save_student_photo(form.photo.data)
+
+            student = Student(
+                student_id=student_id,
+                roll_number=roll_number,
+
+                first_name=form.first_name.data.strip(),
+                last_name=form.last_name.data.strip(),
+                gender=form.gender.data,
+                date_of_birth=form.date_of_birth.data,
+
+                email=form.email.data.strip().lower(),
+                phone=form.phone.data.strip(),
+                address=form.address.data,
+
+                faculty_id=form.faculty_id.data,
+                department_id=form.department_id.data,
+                program_id=form.program_id.data,
+                academic_year_id=form.academic_year_id.data,
+                semester_id=form.semester_id.data,
+
+                admission_year=form.admission_year.data,
+                batch=form.batch.data,
+
+                photo=photo_filename,
+
+                is_voter=form.is_voter.data,
+                is_candidate_eligible=form.is_candidate_eligible.data,
+                is_verified=form.is_verified.data,
+                is_active=form.is_active.data
+            )
+
+            db.session.add(student)
+            db.session.commit()
+
+            flash(
+                f"Student {student.full_name} created successfully.",
+                "success"
+            )
+
+            return redirect(url_for("main.students"))
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(f"Error: {str(e)}", "danger")
+
+    return render_template(
+        "admin/students/create.html",
+        form=form
+    )
+
+@main.route("/admin/students/edit/<int:id>", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def edit_student(id):
+
+    student = Student.query.get_or_404(id)
+
+    form = StudentForm(obj=student)
+
+    if form.validate_on_submit():
+
+        try:
+
+            # Update photo if new one uploaded
+            if form.photo.data:
+
+                delete_student_photo(student.photo)
+
+                student.photo = save_student_photo(form.photo.data)
+
+            # Update fields
+            student.first_name = form.first_name.data.strip()
+            student.last_name = form.last_name.data.strip()
+            student.gender = form.gender.data
+            student.date_of_birth = form.date_of_birth.data
+
+            student.email = form.email.data.strip().lower()
+            student.phone = form.phone.data.strip()
+            student.address = form.address.data
+
+            student.faculty_id = form.faculty_id.data
+            student.department_id = form.department_id.data
+            student.program_id = form.program_id.data
+            student.academic_year_id = form.academic_year_id.data
+            student.semester_id = form.semester_id.data
+
+            student.batch = form.batch.data
+
+            student.is_voter = form.is_voter.data
+            student.is_candidate_eligible = form.is_candidate_eligible.data
+            student.is_verified = form.is_verified.data
+            student.is_active = form.is_active.data
+
+            db.session.commit()
+
+            flash("Student updated successfully.", "success")
+
+            return redirect(url_for("main.students"))
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(f"Error: {str(e)}", "danger")
+
+    return render_template(
+        "admin/students/edit.html",
+        form=form,
+        student=student
+    )
+
+@main.route("/admin/students/delete/<int:id>")
+@login_required
+@super_admin_required
+def delete_student(id):
+
+    student = Student.query.get_or_404(id)
+
+    try:
+
+        # Delete photo
+        delete_student_photo(student.photo)
+
+        db.session.delete(student)
+        db.session.commit()
+
+        flash("Student deleted successfully.", "success")
+
+    except Exception:
+
+        db.session.rollback()
+
+        flash("Unable to delete student.", "danger")
+
+    return redirect(url_for("main.students"))
+
+@main.route("/admin/students/profile/<int:id>")
+@login_required
+@super_admin_required
+def student_profile(id):
+
+    student = Student.query.get_or_404(id)
+
+    return render_template(
+        "admin/students/profile.html",
+        student=student
     )
 
 # ==========================
