@@ -19,7 +19,10 @@ from app.forms.auth_forms import RegisterForm, LoginForm
 from app.forms.faculty_forms import FacultyForm
 from app.forms.department_form import DepartmentForm
 from app.forms.semester_form import SemesterForm
-from app.forms.program_form import ProgramForm
+from app.forms.program_form import (
+    ProgramForm,
+    EditProgramForm
+)
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
@@ -1556,7 +1559,7 @@ def edit_program(id):
 
     program = Program.query.get_or_404(id)
 
-    form = ProgramForm(obj=program)
+    form = EditProgramForm(program, obj=program)
 
     if request.method == "GET":
 

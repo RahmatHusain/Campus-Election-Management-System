@@ -112,3 +112,35 @@ class ProgramForm(FlaskForm):
             raise ValidationError(
                 "Program Code already exists."
             )
+
+class EditProgramForm(ProgramForm):
+
+    def __init__(self, original_program, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_program = original_program
+
+    def validate_name(self, field):
+
+        existing = Program.query.filter_by(
+            department_id=self.department_id.data,
+            name=field.data.strip()
+        ).first()
+
+        if existing and existing.id != self.original_program.id:
+            raise ValidationError(
+                "Program already exists in this department."
+            )
+
+    def validate_code(self, field):
+
+        existing = Program.query.filter_by(
+            department_id=self.department_id.data,
+            code=field.data.strip()
+        ).first()
+
+        if existing and existing.id != self.original_program.id:
+            raise ValidationError(
+                "Program Code already exists."
+            )
+
+            

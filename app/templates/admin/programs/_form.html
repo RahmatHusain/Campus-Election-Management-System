@@ -44,17 +44,29 @@
 
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-3 mb-3">
 
-            {{ form.duration.label(class="form-label") }}
+    {{ form.duration_years.label(class="form-label") }}
 
-            {{ form.duration(class="form-control") }}
+    {{ form.duration_years(class="form-control") }}
 
-            {% for error in form.duration.errors %}
-            <small class="text-danger">{{ error }}</small>
-            {% endfor %}
+    {% for error in form.duration_years.errors %}
+    <small class="text-danger">{{ error }}</small>
+    {% endfor %}
 
-        </div>
+</div>
+
+<div class="col-md-3 mb-3">
+
+    {{ form.total_semesters.label(class="form-label") }}
+
+    {{ form.total_semesters(class="form-control") }}
+
+    {% for error in form.total_semesters.errors %}
+    <small class="text-danger">{{ error }}</small>
+    {% endfor %}
+
+</div>
 
     </div>
 
