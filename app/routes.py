@@ -23,6 +23,7 @@ from app.forms.program_form import (
     ProgramForm,
     EditProgramForm
 )
+from app.forms.student_form import StudentForm
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
