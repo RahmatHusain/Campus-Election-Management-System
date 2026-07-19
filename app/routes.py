@@ -31,6 +31,7 @@ from app.models.department import Department
 from app.models.semester import Semester
 from app.models.academic_year import AcademicYear
 from app.models.program import Program
+from app.models.student import Student
 
 from app.forms.academic_year_forms import (
     AcademicYearForm,
