@@ -51,6 +51,10 @@ from app.forms.academic_year_forms import (
     EditAcademicYearForm
 )
 
+from flask import send_file
+from app.utils.student_import import import_students_from_excel
+from app.utils.student_export import export_students_to_excel
+
 from sqlalchemy import or_
 
 main = Blueprint("main", __name__)
@@ -2120,6 +2124,69 @@ def reject_student(id):
 
     return redirect(
         url_for('main.student_profile', id=student.id)
+    )
+
+# ==========================================
+# Student Import / Export
+# ==========================================
+
+@main.route('/admin/students/import', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def import_students():
+
+    if request.method == 'POST':
+
+        file = request.files.get('file')
+
+        if not file or file.filename == '':
+            flash('Please select an Excel file.', 'warning')
+            return redirect(request.url)
+
+        if not file.filename.endswith('.xlsx'):
+            flash('Only .xlsx files are allowed.', 'danger')
+            return redirect(request.url)
+
+        # Save temporarily
+        temp_path = 'temp_students_import.xlsx'
+        file.save(temp_path)
+
+        result = import_students_from_excel(temp_path)
+
+        if result['success'] > 0:
+            flash(
+                f'{result["success"]} students imported successfully.',
+                'success'
+            )
+
+        if result['failed'] > 0:
+            flash(
+                f'{result["failed"]} rows failed validation.',
+                'warning'
+            )
+
+        return render_template(
+            'admin/students/import.html',
+            result=result
+        )
+
+    return render_template('admin/students/import.html')
+
+
+@main.route('/admin/students/export')
+@login_required
+@super_admin_required
+def export_students():
+
+    students = Student.query.order_by(Student.created_at.desc()).all()
+
+    output = export_students_to_excel(students)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name='students_export.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 # ==========================
 # Profile

@@ -1,0 +1,142 @@
+{% extends 'layouts/admin_base.html' %}
+
+{% block title %}Import Students{% endblock %}
+
+{% block content %}
+
+<div class='container py-4'>
+
+    <div class='row justify-content-center'>
+
+        <div class='col-lg-8'>
+
+            <div class='card shadow-sm border-0'>
+
+                <div class='card-header bg-primary text-white'>
+
+                    <h4 class='mb-0'>
+                        📥 Bulk Student Import
+                    </h4>
+
+                </div>
+
+                <div class='card-body'>
+
+                    <div class='alert alert-info'>
+
+                        <strong>Required Excel Columns:</strong><br>
+
+                        first_name, last_name, gender, date_of_birth, email,
+                        phone, faculty, department, program, academic_year,
+                        semester, admission_year
+
+                    </div>
+
+                    <form method='POST' enctype='multipart/form-data'>
+
+                        <div class='mb-4'>
+
+                            <label class='form-label fw-semibold'>
+                                Select Excel File (.xlsx)
+                            </label>
+
+                            <input
+                                type='file'
+                                name='file'
+                                class='form-control'
+                                accept='.xlsx'
+                                required>
+
+                        </div>
+
+                        <div class='d-flex justify-content-between'>
+
+                            <a href='{{ url_for("main.students") }}'
+                               class='btn btn-outline-secondary'>
+
+                                Cancel
+
+                            </a>
+
+                            <button type='submit' class='btn btn-primary'>
+
+                                <i class='bi bi-upload'></i>
+                                Import Students
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    {% if result %}
+
+                    <hr class='my-4'>
+
+                    <h5>Import Result</h5>
+
+                    <div class='row g-3 mb-3'>
+
+                        <div class='col-md-6'>
+
+                            <div class='alert alert-success mb-0'>
+
+                                <strong>{{ result.success }}</strong>
+                                Successful
+
+                            </div>
+
+                        </div>
+
+                        <div class='col-md-6'>
+
+                            <div class='alert alert-danger mb-0'>
+
+                                <strong>{{ result.failed }}</strong>
+                                Failed
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% if result.errors %}
+
+                    <div class='card border-danger'>
+
+                        <div class='card-header bg-danger text-white'>
+
+                            Validation Errors
+
+                        </div>
+
+                        <div class='card-body'>
+
+                            <ul class='mb-0'>
+
+                                {% for error in result.errors %}
+                                <li>{{ error }}</li>
+                                {% endfor %}
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+
+                    {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
