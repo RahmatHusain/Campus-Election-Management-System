@@ -1,3 +1,4 @@
+from flask import jsonify
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, flash
 
@@ -1975,7 +1976,83 @@ def student_profile(id):
         "admin/students/profile.html",
         student=student
     )
+# ==========================================
+# Dynamic Academic APIs
+# ==========================================
 
+@main.route('/api/departments/<int:faculty_id>')
+@login_required
+def api_departments(faculty_id):
+
+    departments = Department.query.filter_by(
+        faculty_id=faculty_id,
+        is_active=True
+    ).order_by(Department.name).all()
+
+    data = [
+        {
+            'id': d.id,
+            'name': d.name,
+            'code': d.code
+        }
+        for d in departments
+    ]
+
+    return jsonify(data)
+
+
+@main.route('/api/programs/<int:department_id>')
+@login_required
+def api_programs(department_id):
+
+    programs = Program.query.filter_by(
+        department_id=department_id,
+        is_active=True
+    ).order_by(Program.name).all()
+
+    data = [
+        {
+            'id': p.id,
+            'name': p.name,
+            'code': p.code
+        }
+        for p in programs
+    ]
+
+    return jsonify(data)
+
+
+@main.route('/api/semesters/<int:program_id>')
+@login_required
+def api_semesters(program_id):
+
+    # Find program
+    program = Program.query.get_or_404(program_id)
+
+    # Get current academic year
+    current_year = AcademicYear.query.filter_by(
+        is_current=True
+    ).first()
+
+    if not current_year:
+        return jsonify([])
+
+    # Get semesters of current academic year
+    semesters = Semester.query.filter_by(
+        academic_year_id=current_year.id,
+        is_active=True
+    ).order_by(Semester.semester_number).all()
+
+    data = [
+        {
+            'id': s.id,
+            'name': s.name,
+            'number': s.semester_number
+        }
+        for s in semesters
+    ]
+
+    return jsonify(data)
 # ==========================
 # Profile
 # ==========================

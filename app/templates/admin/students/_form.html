@@ -279,53 +279,254 @@
 <!-- ========================= -->
 <!-- JavaScript -->
 <!-- ========================= -->
-
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ==========================
+    // Elements
+    // ==========================
+
+    const facultySelect = document.getElementById('facultySelect');
+    const departmentSelect = document.getElementById('departmentSelect');
+    const programSelect = document.getElementById('programSelect');
+    const semesterSelect = document.getElementById('semesterSelect');
+
+    const admissionYearSelect = document.getElementById('admissionYearSelect');
+    const studentIdPreview = document.getElementById('studentIdPreview');
+    const rollPreview = document.getElementById('rollPreview');
+
+    const photoInput = document.getElementById('photoInput');
+    const photoPreview = document.getElementById('photoPreview');
+
+    // ==========================
     // Photo Preview
-    const photoInput = document.getElementById("photoInput");
-    const photoPreview = document.getElementById("photoPreview");
+    // ==========================
 
     if (photoInput) {
-      photoInput.addEventListener("change", function (e) {
-        const file = e.target.files[0];
 
-        if (file) {
-          const reader = new FileReader();
+        photoInput.addEventListener('change', function (e) {
 
-          reader.onload = function (event) {
-            photoPreview.src = event.target.result;
-          };
+            const file = e.target.files[0];
 
-          reader.readAsDataURL(file);
-        }
-      });
+            if (file) {
+
+                const reader = new FileReader();
+
+                reader.onload = function (event) {
+                    photoPreview.src = event.target.result;
+                };
+
+                reader.readAsDataURL(file);
+            }
+        });
     }
 
-    // Auto ID Preview
-    const programSelect = document.getElementById("programSelect");
-    const admissionYearSelect = document.getElementById("admissionYearSelect");
+    // ==========================
+    // Helper: Reset Select
+    // ==========================
+
+    function resetSelect(select, placeholder) {
+
+        select.innerHTML =
+            `<option value="">${placeholder}</option>`;
+
+        select.disabled = true;
+    }
+
+    // ==========================
+    // Helper: Populate Select
+    // ==========================
+
+    function populateSelect(select, items, placeholder, formatter) {
+
+        select.innerHTML =
+            `<option value="">${placeholder}</option>`;
+
+        items.forEach(item => {
+
+            const option = document.createElement('option');
+
+            option.value = item.id;
+            option.textContent = formatter(item);
+
+            select.appendChild(option);
+        });
+
+        select.disabled = false;
+    }
+
+    // ==========================
+    // Update ID Preview
+    // ==========================
 
     function updatePreview() {
-      const programText =
-        programSelect.options[programSelect.selectedIndex]?.text || "PROGRAM";
-      const programCode = programText.match(/\\((.*?)\\)/)?.[1] || "PRG";
-      const year = admissionYearSelect.value || "2026";
 
-      document.getElementById("studentIdPreview").textContent =
-        `${programCode}-${year}-0001`;
+        const programText =
+            programSelect.options[programSelect.selectedIndex]?.text || 'PRG';
 
-      document.getElementById("rollPreview").textContent =
-        `${year}${programCode}001`;
+        let programCode = 'PRG';
+
+        const match = programText.match(/\\((.*?)\\)/);
+
+        if (match) {
+            programCode = match[1];
+        }
+
+        const year = admissionYearSelect.value || '2026';
+
+        studentIdPreview.textContent =
+            `${programCode}-${year}-0001`;
+
+        rollPreview.textContent =
+            `${year}${programCode}001`;
     }
 
-    if (programSelect && admissionYearSelect) {
-      programSelect.addEventListener("change", updatePreview);
-      admissionYearSelect.addEventListener("change", updatePreview);
-      updatePreview();
-    }
+    // ==========================
+    // Faculty → Departments
+    // ==========================
 
-    // Dynamic Dropdown Placeholder
-    // We will connect Faculty → Department → Program → Semester in Step 6
-  });
+    facultySelect.addEventListener('change', async function () {
+
+        const facultyId = this.value;
+
+        resetSelect(departmentSelect, 'Loading departments...');
+        resetSelect(programSelect, 'Select department first');
+        resetSelect(semesterSelect, 'Select program first');
+
+        if (!facultyId) {
+            resetSelect(departmentSelect, 'Select Faculty First');
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(`/api/departments/${facultyId}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to load departments');
+            }
+
+            const departments = await response.json();
+
+            populateSelect(
+                departmentSelect,
+                departments,
+                'Select Department',
+                d => `${d.name} (${d.code})`
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            resetSelect(departmentSelect, 'Error loading departments');
+
+            alert('Unable to load departments.');
+        }
+    });
+
+    // ==========================
+    // Department → Programs
+    // ==========================
+
+    departmentSelect.addEventListener('change', async function () {
+
+        const departmentId = this.value;
+
+        resetSelect(programSelect, 'Loading programs...');
+        resetSelect(semesterSelect, 'Select program first');
+
+        if (!departmentId) {
+            resetSelect(programSelect, 'Select Department First');
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(`/api/programs/${departmentId}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to load programs');
+            }
+
+            const programs = await response.json();
+
+            populateSelect(
+                programSelect,
+                programs,
+                'Select Program',
+                p => `${p.name} (${p.code})`
+            );
+
+            updatePreview();
+
+        } catch (error) {
+
+            console.error(error);
+
+            resetSelect(programSelect, 'Error loading programs');
+
+            alert('Unable to load programs.');
+        }
+    });
+
+    // ==========================
+    // Program → Semesters
+    // ==========================
+
+    programSelect.addEventListener('change', async function () {
+
+        const programId = this.value;
+
+        resetSelect(semesterSelect, 'Loading semesters...');
+
+        updatePreview();
+
+        if (!programId) {
+            resetSelect(semesterSelect, 'Select Program First');
+            return;
+        }
+
+        try {
+
+            const response =
+                await fetch(`/api/semesters/${programId}`);
+
+            if (!response.ok) {
+                throw new Error('Failed to load semesters');
+            }
+
+            const semesters = await response.json();
+
+            populateSelect(
+                semesterSelect,
+                semesters,
+                'Select Semester',
+                s => `${s.number}. ${s.name}`
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            resetSelect(semesterSelect, 'Error loading semesters');
+
+            alert('Unable to load semesters.');
+        }
+    });
+
+    // ==========================
+    // Admission Year Preview
+    // ==========================
+
+    admissionYearSelect.addEventListener('change', updatePreview);
+
+    // Initial preview
+    updatePreview();
+
+});
+
 </script>
