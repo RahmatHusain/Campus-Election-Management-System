@@ -1,0 +1,331 @@
+<form method="POST" enctype="multipart/form-data" novalidate>
+  {{ form.hidden_tag() }}
+
+  <!-- ========================= -->
+  <!-- Personal Information -->
+  <!-- ========================= -->
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">👤 Personal Information</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.first_name.label(class="form-label fw-semibold") }} {{
+          form.first_name(class="form-control" + (" is-invalid" if
+          form.first_name.errors else "")) }} {% for error in
+          form.first_name.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.last_name.label(class="form-label fw-semibold") }} {{
+          form.last_name(class="form-control" + (" is-invalid" if
+          form.last_name.errors else "")) }} {% for error in
+          form.last_name.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.gender.label(class="form-label fw-semibold") }} {{
+          form.gender(class="form-select" + (" is-invalid" if form.gender.errors
+          else "")) }} {% for error in form.gender.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.date_of_birth.label(class="form-label fw-semibold") }} {{
+          form.date_of_birth(class="form-control" + (" is-invalid" if
+          form.date_of_birth.errors else "")) }} {% for error in
+          form.date_of_birth.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- Contact Information -->
+  <!-- ========================= -->
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">📞 Contact Information</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.email.label(class="form-label fw-semibold") }} {{
+          form.email(class="form-control" + (" is-invalid" if form.email.errors
+          else ""), placeholder="student@university.edu") }} {% for error in
+          form.email.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.phone.label(class="form-label fw-semibold") }} {{
+          form.phone(class="form-control" + (" is-invalid" if form.phone.errors
+          else ""), placeholder="98XXXXXXXX") }} {% for error in
+          form.phone.errors %}
+          <div class="invalid-feedback">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="col-12">
+          {{ form.address.label(class="form-label fw-semibold") }} {{
+          form.address(class="form-control", rows="3", placeholder="Enter full
+          address") }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- Academic Information -->
+  <!-- ========================= -->
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">🎓 Academic Information</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          {{ form.faculty_id.label(class="form-label fw-semibold") }} {{
+          form.faculty_id(class="form-select", id="facultySelect") }}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.department_id.label(class="form-label fw-semibold") }} {{
+          form.department_id(class="form-select", id="departmentSelect") }}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.program_id.label(class="form-label fw-semibold") }} {{
+          form.program_id(class="form-select", id="programSelect") }}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.semester_id.label(class="form-label fw-semibold") }} {{
+          form.semester_id(class="form-select", id="semesterSelect") }}
+        </div>
+
+        <div class="col-md-6">
+          {{ form.academic_year_id.label(class="form-label fw-semibold") }} {{
+          form.academic_year_id(class="form-select") }}
+        </div>
+
+        <div class="col-md-3">
+          {{ form.admission_year.label(class="form-label fw-semibold") }} {{
+          form.admission_year(class="form-select", id="admissionYearSelect") }}
+        </div>
+
+        <div class="col-md-3">
+          {{ form.batch.label(class="form-label fw-semibold") }} {{
+          form.batch(class="form-control", placeholder="2026-A") }}
+        </div>
+      </div>
+
+      <!-- Auto ID Preview -->
+
+      <div class="alert alert-info mt-4 mb-0">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-info-circle-fill"></i>
+
+          <div>
+            <strong>Auto-Generated IDs</strong><br />
+
+            <small>
+              Student ID:
+              <span id="studentIdPreview" class="fw-bold"
+                >Will be generated automatically</span
+              ><br />
+              Roll Number:
+              <span id="rollPreview" class="fw-bold"
+                >Will be generated automatically</span
+              >
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- Profile Photo -->
+  <!-- ========================= -->
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">🖼️ Profile Photo</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row align-items-center g-4">
+        <div class="col-md-3 text-center">
+          <img
+            id="photoPreview"
+            src="{% if student and student.photo %}{{ url_for('static', filename='uploads/students/' ~ student.photo) }}{% else %}https://via.placeholder.com/150x150?text=Photo{% endif %}"
+            class="rounded-circle border shadow-sm"
+            width="150"
+            height="150"
+            style="object-fit: cover"
+          />
+        </div>
+
+        <div class="col-md-9">
+          {{ form.photo.label(class="form-label fw-semibold") }} {{
+          form.photo(class="form-control", id="photoInput",
+          accept=".jpg,.jpeg,.png,.webp") }}
+
+          <div class="form-text">
+            Allowed formats: JPG, JPEG, PNG, WEBP. Maximum recommended size:
+            2MB.
+          </div>
+
+          {% for error in form.photo.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- Election Settings -->
+  <!-- ========================= -->
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">🗳️ Election & Status Settings</h5>
+    </div>
+
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            {{ form.is_voter(class="form-check-input") }} {{
+            form.is_voter.label(class="form-check-label fw-semibold") }}
+          </div>
+
+          <small class="text-muted">
+            Allow this student to participate in voting.
+          </small>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            {{ form.is_candidate_eligible(class="form-check-input") }} {{
+            form.is_candidate_eligible.label(class="form-check-label
+            fw-semibold") }}
+          </div>
+
+          <small class="text-muted">
+            Allow this student to run for election.
+          </small>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            {{ form.is_verified(class="form-check-input") }} {{
+            form.is_verified.label(class="form-check-label fw-semibold") }}
+          </div>
+
+          <small class="text-muted">
+            Mark student as verified by administration.
+          </small>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-check form-switch">
+            {{ form.is_active(class="form-check-input") }} {{
+            form.is_active.label(class="form-check-label fw-semibold") }}
+          </div>
+
+          <small class="text-muted">
+            Keep the student active in the system.
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= -->
+  <!-- Action Buttons -->
+  <!-- ========================= -->
+
+  <div class="d-flex justify-content-between align-items-center">
+    <a href="{{ url_for('main.students') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i>
+      Back to Students
+    </a>
+
+    <button type="submit" class="btn btn-primary btn-lg">
+      <i class="bi bi-save"></i>
+      {{ form.submit.label.text }}
+    </button>
+  </div>
+</form>
+
+<!-- ========================= -->
+<!-- JavaScript -->
+<!-- ========================= -->
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Photo Preview
+    const photoInput = document.getElementById("photoInput");
+    const photoPreview = document.getElementById("photoPreview");
+
+    if (photoInput) {
+      photoInput.addEventListener("change", function (e) {
+        const file = e.target.files[0];
+
+        if (file) {
+          const reader = new FileReader();
+
+          reader.onload = function (event) {
+            photoPreview.src = event.target.result;
+          };
+
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    // Auto ID Preview
+    const programSelect = document.getElementById("programSelect");
+    const admissionYearSelect = document.getElementById("admissionYearSelect");
+
+    function updatePreview() {
+      const programText =
+        programSelect.options[programSelect.selectedIndex]?.text || "PROGRAM";
+      const programCode = programText.match(/\\((.*?)\\)/)?.[1] || "PRG";
+      const year = admissionYearSelect.value || "2026";
+
+      document.getElementById("studentIdPreview").textContent =
+        `${programCode}-${year}-0001`;
+
+      document.getElementById("rollPreview").textContent =
+        `${year}${programCode}001`;
+    }
+
+    if (programSelect && admissionYearSelect) {
+      programSelect.addEventListener("change", updatePreview);
+      admissionYearSelect.addEventListener("change", updatePreview);
+      updatePreview();
+    }
+
+    // Dynamic Dropdown Placeholder
+    // We will connect Faculty → Department → Program → Semester in Step 6
+  });
+</script>
