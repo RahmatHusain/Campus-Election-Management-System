@@ -271,3 +271,20 @@ class StudentForm(FlaskForm):
             raise ValidationError(
                 "Invalid admission year."
             )
+
+class EditStudentForm(StudentForm):
+
+    def __init__(self, original_student, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_student = original_student
+
+    def validate_email(self, field):
+
+        existing = Student.query.filter_by(
+            email=field.data.strip().lower()
+        ).first()
+
+        if existing and existing.id != self.original_student.id:
+            raise ValidationError(
+                "Email is already registered."
+            )

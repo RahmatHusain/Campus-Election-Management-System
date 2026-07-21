@@ -1,411 +1,721 @@
-{% extends "layouts/admin_base.html" %} {% block title %} Program Management {%
-endblock %} {% block content %}
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}
+Program Management
+{% endblock %}
+
+{% block content %}
 
 <div class="container-fluid py-4">
-  <!-- ========================= -->
-  <!-- Page Header -->
-  <!-- ========================= -->
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="fw-bold mb-1">🎓 Program Management</h2>
+    <!-- ========================= -->
+    <!-- Page Header -->
+    <!-- ========================= -->
 
-      <p class="text-muted mb-0">
-        Manage academic programs offered by departments.
-      </p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+
+                🎓 Program Management
+
+            </h2>
+
+            <p class="text-muted mb-0">
+
+                Manage academic programs offered by departments.
+
+            </p>
+
+        </div>
+
+        <div>
+
+            <a href="{{ url_for('main.create_program') }}"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-circle"></i>
+
+                Add Program
+
+            </a>
+
+        </div>
+
     </div>
 
-    <div>
-      <a href="{{ url_for('main.create_program') }}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i>
+    <!-- ========================= -->
+    <!-- Statistics -->
+    <!-- ========================= -->
 
-        Add Program
-      </a>
+    <div class="row g-4 mb-4">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <h6 class="text-muted">
+
+                                Total Programs
+
+                            </h6>
+
+                            <h2 class="fw-bold">
+
+                                {{ stats.total }}
+
+                            </h2>
+
+                        </div>
+
+                        <div>
+
+                            <i class="bi bi-mortarboard fs-1 text-primary"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <h6 class="text-muted">
+
+                                Active
+
+                            </h6>
+
+                            <h2 class="text-success">
+
+                                {{ stats.active }}
+
+                            </h2>
+
+                        </div>
+
+                        <div>
+
+                            <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <h6 class="text-muted">
+
+                                Inactive
+
+                            </h6>
+
+                            <h2 class="text-danger">
+
+                                {{ stats.inactive }}
+
+                            </h2>
+
+                        </div>
+
+                        <div>
+
+                            <i class="bi bi-x-circle-fill fs-1 text-danger"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card shadow-sm border-0">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between">
+
+                        <div>
+
+                            <h6 class="text-muted">
+
+                                Departments
+
+                            </h6>
+
+                            <h2 class="text-info">
+
+                                {{ stats.departments }}
+
+                            </h2>
+
+                        </div>
+
+                        <div>
+
+                            <i class="bi bi-building fs-1 text-info"></i>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
-  </div>
 
-  <!-- ========================= -->
-  <!-- Statistics -->
-  <!-- ========================= -->
+    <!-- ========================= -->
+    <!-- Search -->
+    <!-- ========================= -->
 
-  <div class="row g-4 mb-4">
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0 mb-4">
+
         <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Total Programs</h6>
 
-              <h2 class="fw-bold">{{ stats.total }}</h2>
-            </div>
+            <form method="GET">
 
-            <div>
-              <i class="bi bi-mortarboard fs-1 text-primary"></i>
-            </div>
-          </div>
+                <div class="row g-3">
+
+                    <div class="col-lg-4">
+
+                        <input
+
+                            type="text"
+
+                            class="form-control"
+
+                            name="search"
+
+                            placeholder="Search Program..."
+
+                            value="{{ search }}">
+
+                    </div>
+
+                    <div class="col-lg-3">
+
+                        <select
+
+                            class="form-select"
+
+                            name="department">
+
+                            <option value="">
+
+                                All Departments
+
+                            </option>
+
+                            {% for department in departments %}
+
+                            <option
+
+                                value="{{ department.id }}"
+
+                                {% if department_id|string == department.id|string %}
+
+                                selected
+
+                                {% endif %}>
+
+                                {{ department.name }}
+
+                            </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-lg-3">
+
+                        <select
+
+                            class="form-select"
+
+                            name="status">
+
+                            <option value="">
+
+                                All Status
+
+                            </option>
+
+                            <option
+
+                                value="active"
+
+                                {% if status=="active" %}
+
+                                selected
+
+                                {% endif %}>
+
+                                Active
+
+                            </option>
+
+                            <option
+
+                                value="inactive"
+
+                                {% if status=="inactive" %}
+
+                                selected
+
+                                {% endif %}>
+
+                                Inactive
+
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="col-lg-2 d-grid">
+
+                        <button
+
+                            class="btn btn-primary">
+
+                            <i class="bi bi-search"></i>
+
+                            Search
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
         </div>
-      </div>
+
     </div>
 
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Active</h6>
+        <!-- ========================= -->
+    <!-- Program Table -->
+    <!-- ========================= -->
 
-              <h2 class="text-success">{{ stats.active }}</h2>
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <h5 class="mb-0">
+
+                    Program List
+
+                </h5>
+
+                <span class="badge bg-primary">
+
+                    {{ programs|length }} Programs
+
+                </span>
+
             </div>
 
-            <div>
-              <i class="bi bi-check-circle-fill fs-1 text-success"></i>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
 
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Inactive</h6>
+        <div class="table-responsive">
 
-              <h2 class="text-danger">{{ stats.inactive }}</h2>
-            </div>
+            <table class="table table-hover align-middle mb-0">
 
-            <div>
-              <i class="bi bi-x-circle-fill fs-1 text-danger"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                <thead class="table-light">
 
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Departments</h6>
+                    <tr>
 
-              <h2 class="text-info">{{ stats.departments }}</h2>
-            </div>
+                        <th width="60">
 
-            <div>
-              <i class="bi bi-building fs-1 text-info"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+                            ID
 
-  <!-- ========================= -->
-  <!-- Search -->
-  <!-- ========================= -->
+                        </th>
 
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body">
-      <form method="GET">
-        <div class="row g-3">
-          <div class="col-lg-4">
-            <input
-              type="text"
-              class="form-control"
-              name="search"
-              placeholder="Search Program..."
-              value="{{ search }}"
-            />
-          </div>
+                        <th>
 
-          <div class="col-lg-3">
-            <select class="form-select" name="department">
-              <option value="">All Departments</option>
+                            Program
 
-              {% for department in departments %}
+                        </th>
 
-              <option
-                value="{{ department.id }}"
-                {%
-                if
-                department_id|string=""
-                ="department.id|string"
-                %}
-                selected
-                {%
-                endif
-                %}
-              >
-                {{ department.name }}
-              </option>
+                        <th>
 
-              {% endfor %}
-            </select>
-          </div>
+                            Department
 
-          <div class="col-lg-3">
-            <select class="form-select" name="status">
-              <option value="">All Status</option>
+                        </th>
 
-              <option
-                value="active"
-                {%
-                if
-                status=""
-                ="active"
-                %}
-                selected
-                {%
-                endif
-                %}
-              >
-                Active
-              </option>
+                        <th>
 
-              <option
-                value="inactive"
-                {%
-                if
-                status=""
-                ="inactive"
-                %}
-                selected
-                {%
-                endif
-                %}
-              >
-                Inactive
-              </option>
-            </select>
-          </div>
+                            Code
 
-          <div class="col-lg-2 d-grid">
-            <button class="btn btn-primary">
-              <i class="bi bi-search"></i>
+                        </th>
 
-              Search
-            </button>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
+                        <th class="text-center">
 
-  <!-- ========================= -->
-  <!-- Program Table -->
-  <!-- ========================= -->
+                            Duration
 
-  <div class="card shadow-sm border-0">
-    <div class="card-header bg-white">
-      <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Program List</h5>
+                        </th>
 
-        <span class="badge bg-primary"> {{ programs|length }} Programs </span>
-      </div>
-    </div>
+                        <th class="text-center">
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle mb-0">
-        <thead class="table-light">
-          <tr>
-            <th width="60">ID</th>
+                            Semesters
 
-            <th>Program</th>
+                        </th>
 
-            <th>Department</th>
+                        <th class="text-center">
 
-            <th>Code</th>
+                            Status
 
-            <th class="text-center">Duration</th>
+                        </th>
 
-            <th class="text-center">Semesters</th>
+                        <th width="240" class="text-center">
 
-            <th class="text-center">Status</th>
+                            Actions
 
-            <th width="240" class="text-center">Actions</th>
-          </tr>
-        </thead>
+                        </th>
 
-        <tbody>
-          {% if programs %} {% for program in programs %}
+                    </tr>
 
-          <tr>
-            <td>{{ program.id }}</td>
+                </thead>
 
-            <td>
-              <strong> {{ program.name }} </strong>
+                <tbody>
 
-              {% if program.description %}
+                {% if programs %}
 
-              <br />
+                {% for program in programs %}
 
-              <small class="text-muted">
-                {{ program.description[:60] }} {% if program.description|length
-                > 60 %} ... {% endif %}
-              </small>
+                <tr>
 
-              {% endif %}
-            </td>
+                    <td>
 
-            <td>
-              <span class="badge bg-info text-dark">
-                {{ program.department.name }}
-              </span>
-            </td>
+                        {{ program.id }}
 
-            <td>
-              <span class="badge bg-secondary"> {{ program.code }} </span>
-            </td>
+                    </td>
 
-            <td class="text-center">{{ program.duration_years }} Years</td>
+                    <td>
 
-            <td class="text-center">{{ program.total_semesters }}</td>
+                        <strong>
 
-            <td class="text-center">
-              {% if program.is_active %}
+                            {{ program.name }}
 
-              <span class="badge bg-success"> Active </span>
+                        </strong>
 
-              {% else %}
+                        {% if program.description %}
 
-              <span class="badge bg-danger"> Inactive </span>
+                        <br>
 
-              {% endif %}
-            </td>
+                        <small class="text-muted">
 
-            <td class="text-center">
-              <a
-                href="{{ url_for('main.edit_program', id=program.id) }}"
-                class="btn btn-warning btn-sm"
-              >
-                <i class="bi bi-pencil-square"></i>
+                            {{ program.description[:60] }}
 
-                Edit
-              </a>
+                            {% if program.description|length > 60 %}
 
-              <a
-                href="{{ url_for('main.toggle_program', id=program.id) }}"
-                class="btn btn-secondary btn-sm"
-              >
-                {% if program.is_active %}
+                            ...
 
-                <i class="bi bi-toggle-on"></i>
+                            {% endif %}
+
+                        </small>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        <span class="badge bg-info text-dark">
+
+                            {{ program.department.name }}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <span class="badge bg-secondary">
+
+                            {{ program.code }}
+
+                        </span>
+
+                    </td>
+
+                    <td class="text-center">
+
+                        {{ program.duration_years }}
+
+                        Years
+
+                    </td>
+
+                    <td class="text-center">
+
+                        {{ program.total_semesters }}
+
+                    </td>
+
+                    <td class="text-center">
+
+                        {% if program.is_active %}
+
+                        <span class="badge bg-success">
+
+                            Active
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-danger">
+
+                            Inactive
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td class="text-center">
+
+                        <a
+
+                            href="{{ url_for('main.edit_program', id=program.id) }}"
+
+                            class="btn btn-warning btn-sm">
+
+                            <i class="bi bi-pencil-square"></i>
+
+                            Edit
+
+                        </a>
+
+                        <a
+
+                            href="{{ url_for('main.toggle_program', id=program.id) }}"
+
+                            class="btn btn-secondary btn-sm">
+
+                            {% if program.is_active %}
+
+                            <i class="bi bi-toggle-on"></i>
+
+                            {% else %}
+
+                            <i class="bi bi-toggle-off"></i>
+
+                            {% endif %}
+
+                        </a>
+
+                        <button
+
+                            class="btn btn-danger btn-sm"
+
+                            data-bs-toggle="modal"
+
+                            data-bs-target="#deleteModal{{ program.id }}">
+
+                            <i class="bi bi-trash"></i>
+
+                        </button>
+
+                    </td>
+
+                </tr>
+                 <!-- Delete Modal -->
+
+                <div
+                    class="modal fade"
+                    id="deleteModal{{ program.id }}"
+                    tabindex="-1"
+                    aria-hidden="true">
+
+                    <div class="modal-dialog modal-dialog-centered">
+
+                        <div class="modal-content">
+
+                            <div class="modal-header bg-danger text-white">
+
+                                <h5 class="modal-title">
+
+                                    Delete Program
+
+                                </h5>
+
+                                <button
+                                    type="button"
+                                    class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal">
+                                </button>
+
+                            </div>
+
+                            <div class="modal-body">
+
+                                <p>
+
+                                    Are you sure you want to delete
+
+                                    <strong>
+
+                                        {{ program.name }}
+
+                                    </strong>
+
+                                    ?
+
+                                </p>
+
+                                <div class="alert alert-warning mb-0">
+
+                                    <strong>Warning:</strong>
+
+                                    This action cannot be undone.
+
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer">
+
+                                <button
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal">
+
+                                    Cancel
+
+                                </button>
+
+                                <a
+                                    href="{{ url_for('main.delete_program', id=program.id) }}"
+                                    class="btn btn-danger">
+
+                                    <i class="bi bi-trash"></i>
+
+                                    Delete
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
 
                 {% else %}
 
-                <i class="bi bi-toggle-off"></i>
+                <tr>
+
+                    <td colspan="8" class="text-center py-5">
+
+                        <img
+                            src="https://cdn.jsdelivr.net/gh/twbs/icons/icons/folder.svg"
+                            width="48"
+                            class="mb-3">
+
+                        <h5>
+
+                            No Programs Found
+
+                        </h5>
+
+                        <p class="text-muted">
+
+                            No programs match your current search.
+
+                        </p>
+
+                        <a
+                            href="{{ url_for('main.create_program') }}"
+                            class="btn btn-primary">
+
+                            <i class="bi bi-plus-circle"></i>
+
+                            Add First Program
+
+                        </a>
+
+                    </td>
+
+                </tr>
 
                 {% endif %}
-              </a>
 
-              <button
-                class="btn btn-danger btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#deleteModal{{ program.id }}"
-              >
-                <i class="bi bi-trash"></i>
-              </button>
-            </td>
-          </tr>
-          <!-- Delete Modal -->
+                </tbody>
 
-          <div
-            class="modal fade"
-            id="deleteModal{{ program.id }}"
-            tabindex="-1"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                  <h5 class="modal-title">Delete Program</h5>
+            </table>
 
-                  <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    data-bs-dismiss="modal"
-                  ></button>
-                </div>
+        </div>
 
-                <div class="modal-body">
-                  <p>
-                    Are you sure you want to delete
-
-                    <strong> {{ program.name }} </strong>
-
-                    ?
-                  </p>
-
-                  <div class="alert alert-warning mb-0">
-                    <strong>Warning:</strong>
-
-                    This action cannot be undone.
-                  </div>
-                </div>
-
-                <div class="modal-footer">
-                  <button class="btn btn-secondary" data-bs-dismiss="modal">
-                    Cancel
-                  </button>
-
-                  <a
-                    href="{{ url_for('main.delete_program', id=program.id) }}"
-                    class="btn btn-danger"
-                  >
-                    <i class="bi bi-trash"></i>
-
-                    Delete
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {% endfor %} {% else %}
-
-          <tr>
-            <td colspan="8" class="text-center py-5">
-              <img
-                src="https://cdn.jsdelivr.net/gh/twbs/icons/icons/folder.svg"
-                width="48"
-                class="mb-3"
-              />
-
-              <h5>No Programs Found</h5>
-
-              <p class="text-muted">No programs match your current search.</p>
-
-              <a
-                href="{{ url_for('main.create_program') }}"
-                class="btn btn-primary"
-              >
-                <i class="bi bi-plus-circle"></i>
-
-                Add First Program
-              </a>
-            </td>
-          </tr>
-
-          {% endif %}
-        </tbody>
-      </table>
     </div>
-  </div>
-  <!-- ========================= -->
-  <!-- Footer -->
-  <!-- ========================= -->
+        <!-- ========================= -->
+    <!-- Footer -->
+    <!-- ========================= -->
 
-  <div class="mt-4">
-    <small class="text-muted">
-      Showing
+    <div class="mt-4">
 
-      <strong>{{ programs|length }}</strong>
+        <small class="text-muted">
 
-      program(s)
-    </small>
-  </div>
+            Showing
+
+            <strong>{{ programs|length }}</strong>
+
+            program(s)
+
+        </small>
+
+    </div>
+
 </div>
 
 <!-- ========================= -->
@@ -413,20 +723,30 @@ endblock %} {% block content %}
 <!-- ========================= -->
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+
+document.addEventListener("DOMContentLoaded", function () {
+
     // Auto-hide flash messages
     const alerts = document.querySelectorAll(".alert");
 
-    alerts.forEach(function (alert) {
-      setTimeout(function () {
-        if (alert) {
-          let bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+    alerts.forEach(function(alert){
 
-          bsAlert.close();
-        }
-      }, 5000);
+        setTimeout(function(){
+
+            if(alert){
+
+                let bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+
+                bsAlert.close();
+
+            }
+
+        },5000);
+
     });
-  });
+
+});
+
 </script>
 
 {% endblock %}

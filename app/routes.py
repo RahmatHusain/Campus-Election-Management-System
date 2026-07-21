@@ -32,7 +32,10 @@ from app.models.department import Department
 from app.models.semester import Semester
 from app.models.academic_year import AcademicYear
 from app.models.program import Program
-from app.forms.student_form import StudentForm
+from app.forms.student_form import (
+    StudentForm,
+    EditStudentForm
+)
 from app.models.student import Student
 from app.utils.student_id import (
     generate_student_id,
@@ -1691,7 +1694,8 @@ def delete_program(id):
 # ==========================
 # Programs
 # ==========================
-
+from app.forms.student_form import StudentForm, EditStudentForm
+from app.utils.file_upload import save_student_photo, delete_student_photo
 @main.route("/admin/students")
 @login_required
 @super_admin_required
@@ -1829,36 +1833,61 @@ def create_student():
         "admin/students/create.html",
         form=form
     )
-
-@main.route("/admin/students/edit/<int:id>", methods=["GET", "POST"])
+@main.route('/admin/students/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @super_admin_required
 def edit_student(id):
 
+    # Get student
     student = Student.query.get_or_404(id)
 
-    form = StudentForm(obj=student)
+    # Use edit form (fixes duplicate email issue)
+    form = EditStudentForm(student, obj=student)
 
+    # Process form submission
     if form.validate_on_submit():
 
         try:
 
-            # Update photo if new one uploaded
-            if form.photo.data:
+            # ==========================
+            # Handle Photo Upload
+            # ==========================
 
+            photo_file = form.photo.data
+
+            # Upload only if a NEW file is selected
+            if (
+                photo_file
+                and hasattr(photo_file, 'filename')
+                and photo_file.filename
+            ):
+
+                # Delete old photo
                 delete_student_photo(student.photo)
 
-                student.photo = save_student_photo(form.photo.data)
+                # Save new photo
+                student.photo = save_student_photo(photo_file)
 
-            # Update fields
+            # ==========================
+            # Update Personal Information
+            # ==========================
+
             student.first_name = form.first_name.data.strip()
             student.last_name = form.last_name.data.strip()
             student.gender = form.gender.data
             student.date_of_birth = form.date_of_birth.data
 
+            # ==========================
+            # Update Contact Information
+            # ==========================
+
             student.email = form.email.data.strip().lower()
             student.phone = form.phone.data.strip()
             student.address = form.address.data
+
+            # ==========================
+            # Update Academic Information
+            # ==========================
 
             student.faculty_id = form.faculty_id.data
             student.department_id = form.department_id.data
@@ -1866,27 +1895,46 @@ def edit_student(id):
             student.academic_year_id = form.academic_year_id.data
             student.semester_id = form.semester_id.data
 
+            student.admission_year = form.admission_year.data
             student.batch = form.batch.data
+
+            # ==========================
+            # Update Election Settings
+            # ==========================
 
             student.is_voter = form.is_voter.data
             student.is_candidate_eligible = form.is_candidate_eligible.data
             student.is_verified = form.is_verified.data
             student.is_active = form.is_active.data
 
+            # ==========================
+            # Save Changes
+            # ==========================
+
             db.session.commit()
 
-            flash("Student updated successfully.", "success")
+            flash(
+                f'Student {student.full_name} updated successfully.',
+                'success'
+            )
 
-            return redirect(url_for("main.students"))
+            return redirect(
+                url_for('main.students')
+            )
 
         except Exception as e:
 
+            # Rollback database
             db.session.rollback()
 
-            flash(f"Error: {str(e)}", "danger")
+            flash(
+                f'Error: {str(e)}',
+                'danger'
+            )
 
+    # Render edit page
     return render_template(
-        "admin/students/edit.html",
+        'admin/students/edit.html',
         form=form,
         student=student
     )
