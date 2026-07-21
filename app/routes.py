@@ -2053,6 +2053,74 @@ def api_semesters(program_id):
     ]
 
     return jsonify(data)
+# ==========================================
+# Student Verification Workflow
+# ==========================================
+
+@main.route('/admin/students/verify/<int:id>')
+@login_required
+@super_admin_required
+def verify_student(id):
+
+    student = Student.query.get_or_404(id)
+
+    try:
+
+        student.is_verified = True
+        student.is_voter = True
+
+        db.session.commit()
+
+        flash(
+            f'{student.full_name} has been verified successfully.',
+            'success'
+        )
+
+    except Exception:
+
+        db.session.rollback()
+
+        flash(
+            'Unable to verify student.',
+            'danger'
+        )
+
+    return redirect(
+        url_for('main.student_profile', id=student.id)
+    )
+
+
+@main.route('/admin/students/reject/<int:id>')
+@login_required
+@super_admin_required
+def reject_student(id):
+
+    student = Student.query.get_or_404(id)
+
+    try:
+
+        student.is_verified = False
+        student.is_candidate_eligible = False
+
+        db.session.commit()
+
+        flash(
+            f'{student.full_name} verification has been rejected.',
+            'warning'
+        )
+
+    except Exception:
+
+        db.session.rollback()
+
+        flash(
+            'Unable to reject verification.',
+            'danger'
+        )
+
+    return redirect(
+        url_for('main.student_profile', id=student.id)
+    )
 # ==========================
 # Profile
 # ==========================
