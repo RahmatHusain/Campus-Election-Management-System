@@ -180,7 +180,139 @@
     <!-- ========================= -->
     <!-- Search & Filter -->
     <!-- ========================= -->
+    <!-- Advanced Search Card -->
+<div class="card shadow-sm border-0 mb-4">
 
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0">
+            🔍 Advanced Student Search
+        </h5>
+
+    </div>
+
+    <div class="card-body">
+
+        <form method="GET">
+
+            <div class="row g-3">
+
+                <!-- Search -->
+                <div class="col-md-6">
+
+                    <label class="form-label fw-semibold">
+                        Search
+                    </label>
+
+                    <input type="text"
+                           name="search"
+                           class="form-control"
+                           placeholder="Student ID, Roll No, Name, Email, Phone"
+                           value="{{ search }}">
+
+                </div>
+
+                <!-- Faculty -->
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Faculty
+                    </label>
+
+                    <select name="faculty" class="form-select">
+
+                        <option value="">All Faculties</option>
+
+                        {% for faculty in faculties %}
+                        <option value="{{ faculty.id }}"
+                            {% if faculty_id == faculty.id %}selected{% endif %}>
+
+                            {{ faculty.name }}
+
+                        </option>
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <!-- Verification -->
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Verification
+                    </label>
+
+                    <select name="verified" class="form-select">
+
+                        <option value="">All</option>
+
+                        <option value="verified"
+                            {% if verified == 'verified' %}selected{% endif %}>
+                            Verified
+                        </option>
+
+                        <option value="unverified"
+                            {% if verified == 'unverified' %}selected{% endif %}>
+                            Unverified
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-3">
+
+                    <label class="form-label fw-semibold">
+                        Status
+                    </label>
+
+                    <select name="status" class="form-select">
+
+                        <option value="">All</option>
+
+                        <option value="active"
+                            {% if status == 'active' %}selected{% endif %}>
+                            Active
+                        </option>
+
+                        <option value="inactive"
+                            {% if status == 'inactive' %}selected{% endif %}>
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-12 d-flex gap-2">
+
+                    <button type="submit" class="btn btn-primary">
+
+                        <i class="bi bi-search"></i>
+                        Search
+
+                    </button>
+
+                    <a href="{{ url_for('main.students') }}"
+                       class="btn btn-outline-secondary">
+
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Reset
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
     <div class='card shadow-sm border-0 mb-4'>
 
         <div class='card-body'>
@@ -583,6 +715,101 @@
                 </tbody>
 
             </table>
+            <!-- Pagination -->
+{% if students.pages > 1 %}
+
+<div class="card-footer bg-white">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+        <div class="text-muted small">
+
+            Showing
+            <strong>{{ students.items|length }}</strong>
+            of
+            <strong>{{ students.total }}</strong>
+            students
+
+        </div>
+
+        <nav aria-label="Student pagination">
+
+            <ul class="pagination pagination-sm mb-0">
+
+                <!-- Previous -->
+                {% if students.has_prev %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ url_for('main.students',
+                           page=students.prev_num,
+                           search=search,
+                           faculty=faculty_id,
+                           verified=verified,
+                           status=status) }}">
+
+                        Previous
+
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Page Numbers -->
+                {% for page_num in students.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+
+                    {% if page_num %}
+
+                        <li class="page-item {% if page_num == students.page %}active{% endif %}">
+
+                            <a class="page-link"
+                               href="{{ url_for('main.students',
+                                   page=page_num,
+                                   search=search,
+                                   faculty=faculty_id,
+                                   verified=verified,
+                                   status=status) }}">
+
+                                {{ page_num }}
+
+                            </a>
+
+                        </li>
+
+                    {% else %}
+
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+
+                    {% endif %}
+
+                {% endfor %}
+
+                <!-- Next -->
+                {% if students.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="{{ url_for('main.students',
+                           page=students.next_num,
+                           search=search,
+                           faculty=faculty_id,
+                           verified=verified,
+                           status=status) }}">
+
+                        Next
+
+                    </a>
+                </li>
+                {% endif %}
+
+            </ul>
+
+        </nav>
+
+    </div>
+
+</div>
+
+{% endif %}
 
         </div>
 

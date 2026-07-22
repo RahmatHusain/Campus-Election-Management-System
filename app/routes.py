@@ -1726,142 +1726,190 @@ def delete_program(id):
 # ==========================
 from app.forms.student_form import StudentForm, EditStudentForm
 from app.utils.file_upload import save_student_photo, delete_student_photo
-@main.route("/admin/students")
+# ==========================================
+# Student List (Advanced Search + Pagination)
+# ==========================================
+
+@main.route('/admin/students')
 @login_required
 @super_admin_required
 def students():
 
-    search = request.args.get("search", "").strip()
-    program_id = request.args.get("program", "")
-    semester_id = request.args.get("semester", "")
-    status = request.args.get("status", "")
+    # -----------------------------
+    # Query Parameters
+    # -----------------------------
+    search = request.args.get('search', '').strip()
 
+    faculty_id = request.args.get('faculty', type=int)
+    department_id = request.args.get('department', type=int)
+    program_id = request.args.get('program', type=int)
+    academic_year_id = request.args.get('academic_year', type=int)
+    semester_id = request.args.get('semester', type=int)
+
+    verified = request.args.get('verified')
+    status = request.args.get('status')
+
+    page = request.args.get('page', 1, type=int)
+
+    # -----------------------------
+    # Base Query
+    # -----------------------------
     query = Student.query
 
-    # Search
+    # -----------------------------
+    # Advanced Search
+    # -----------------------------
     if search:
+
+        search_pattern = f'%{search}%'
+
         query = query.filter(
+
             db.or_(
-                Student.first_name.ilike(f"%{search}%"),
-                Student.last_name.ilike(f"%{search}%"),
-                Student.student_id.ilike(f"%{search}%"),
-                Student.roll_number.ilike(f"%{search}%"),
-                Student.email.ilike(f"%{search}%")
+
+                # Student ID
+                Student.student_id.ilike(search_pattern),
+
+                # Roll Number
+                Student.roll_number.ilike(search_pattern),
+
+                # First Name
+                Student.first_name.ilike(search_pattern),
+
+                # Last Name
+                Student.last_name.ilike(search_pattern),
+
+                # Full Name
+                db.func.concat(
+                    Student.first_name,
+                    ' ',
+                    Student.last_name
+                ).ilike(search_pattern),
+
+                # Email
+                Student.email.ilike(search_pattern),
+
+                # Phone
+                Student.phone.ilike(search_pattern)
+
             )
+
         )
 
-    # Program filter
+    # -----------------------------
+    # Academic Filters
+    # -----------------------------
+    if faculty_id:
+        query = query.filter_by(faculty_id=faculty_id)
+
+    if department_id:
+        query = query.filter_by(department_id=department_id)
+
     if program_id:
         query = query.filter_by(program_id=program_id)
 
-    # Semester filter
+    if academic_year_id:
+        query = query.filter_by(academic_year_id=academic_year_id)
+
     if semester_id:
         query = query.filter_by(semester_id=semester_id)
 
-    # Status filter
-    if status == "active":
-        query = query.filter_by(is_active=True)
-    elif status == "inactive":
-        query = query.filter_by(is_active=False)
-    elif status == "verified":
+    # -----------------------------
+    # Verification Filter
+    # -----------------------------
+    if verified == 'verified':
         query = query.filter_by(is_verified=True)
 
-    students = query.order_by(Student.created_at.desc()).all()
+    elif verified == 'unverified':
+        query = query.filter_by(is_verified=False)
 
-    stats = {
-        "total": Student.query.count(),
-        "active": Student.query.filter_by(is_active=True).count(),
-        "verified": Student.query.filter_by(is_verified=True).count(),
-        "voters": Student.query.filter_by(is_voter=True).count()
-    }
+    # -----------------------------
+    # Active Status Filter
+    # -----------------------------
+    if status == 'active':
+        query = query.filter_by(is_active=True)
 
-    return render_template(
-        "admin/students/index.html",
-        students=students,
-        stats=stats,
-        search=search,
-        status=status,
-        program_id=program_id,
-        semester_id=semester_id
+    elif status == 'inactive':
+        query = query.filter_by(is_active=False)
+
+    # -----------------------------
+    # Sorting
+    # -----------------------------
+    query = query.order_by(
+        Student.created_at.desc()
     )
 
-@main.route("/admin/students/create", methods=["GET", "POST"])
-@login_required
-@super_admin_required
-def create_student():
+    # -----------------------------
+    # Pagination
+    # -----------------------------
+    students = query.paginate(
+        page=page,
+        per_page=20,
+        error_out=False
+    )
 
-    form = StudentForm()
+    # -----------------------------
+    # Statistics
+    # -----------------------------
+    stats = {
 
-    if form.validate_on_submit():
+        'total': Student.query.count(),
 
-        try:
+        'verified': Student.query.filter_by(
+            is_verified=True
+        ).count(),
 
-            # Auto-generate IDs
-            student_id = generate_student_id(
-                form.program_id.data,
-                form.admission_year.data
-            )
+        'unverified': Student.query.filter_by(
+            is_verified=False
+        ).count(),
 
-            roll_number = generate_roll_number(
-                form.program_id.data,
-                form.admission_year.data
-            )
+        'active': Student.query.filter_by(
+            is_active=True
+        ).count()
 
-            # Save photo
-            photo_filename = None
+    }
 
-            if form.photo.data:
-                photo_filename = save_student_photo(form.photo.data)
-
-            student = Student(
-                student_id=student_id,
-                roll_number=roll_number,
-
-                first_name=form.first_name.data.strip(),
-                last_name=form.last_name.data.strip(),
-                gender=form.gender.data,
-                date_of_birth=form.date_of_birth.data,
-
-                email=form.email.data.strip().lower(),
-                phone=form.phone.data.strip(),
-                address=form.address.data,
-
-                faculty_id=form.faculty_id.data,
-                department_id=form.department_id.data,
-                program_id=form.program_id.data,
-                academic_year_id=form.academic_year_id.data,
-                semester_id=form.semester_id.data,
-
-                admission_year=form.admission_year.data,
-                batch=form.batch.data,
-
-                photo=photo_filename,
-
-                is_voter=form.is_voter.data,
-                is_candidate_eligible=form.is_candidate_eligible.data,
-                is_verified=form.is_verified.data,
-                is_active=form.is_active.data
-            )
-
-            db.session.add(student)
-            db.session.commit()
-
-            flash(
-                f"Student {student.full_name} created successfully.",
-                "success"
-            )
-
-            return redirect(url_for("main.students"))
-
-        except Exception as e:
-
-            db.session.rollback()
-
-            flash(f"Error: {str(e)}", "danger")
-
+    # -----------------------------
+    # Render
+    # -----------------------------
     return render_template(
-        "admin/students/create.html",
-        form=form
+
+        'admin/students/index.html',
+
+        students=students,
+        stats=stats,
+
+        # Search values
+        search=search,
+        faculty_id=faculty_id,
+        department_id=department_id,
+        program_id=program_id,
+        academic_year_id=academic_year_id,
+        semester_id=semester_id,
+        verified=verified,
+        status=status,
+
+        # Dropdown data
+        faculties=Faculty.query.filter_by(
+            is_active=True
+        ).all(),
+
+        departments=Department.query.filter_by(
+            is_active=True
+        ).all(),
+
+        programs=Program.query.filter_by(
+            is_active=True
+        ).all(),
+
+        academic_years=AcademicYear.query.filter_by(
+            is_active=True
+        ).all(),
+
+        semesters_list=Semester.query.filter_by(
+            is_active=True
+        ).all()
+
     )
 @main.route('/admin/students/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
