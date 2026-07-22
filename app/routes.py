@@ -2016,6 +2016,110 @@ def edit_student(id):
         form=form,
         student=student
     )
+# ==========================================
+# Create Student
+# ==========================================
+
+@main.route('/admin/students/create', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def add_student():
+
+    form = StudentForm()
+
+    if form.validate_on_submit():
+
+        try:
+
+            # -----------------------------
+            # Handle photo upload
+            # -----------------------------
+            photo_path = None
+
+            if (
+                form.photo.data and
+                hasattr(form.photo.data, 'filename') and
+                form.photo.data.filename
+            ):
+                photo_path = save_student_photo(
+                    form.photo.data
+                )
+
+            # -----------------------------
+            # Generate Student ID & Roll
+            # -----------------------------
+            admission_year = form.admission_year.data
+
+            student_id = generate_student_id(
+                form.program_id.data,
+                admission_year
+            )
+
+            roll_number = generate_roll_number(
+                form.program_id.data,
+                admission_year
+            )
+
+            # -----------------------------
+            # Create Student
+            # -----------------------------
+            student = Student(
+
+                student_id=student_id,
+                roll_number=roll_number,
+
+                first_name=form.first_name.data.strip(),
+                last_name=form.last_name.data.strip(),
+
+                gender=form.gender.data,
+                date_of_birth=form.date_of_birth.data,
+
+                email=form.email.data.strip().lower(),
+                phone=form.phone.data.strip(),
+                address=form.address.data,
+
+                faculty_id=form.faculty_id.data,
+                department_id=form.department_id.data,
+                program_id=form.program_id.data,
+                academic_year_id=form.academic_year_id.data,
+                semester_id=form.semester_id.data,
+
+                admission_year=admission_year,
+                batch=form.batch.data,
+
+                photo=photo_path,
+
+                is_voter=form.is_voter.data,
+                is_candidate_eligible=form.is_candidate_eligible.data,
+                is_verified=form.is_verified.data,
+                is_active=form.is_active.data
+            )
+
+            db.session.add(student)
+            db.session.commit()
+
+            flash(
+                'Student created successfully.',
+                'success'
+            )
+
+            return redirect(
+                url_for('main.students')
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(
+                f'Error creating student: {str(e)}',
+                'danger'
+            )
+
+    return render_template(
+        'admin/students/create.html',
+        form=form
+    )
 
 @main.route("/admin/students/delete/<int:id>")
 @login_required
