@@ -54,7 +54,7 @@ from app.forms.academic_year_forms import (
 from flask import send_file
 from app.utils.student_import import import_students_from_excel
 from app.utils.student_export import export_students_to_excel
-
+from io import BytesIO, StringIO
 from sqlalchemy import or_
 
 main = Blueprint("main", __name__)
@@ -2188,6 +2188,31 @@ def export_students():
         download_name='students_export.xlsx',
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
+
+# ==========================================
+# CSV Template Download
+# ==========================================
+
+@main.route('/admin/students/template/csv')
+@login_required
+@super_admin_required
+def download_student_csv_template():
+
+    csv_content = '''first_name,last_name,gender,date_of_birth,email,phone,faculty,department,program,academic_year,semester,admission_year
+Rahmat,Husain,Male,2004-05-12,rahmat@example.com,9800000000,Science,Information Technology,BIT,2026/27,First Semester,2026
+'''
+
+    output = StringIO()
+    output.write(csv_content)
+    output.seek(0)
+
+    return send_file(
+        BytesIO(output.getvalue().encode('utf-8')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name='student_import_template.csv'
+    )
+
 # ==========================
 # Profile
 # ==========================
