@@ -56,7 +56,12 @@ from app.utils.student_import import import_students
 from app.utils.student_export import export_students_to_excel
 from app.utils.student_import import import_students as import_students_file
 from io import BytesIO, StringIO
+from app.forms.semester_form import (
+    SemesterForm,
+    EditSemesterForm
+)
 from sqlalchemy import or_
+
 
 main = Blueprint("main", __name__)
 
@@ -1274,106 +1279,6 @@ def create_semester():
         "admin/semesters/create.html",
         form=form
     )
-@main.route("/admin/semesters/edit/<int:id>", methods=["GET", "POST"])
-@login_required
-@super_admin_required
-def edit_semester(id):
-
-    semester = Semester.query.get_or_404(id)
-
-    form = SemesterForm(
-        original_id=semester.id,
-        obj=semester
-    )
-
-    if form.validate_on_submit():
-
-        if form.is_current.data:
-            
-            Semester.query.update(
-                {
-                    "is_current": False
-                }
-
-            )
-            
-            semester.is_current = True
-            semester.is_active = True
-
-        else:
-
-            semester.is_current = False
-
-        try:
-
-            semester.academic_year_id = form.academic_year_id.data
-            semester.name = form.name.data.strip()
-            semester.semester_number = form.semester_number.data
-            semester.start_date = form.start_date.data
-            semester.end_date = form.end_date.data
-            semester.is_active = form.is_active.data
-
-            if form.is_current.data:
-
-                Semester.query.update(
-                    {"is_current": False}
-                )
-
-                semester.is_current = True
-
-            else:
-
-                semester.is_current = False
-
-            db.session.commit()
-
-            flash(
-                "Semester updated successfully.",
-                "success"
-            )
-
-            return redirect(
-                url_for("main.semesters")
-            )
-
-        except Exception as e:
-
-            db.session.rollback()
-
-            flash(str(e), "danger")
-
-    return render_template(
-        "admin/semesters/edit.html",
-        form=form,
-        semester=semester
-    )
-
-@main.route("/admin/semesters/current/<int:id>")
-@login_required
-@super_admin_required
-def set_current_semester(id):
-
-    Semester.query.update(
-        {
-            "is_current": False
-        }
-    )
-
-    semester = Semester.query.get_or_404(id)
-
-    semester.is_current = True
-    semester.is_active = True
-
-    db.session.commit()
-
-    flash(
-        "Current Semester updated.",
-        "success"
-    )
-
-    return redirect(
-        url_for("main.semesters")
-    )
 
 @main.route("/admin/semesters/toggle/<int:id>")
 @login_required
@@ -1393,6 +1298,125 @@ def toggle_semester(id):
 
     return redirect(
         url_for("main.semesters")
+    )
+
+# ==========================================
+# Edit Semester
+# ==========================================
+
+@main.route('/admin/semesters/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+@super_admin_required
+def edit_semester(id):
+
+    semester = Semester.query.get_or_404(id)
+
+    # Load edit form with current semester data
+    form = EditSemesterForm(
+        semester.name,
+        obj=semester
+    )
+
+    # IMPORTANT:
+    # Pre-select current academic year in dropdown
+    if request.method == 'GET':
+        form.academic_year_id.data = semester.academic_year_id
+
+    if form.validate_on_submit():
+
+        try:
+
+            # -----------------------------
+            # Update semester fields
+            # -----------------------------
+            semester.academic_year_id = form.academic_year_id.data
+            semester.name = form.name.data.strip()
+            semester.semester_number = form.semester_number.data
+            semester.start_date = form.start_date.data
+            semester.end_date = form.end_date.data
+            semester.is_current = form.is_current.data
+            semester.is_active = form.is_active.data
+
+            # -----------------------------
+            # Ensure only one current semester
+            # -----------------------------
+            if semester.is_current:
+
+                Semester.query.filter(
+                    Semester.id != semester.id
+                ).update(
+                    {'is_current': False},
+                    synchronize_session=False
+                )
+
+            db.session.commit()
+
+            flash(
+                'Semester updated successfully.',
+                'success'
+            )
+
+            return redirect(
+                url_for('main.semesters')
+            )
+
+        except Exception as e:
+
+            db.session.rollback()
+
+            flash(
+                f'Error updating semester: {str(e)}',
+                'danger'
+            )
+
+    return render_template(
+        'admin/semesters/edit.html',
+        form=form,
+        semester=semester
+    )
+
+
+# ==========================================
+# Set Current Semester
+# ==========================================
+
+@main.route('/admin/semesters/current/<int:id>')
+@login_required
+@super_admin_required
+def set_current_semester(id):
+
+    try:
+
+        # Remove current flag from all semesters
+        Semester.query.update(
+            {'is_current': False},
+            synchronize_session=False
+        )
+
+        # Set selected semester as current
+        semester = Semester.query.get_or_404(id)
+
+        semester.is_current = True
+        semester.is_active = True
+
+        db.session.commit()
+
+        flash(
+            f'{semester.name} is now the current semester.',
+            'success'
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            f'Error setting current semester: {str(e)}',
+            'danger'
+        )
+
+    return redirect(
+        url_for('main.semesters')
     )
 
 @main.route("/admin/semesters/delete/<int:id>")
