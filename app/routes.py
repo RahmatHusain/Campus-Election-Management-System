@@ -24,7 +24,7 @@ from app.forms.program_form import (
     ProgramForm,
     EditProgramForm
 )
-
+import os
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
@@ -52,8 +52,9 @@ from app.forms.academic_year_forms import (
 )
 
 from flask import send_file
-from app.utils.student_import import import_students_from_excel
+from app.utils.student_import import import_students
 from app.utils.student_export import export_students_to_excel
+from app.utils.student_import import import_students as import_students_file
 from io import BytesIO, StringIO
 from sqlalchemy import or_
 
@@ -2129,49 +2130,92 @@ def reject_student(id):
 # ==========================================
 # Student Import / Export
 # ==========================================
+# ==========================================
+# Student Import (CSV + Excel)
+# ==========================================
 
 @main.route('/admin/students/import', methods=['GET', 'POST'])
 @login_required
 @super_admin_required
 def import_students():
 
+    result = None
+
+    # --------------------------
+    # POST: Handle file upload
+    # --------------------------
     if request.method == 'POST':
 
         file = request.files.get('file')
 
+        # No file selected
         if not file or file.filename == '':
-            flash('Please select an Excel file.', 'warning')
-            return redirect(request.url)
 
-        if not file.filename.endswith('.xlsx'):
-            flash('Only .xlsx files are allowed.', 'danger')
-            return redirect(request.url)
-
-        # Save temporarily
-        temp_path = 'temp_students_import.xlsx'
-        file.save(temp_path)
-
-        result = import_students_from_excel(temp_path)
-
-        if result['success'] > 0:
             flash(
-                f'{result["success"]} students imported successfully.',
-                'success'
-            )
-
-        if result['failed'] > 0:
-            flash(
-                f'{result["failed"]} rows failed validation.',
+                'Please select a CSV or Excel file.',
                 'warning'
             )
 
-        return render_template(
-            'admin/students/import.html',
-            result=result
-        )
+            return redirect(request.url)
 
-    return render_template('admin/students/import.html')
+        filename = file.filename.lower()
 
+        # Allowed extensions
+        allowed = ('.csv', '.xlsx', '.xls')
+
+        if not filename.endswith(allowed):
+
+            flash(
+                'Only .csv and .xlsx files are allowed.',
+                'danger'
+            )
+
+            return redirect(request.url)
+
+        try:
+
+            # Temporary file path
+            temp_path = f'temp_{filename}'
+
+            # Save uploaded file
+            file.save(temp_path)
+
+            # Import students
+            result = import_students_file(temp_path)
+
+            # Delete temporary file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+
+            # Flash messages
+            if result['success'] > 0:
+
+                flash(
+                    f'{result["success"]} students imported successfully.',
+                    'success'
+                )
+
+            if result['failed'] > 0:
+
+                flash(
+                    f'{result["failed"]} rows failed validation.',
+                    'warning'
+                )
+
+        except Exception as e:
+
+            flash(
+                f'Import failed: {str(e)}',
+                'danger'
+            )
+
+    # --------------------------
+    # GET + POST final response
+    # --------------------------
+    return render_template(
+        'admin/students/import.html',
+        result=result
+    )
 
 @main.route('/admin/students/export')
 @login_required
