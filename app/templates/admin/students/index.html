@@ -2,326 +2,297 @@
 endblock %} {% block content %}
 
 <div class="container-fluid py-4">
-  <!-- ========================= -->
-  <!-- Page Header -->
-  <!-- ========================= -->
+    <!-- ========================= -->
+    <!-- Page Header -->
+    <!-- ========================= -->
 
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h2 class="fw-bold mb-1">🎓 Student Management</h2>
-
-      <p class="text-muted mb-0">
-        Manage student records, verification, and election eligibility.
-      </p>
-    </div>
-
-    <div class="d-flex gap-2">
-      <a href='{{ url_for("main.add_student") }}' class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i>
-        Add Student
-      </a>
-    </div>
-  </div>
-  <a
-    href="{{ url_for('main.import_students') }}"
-    class="btn btn-outline-primary"
-  >
-    <i class="bi bi-upload"></i>
-    Import
-  </a>
-
-  <a
-    href="{{ url_for('main.export_students') }}"
-    class="btn btn-outline-success"
-  >
-    <i class="bi bi-download"></i>
-    Export
-  </a>
-
-  <!-- ========================= -->
-  <!-- Statistics Cards -->
-  <!-- ========================= -->
-
-  <div class="row g-4 mb-4">
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Total Students</h6>
-              <h2 class="fw-bold">{{ stats.total }}</h2>
-            </div>
-
-            <div>
-              <i class="bi bi-people-fill fs-1 text-primary"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Active</h6>
-              <h2 class="text-success">{{ stats.active }}</h2>
-            </div>
-
-            <div>
-              <i class="bi bi-check-circle-fill fs-1 text-success"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Verified</h6>
-              <h2 class="text-info">{{ stats.verified }}</h2>
-            </div>
-
-            <div>
-              <i class="bi bi-patch-check-fill fs-1 text-info"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-      <div class="card shadow-sm border-0">
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <div>
-              <h6 class="text-muted">Eligible Voters</h6>
-              <h2 class="text-warning">{{ stats.voters }}</h2>
-            </div>
-
-            <div>
-              <i class="bi bi-check2-square fs-1 text-warning"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========================= -->
-  <!-- Search & Filter -->
-  <!-- ========================= -->
-  <!-- Advanced Search Card -->
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white">
-      <h5 class="mb-0">🔍 Advanced Student Search</h5>
-    </div>
-
-    <div class="card-body">
-      <form method="GET">
-        <div class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Search</label>
-
-            <input
-              type="text"
-              name="search"
-              class="form-control"
-              placeholder="Student ID, Roll No, Name, Email, Phone"
-              value="{{ search }}"
-            />
-          </div>
-
-          <div class="col-md-3">
-            <label class="form-label fw-semibold">Faculty</label>
-
-            <select name="faculty" class="form-select">
-              <option value="">All Faculties</option>
-
-              {% for faculty in faculties %}
-
-              <option
-                value="{{ faculty.id }}"
-                {% if faculty_id == faculty.id %}
-                selected
-                {%
-                endif
-                %}
-              >
-                {{ faculty.name }}
-              </option>
-
-              {% endfor %}
-            </select>
-          </div>
-
-         
-            <div class="col-md-3">
-    <label class="form-label fw-semibold">Verification</label>
-
-    <select name="verified" class="form-select">
-        <option value="">All</option>
-        <option value="verified"
-            {% if verified == 'verified' %}selected{% endif %}>
-            Verified
-        </option>
-        <option value="unverified"
-            {% if verified == 'unverified' %}selected{% endif %}>
-            Unverified
-        </option>
-    </select>
-</div>
-
-<div class="col-md-3">
-    <label class="form-label fw-semibold">Status</label>
-
-    <select name="status" class="form-select">
-        <option value="">All</option>
-        <option value="active"
-            {% if status == 'active' %}selected{% endif %}>
-            Active
-        </option>
-        <option value="inactive"
-            {% if status == 'inactive' %}selected{% endif %}>
-            Inactive
-        </option>
-    </select>
-</div>
-
-          <div class="col-12 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              <i class="bi bi-search"></i>
-              Search
-            </button>
-
-            <a
-              href="{{ url_for('main.students') }}"
-              class="btn btn-outline-secondary"
-            >
-              <i class="bi bi-arrow-clockwise"></i>
-              Reset
-            </a>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
- 
-  <!-- Bulk Action Toolbar -->
-  <div
-    class="card shadow-sm border-0 mb-3"
-    id="bulkToolbar"
-    style="display: none"
-  >
-    <div class="card-body py-2">
-      <div
-        class="d-flex justify-content-between align-items-center flex-wrap gap-2"
-      >
+    <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <span class="fw-semibold text-primary" id="selectedCount">
-            0 selected
-          </span>
+            <h2 class="fw-bold mb-1">🎓 Student Management</h2>
+
+            <p class="text-muted mb-0">
+                Manage student records, verification, and election eligibility.
+            </p>
         </div>
 
-        <div class="d-flex gap-2 flex-wrap">
-          <button
-            type="submit"
-            name="action"
-            value="verify"
-            class="btn btn-sm btn-success"
-          >
-            <i class="bi bi-check-circle"></i>
-            Verify
-          </button>
+        <div class="d-flex gap-2">
+            <a href='{{ url_for("main.add_student") }}' class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i>
+                Add Student
+            </a>
+        </div>
+    </div>
+    <a href="{{ url_for('main.import_students') }}" class="btn btn-outline-primary">
+        <i class="bi bi-upload"></i>
+        Import
+    </a>
 
-          <button
-            type="submit"
-            name="action"
-            value="activate"
-            class="btn btn-sm btn-primary"
-          >
-            <i class="bi bi-toggle-on"></i>
-            Activate
-          </button>
+    <a href="{{ url_for('main.export_students') }}" class="btn btn-outline-success">
+        <i class="bi bi-download"></i>
+        Export
+    </a>
 
-          <button
-            type="submit"
-            name="action"
-            value="deactivate"
-            class="btn btn-sm btn-warning"
-          >
-            <i class="bi bi-toggle-off"></i>
-            Deactivate
-          </button>
+    <!-- ========================= -->
+    <!-- Statistics Cards -->
+    <!-- ========================= -->
 
-          <button
-            type="submit"
-            name="action"
-            value="delete"
-            class="btn btn-sm btn-danger"
-            onclick="
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Total Students</h6>
+                            <h2 class="fw-bold">{{ stats.total }}</h2>
+                        </div>
+
+                        <div>
+                            <i class="bi bi-people-fill fs-1 text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Active</h6>
+                            <h2 class="text-success">{{ stats.active }}</h2>
+                        </div>
+
+                        <div>
+                            <i class="bi bi-check-circle-fill fs-1 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Verified</h6>
+                            <h2 class="text-info">{{ stats.verified }}</h2>
+                        </div>
+
+                        <div>
+                            <i class="bi bi-patch-check-fill fs-1 text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="text-muted">Eligible Voters</h6>
+                            <h2 class="text-warning">{{ stats.voters }}</h2>
+                        </div>
+
+                        <div>
+                            <i class="bi bi-check2-square fs-1 text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================= -->
+    <!-- Search & Filter -->
+    <!-- ========================= -->
+    <!-- Advanced Search Card -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">🔍 Advanced Student Search</h5>
+        </div>
+
+        <div class="card-body">
+            <form method="GET">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Search</label>
+
+                        <input type="text" name="search" class="form-control"
+                            placeholder="Student ID, Roll No, Name, Email, Phone" value="{{ search }}" />
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Faculty</label>
+
+                        <select name="faculty" class="form-select">
+                            <option value="">All Faculties</option>
+
+                            {% for faculty in faculties %}
+
+                            <option value="{{ faculty.id }}" {% if faculty_id==faculty.id %} selected {% endif %}>
+                                {{ faculty.name }}
+                            </option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Verification</label>
+
+                        <select name="verified" class="form-select">
+                            <option value="">All</option>
+                            <option value="verified" {% if verified=='verified' %}selected{% endif %}>
+                                Verified
+                            </option>
+                            <option value="unverified" {% if verified=='unverified' %}selected{% endif %}>
+                                Unverified
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Status</label>
+
+                        <select name="status" class="form-select">
+                            <option value="">All</option>
+                            <option value="active" {% if status=='active' %}selected{% endif %}>
+                                Active
+                            </option>
+                            <option value="inactive" {% if status=='inactive' %}selected{% endif %}>
+                                Inactive
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i>
+                            Search
+                        </button>
+
+                        <a href="{{ url_for('main.students') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% if search or faculty_id or verified or status %}
+
+    <div class="alert alert-info d-flex justify-content-between align-items-center">
+
+        <div>
+            <i class="bi bi-funnel-fill me-2"></i>
+
+            Showing
+            <strong>{{ students.total }}</strong>
+            filtered result(s)
+
+            {% if search %}
+            for <strong>"{{ search }}"</strong>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('main.students') }}" class="btn btn-sm btn-outline-primary">
+
+            Clear Filters
+
+        </a>
+
+    </div>
+
+    {% endif %}
+    <!-- Bulk Action Toolbar -->
+    <div class="card shadow-sm border-0 mb-3" id="bulkToolbar" style="display: none">
+        <div class="card-body py-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <span class="fw-semibold text-primary" id="selectedCount">
+                        0 selected
+                    </span>
+                </div>
+
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="submit" name="action" value="verify" class="btn btn-sm btn-success">
+                        <i class="bi bi-check-circle"></i>
+                        Verify
+                    </button>
+
+                    <button type="submit" name="action" value="activate" class="btn btn-sm btn-primary">
+                        <i class="bi bi-toggle-on"></i>
+                        Activate
+                    </button>
+
+                    <button type="submit" name="action" value="deactivate" class="btn btn-sm btn-warning">
+                        <i class="bi bi-toggle-off"></i>
+                        Deactivate
+                    </button>
+
+                    <button type="submit" name="action" value="delete" class="btn btn-sm btn-danger" onclick="
               return confirm(
                 'Are you sure you want to permanently delete the selected students?',
               );
-            "
-          >
-            <i class="bi bi-trash"></i>
-            Delete
-          </button>
+            ">
+                        <i class="bi bi-trash"></i>
+                        Delete
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-  <!-- ========================= -->
-  <!-- Student Table -->
-  <!-- ========================= -->
+    <!-- ========================= -->
+    <!-- Student Table -->
+    <!-- ========================= -->
 
- <div class="card shadow-sm border-0">
+    <div class="card shadow-sm border-0">
 
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">Student Records</h5>
-        <span class="badge bg-primary rounded-pill">
-            {{ students.total }} Students
-        </span>
-    </div>
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Student Records</h5>
+            <span class="badge bg-primary rounded-pill">
+                {% if search or faculty_id or verified or status %}
+                {{ students.total }} Results
+                {% else %}
+                {{ students.total }} Students
+                {% endif %}
+            </span>
+        </div>
 
-    <div class="table-responsive">
+        <div class="table-responsive">
 
-        <table class="table table-hover align-middle mb-0">
+            <table class="table table-hover align-middle mb-0">
 
-            
 
-            <tbody>
 
-                {% if students.items %}
+                <tbody>
+
+                    {% if students.items %}
 
                     {% for student in students.items %}
 
                     <tr>
 
                         <td>
-                            <input type="checkbox"
-                                   name="student_ids"
-                                   value="{{ student.id }}"
-                                   class="form-check-input student-checkbox">
+                            <input type="checkbox" name="student_ids" value="{{ student.id }}"
+                                class="form-check-input student-checkbox">
                         </td>
 
                         <td>
                             {% if student.photo %}
-                                <img src="{{ url_for('static', filename=student.photo) }}"
-                                     class="rounded-circle"
-                                     width="48"
-                                     height="48"
-                                     style="object-fit: cover;">
+                            <img src="{{ url_for('static', filename=student.photo) }}" class="rounded-circle" width="48"
+                                height="48" style="object-fit: cover;">
                             {% else %}
-                                <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
-                                     style="width:48px;height:48px;">
-                                    <i class="bi bi-person text-white"></i>
-                                </div>
+                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center"
+                                style="width:48px;height:48px;">
+                                <i class="bi bi-person text-white"></i>
+                            </div>
                             {% endif %}
                         </td>
 
@@ -347,44 +318,42 @@ endblock %} {% block content %}
 
                         <td class="text-center">
                             {% if student.is_verified %}
-                                <span class="badge bg-success">Verified</span>
+                            <span class="badge bg-success">Verified</span>
                             {% else %}
-                                <span class="badge bg-warning text-dark">Pending</span>
+                            <span class="badge bg-warning text-dark">Pending</span>
                             {% endif %}
                         </td>
 
                         <td class="text-center">
                             {% if student.is_candidate_eligible %}
-                                <span class="badge bg-primary">Candidate</span>
+                            <span class="badge bg-primary">Candidate</span>
                             {% else %}
-                                <span class="badge bg-secondary">Voter</span>
+                            <span class="badge bg-secondary">Voter</span>
                             {% endif %}
                         </td>
 
                         <td class="text-center">
                             {% if student.is_active %}
-                                <span class="badge bg-success">Active</span>
+                            <span class="badge bg-success">Active</span>
                             {% else %}
-                                <span class="badge bg-danger">Inactive</span>
+                            <span class="badge bg-danger">Inactive</span>
                             {% endif %}
                         </td>
 
                         <td class="text-center">
 
                             <a href="{{ url_for('main.student_profile', id=student.id) }}"
-                               class="btn btn-sm btn-outline-info">
+                                class="btn btn-sm btn-outline-info">
                                 <i class="bi bi-eye"></i>
                             </a>
 
                             <a href="{{ url_for('main.edit_student', id=student.id) }}"
-                               class="btn btn-sm btn-outline-primary">
+                                class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i>
                             </a>
 
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal{{ student.id }}">
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                data-bs-target="#deleteModal{{ student.id }}">
                                 <i class="bi bi-trash"></i>
                             </button>
 
@@ -394,7 +363,7 @@ endblock %} {% block content %}
 
                     {% endfor %}
 
-                {% else %}
+                    {% else %}
 
                     <tr>
                         <td colspan="9" class="text-center py-5">
@@ -406,23 +375,23 @@ endblock %} {% block content %}
                         </td>
                     </tr>
 
-                {% endif %}
+                    {% endif %}
 
-            </tbody>
+                </tbody>
 
-        </table>
+            </table>
+
+        </div>
 
     </div>
-
-</div>
-  <!-- Footer -->
-  <div class="mt-4">
-    <small class="text-muted">
-      Showing
-      <strong>{{ students.items|length }}</strong>
-      student(s)
-    </small>
-  </div>
+    <!-- Footer -->
+    <div class="mt-4">
+        <small class="text-muted">
+            Showing
+            <strong>{{ students.items|length }}</strong>
+            student(s)
+        </small>
+    </div>
 
 </div>
 
