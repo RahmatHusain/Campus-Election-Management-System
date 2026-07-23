@@ -2204,17 +2204,53 @@ def bulk_student_action():
         flash(f'Bulk operation failed: {str(e)}', 'danger')
 
     return redirect(url_for('main.students'))
-
-@main.route("/admin/students/profile/<int:id>")
+@main.route('/admin/students/profile/<int:id>')
 @login_required
 @super_admin_required
 def student_profile(id):
 
+    # Get student with related data
     student = Student.query.get_or_404(id)
 
+    # Build profile statistics
+    profile_stats = {
+        'is_verified': student.is_verified,
+        'is_active': student.is_active,
+        'is_voter': student.is_voter,
+        'is_candidate_eligible': student.is_candidate_eligible,
+        'registration_complete': bool(
+            student.faculty_id and
+            student.department_id and
+            student.program_id and
+            student.academic_year_id and
+            student.semester_id
+        )
+    }
+
+    # Simple timeline (we will upgrade with AuditLog later)
+    timeline = [
+        {
+            'title': 'Student Registered',
+            'description': f'{student.first_name} {student.last_name} was added to the system.',
+            'date': student.created_at,
+            'type': 'success'
+        }
+    ]
+
+    # Add verification event
+    if student.is_verified:
+        timeline.append({
+            'title': 'Student Verified',
+            'description': 'Account has been approved by the administrator.',
+            'date': student.updated_at or student.created_at,
+            'type': 'primary'
+        })
+
     return render_template(
-        "admin/students/profile.html",
-        student=student
+        'admin/students/profile.html',
+        student=student,
+        profile_stats=profile_stats,
+        timeline=timeline
     )
 # ==========================================
 # Dynamic Academic APIs
