@@ -1,37 +1,37 @@
 from datetime import datetime
 from app import db
 
-
 class AuditLog(db.Model):
-    __tablename__ = "audit_logs"
+    __tablename__ = 'audit_logs'
 
     id = db.Column(db.Integer, primary_key=True)
 
-    user_id = db.Column(
-        db.Integer,
-        db.ForeignKey("users.id"),
-        nullable=True
-    )
+    # Who performed the action
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    action = db.Column(
-        db.String(100),
-        nullable=False
-    )
+    # What happened
+    action = db.Column(db.String(100), nullable=False)
 
-    ip_address = db.Column(
-        db.String(45),
-        nullable=True
-    )
+    # Which entity
+    entity_type = db.Column(db.String(50), nullable=False)
+    entity_id = db.Column(db.Integer, nullable=False)
 
-    timestamp = db.Column(
+    # Human readable message
+    description = db.Column(db.Text)
+
+    # Extra metadata
+    ip_address = db.Column(db.String(45))
+
+    created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow
     )
 
+    # Relationship
     user = db.relationship(
-        "User",
-        backref="audit_logs"
+        'User',
+        backref='audit_logs'
     )
 
     def __repr__(self):
-        return f"<AuditLog {self.action}>"
+        return f'<AuditLog {self.action}>'

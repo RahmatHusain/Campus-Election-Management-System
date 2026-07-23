@@ -28,6 +28,7 @@ import os
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
+
 from app.utils.audit import log_action
 from app.models.faculty import Faculty
 from app.models.department import Department
@@ -2209,10 +2210,9 @@ def bulk_student_action():
 @super_admin_required
 def student_profile(id):
 
-    # Get student with related data
     student = Student.query.get_or_404(id)
 
-    # Build profile statistics
+    # Profile statistics
     profile_stats = {
         'is_verified': student.is_verified,
         'is_active': student.is_active,
@@ -2227,24 +2227,13 @@ def student_profile(id):
         )
     }
 
-    # Simple timeline (we will upgrade with AuditLog later)
-    timeline = [
-        {
-            'title': 'Student Registered',
-            'description': f'{student.first_name} {student.last_name} was added to the system.',
-            'date': student.created_at,
-            'type': 'success'
-        }
-    ]
-
-    # Add verification event
-    if student.is_verified:
-        timeline.append({
-            'title': 'Student Verified',
-            'description': 'Account has been approved by the administrator.',
-            'date': student.updated_at or student.created_at,
-            'type': 'primary'
-        })
+    # ✅ REAL AUDIT TIMELINE (ONLY THIS)
+    timeline = AuditLog.query.filter_by(
+        entity_type='student',
+        entity_id=student.id
+    ).order_by(
+        AuditLog.created_at.desc()
+    ).limit(20).all()
 
     return render_template(
         'admin/students/profile.html',
@@ -2332,7 +2321,6 @@ def api_semesters(program_id):
 # ==========================================
 # Student Verification Workflow
 # ==========================================
-
 @main.route('/admin/students/verify/<int:id>')
 @login_required
 @super_admin_required
@@ -2340,31 +2328,23 @@ def verify_student(id):
 
     student = Student.query.get_or_404(id)
 
-    try:
+    # Verify student
+    student.is_verified = True
 
-        student.is_verified = True
-        student.is_voter = True
-
-        db.session.commit()
-
-        flash(
-            f'{student.full_name} has been verified successfully.',
-            'success'
-        )
-
-    except Exception:
-
-        db.session.rollback()
-
-        flash(
-            'Unable to verify student.',
-            'danger'
-        )
-
-    return redirect(
-        url_for('main.student_profile', id=student.id)
+    # 🔥 THIS IS THE AUDIT IMPLEMENTATION
+    log_action(
+        action='verify_student',
+        entity_type='student',
+        entity_id=student.id,
+        description=f'Verified student {student.first_name} {student.last_name}'
     )
 
+    # Save both student + audit log
+    db.session.commit()
+
+    flash('Student verified successfully.', 'success')
+
+    return redirect(url_for('main.student_profile', id=id))
 
 @main.route('/admin/students/reject/<int:id>')
 @login_required
@@ -2372,6 +2352,17 @@ def verify_student(id):
 def reject_student(id):
 
     student = Student.query.get_or_404(id)
+    student.is_verified = False
+
+    # 🔥 AUDIT ENTRY
+    log_action(
+        action='reject_student',
+        entity_type='student',
+        entity_id=student.id,
+        description=f'Rejected verification for {student.first_name} {student.last_name}'
+    )
+
+    db.session.commit()
 
     try:
 
