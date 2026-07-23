@@ -2145,7 +2145,114 @@ def delete_student(id):
         flash("Unable to delete student.", "danger")
 
     return redirect(url_for("main.students"))
+# ==========================================
+# Bulk Student Actions
+# ==========================================
 
+@main.route('/admin/students/bulk-action', methods=['POST'])
+@login_required
+@super_admin_required
+def bulk_student_action():
+
+    action = request.form.get('action')
+    student_ids = request.form.getlist('student_ids')
+
+    if not student_ids:
+
+        flash(
+            'Please select at least one student.',
+            'warning'
+        )
+
+        return redirect(url_for('main.students'))
+
+    try:
+
+        # Convert to integers
+        student_ids = [int(sid) for sid in student_ids]
+
+        students = Student.query.filter(
+            Student.id.in_(student_ids)
+        ).all()
+
+        if not students:
+
+            flash(
+                'Selected students were not found.',
+                'danger'
+            )
+
+            return redirect(url_for('main.students'))
+
+        # -----------------------------
+        # Bulk Verify
+        # -----------------------------
+        if action == 'verify':
+
+            for student in students:
+                student.is_verified = True
+
+            message = f'{len(students)} students verified successfully.'
+
+        # -----------------------------
+        # Bulk Activate
+        # -----------------------------
+        elif action == 'activate':
+
+            for student in students:
+                student.is_active = True
+
+            message = f'{len(students)} students activated successfully.'
+
+        # -----------------------------
+        # Bulk Deactivate
+        # -----------------------------
+        elif action == 'deactivate':
+
+            for student in students:
+                student.is_active = False
+
+            message = f'{len(students)} students deactivated successfully.'
+
+        # -----------------------------
+        # Bulk Delete
+        # -----------------------------
+        elif action == 'delete':
+
+            for student in students:
+
+                # Delete photo if exists
+                if student.photo:
+                    delete_student_photo(student.photo)
+
+                db.session.delete(student)
+
+            message = f'{len(students)} students deleted successfully.'
+
+        else:
+
+            flash(
+                'Invalid bulk action.',
+                'danger'
+            )
+
+            return redirect(url_for('main.students'))
+
+        # Commit transaction
+        db.session.commit()
+
+        flash(message, 'success')
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            f'Bulk operation failed: {str(e)}',
+            'danger'
+        )
+
+    return redirect(url_for('main.students'))
 @main.route("/admin/students/profile/<int:id>")
 @login_required
 @super_admin_required
