@@ -2478,23 +2478,102 @@ def import_students():
         'admin/students/import.html',
         result=result
     )
-
 @main.route('/admin/students/export')
 @login_required
 @super_admin_required
 def export_students():
 
-    students = Student.query.order_by(Student.created_at.desc()).all()
+    import csv
+    from io import StringIO
+    from flask import make_response, request
 
-    output = export_students_to_excel(students)
+    # Base query
+    query = Student.query
 
-    return send_file(
-        output,
-        as_attachment=True,
-        download_name='students_export.xlsx',
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
+    # Filters
+    search = request.args.get('search', '').strip()
+    faculty_id = request.args.get('faculty', '')
+    verified = request.args.get('verified', '')
+    status = request.args.get('status', '')
 
+    # Search
+    if search:
+        query = query.filter(
+            db.or_(
+                Student.first_name.ilike(f'%{search}%'),
+                Student.last_name.ilike(f'%{search}%'),
+                Student.email.ilike(f'%{search}%'),
+                Student.student_id.ilike(f'%{search}%')
+            )
+        )
+
+    # Faculty filter
+    if faculty_id:
+        query = query.filter(Student.faculty_id == int(faculty_id))
+
+    # Verification filter
+    if verified == 'verified':
+        query = query.filter(Student.is_verified == True)
+
+    elif verified == 'unverified':
+        query = query.filter(Student.is_verified == False)
+
+    # Status filter
+    if status == 'active':
+        query = query.filter(Student.is_active == True)
+
+    elif status == 'inactive':
+        query = query.filter(Student.is_active == False)
+
+    # Get filtered students
+    students = query.order_by(Student.created_at.desc()).all()
+
+    # Create CSV in memory
+    output = StringIO()
+
+    writer = csv.writer(output)
+
+    # Header
+    writer.writerow([
+        'Student ID',
+        'First Name',
+        'Last Name',
+        'Email',
+        'Phone',
+        'Faculty',
+        'Department',
+        'Program',
+        'Academic Year',
+        'Semester',
+        'Verified',
+        'Active'
+    ])
+
+    # Data rows
+    for student in students:
+
+        writer.writerow([
+            student.student_id,
+            student.first_name,
+            student.last_name,
+            student.email,
+            student.phone,
+            student.faculty.name if student.faculty else '',
+            student.department.name if student.department else '',
+            student.program.name if student.program else '',
+            student.academic_year.name if student.academic_year else '',
+            student.semester.name if student.semester else '',
+            'Yes' if student.is_verified else 'No',
+            'Yes' if student.is_active else 'No'
+        ])
+
+    # Build response
+    response = make_response(output.getvalue())
+
+    response.headers['Content-Disposition'] = 'attachment; filename=students_export.csv'
+    response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+
+    return response
 # ==========================================
 # CSV Template Download
 # ==========================================
