@@ -1,43 +1,62 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
 
     const selectAll = document.getElementById('selectAll');
     const checkboxes = document.querySelectorAll('.student-checkbox');
     const toolbar = document.getElementById('bulkToolbar');
-    const selectedCount = document.getElementById('selectedCount');
+    const counter = document.getElementById('selectedCount');
 
     function updateToolbar() {
 
         const checked = document.querySelectorAll('.student-checkbox:checked');
-        const count = checked.length;
 
-        if (count > 0) {
-            toolbar.style.display = 'block';
-            selectedCount.textContent = `${count} selected`;
-        } else {
-            toolbar.style.display = 'none';
-            selectedCount.textContent = '0 selected';
-        }
+        counter.textContent = checked.length;
+
+        toolbar.style.display = checked.length > 0 ? 'block' : 'none';
 
         if (selectAll) {
-            selectAll.checked = count === checkboxes.length && count > 0;
+
+            selectAll.checked =
+                checked.length === checkboxes.length && checkboxes.length > 0;
         }
     }
 
+    // Select All
     if (selectAll) {
 
-        selectAll.addEventListener('change', function () {
+        selectAll.addEventListener('change', () => {
 
             checkboxes.forEach(cb => {
-                cb.checked = this.checked;
+                cb.checked = selectAll.checked;
             });
 
             updateToolbar();
         });
     }
 
+    // Individual Checkboxes
     checkboxes.forEach(cb => {
+
         cb.addEventListener('change', updateToolbar);
     });
+
+    // Form Validation
+    const form = document.getElementById('bulkActionForm');
+
+    if (form) {
+
+        form.addEventListener('submit', (e) => {
+
+            const checked =
+                document.querySelectorAll('.student-checkbox:checked');
+
+            if (checked.length === 0) {
+
+                e.preventDefault();
+
+                alert('Please select at least one student.');
+            }
+        });
+    }
 
     updateToolbar();
 });

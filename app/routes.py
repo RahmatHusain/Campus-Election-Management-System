@@ -28,6 +28,7 @@ import os
 from app.models.user import User
 from flask import request
 from app.models.audit_log import AuditLog
+from app.utils.audit import log_action
 from app.models.faculty import Faculty
 from app.models.department import Department
 from app.models.semester import Semester
@@ -50,7 +51,7 @@ from app.forms.academic_year_forms import (
     AcademicYearForm,
     EditAcademicYearForm
 )
-
+from app.forms.bulk_form import BulkActionForm
 from flask import send_file
 from app.utils.student_import import import_students
 from app.utils.student_export import export_students_to_excel
@@ -1726,6 +1727,7 @@ def delete_program(id):
 # ==========================
 from app.forms.student_form import StudentForm, EditStudentForm
 from app.utils.file_upload import save_student_photo, delete_student_photo
+from app.forms.bulk_form import BulkActionForm
 # ==========================================
 # Student List (Advanced Search + Pagination)
 # ==========================================
@@ -1807,35 +1809,38 @@ def students():
     # -----------------------------
     # Pagination
     # -----------------------------
-    students = query.order_by(
-        Student.created_at.desc()
-    ).paginate(
+       # Pagination
+    students = query.order_by(Student.created_at.desc()).paginate(
         page=page,
         per_page=10,
         error_out=False
     )
 
-    # -----------------------------
+    # Faculties for filter dropdown
+    faculties = Faculty.query.order_by(Faculty.name).all()
+
+    # Bulk action form
+    bulk_form = BulkActionForm()
+
     # Statistics
-    # -----------------------------
     stats = {
         'total': Student.query.count(),
-        'active': Student.query.filter_by(is_active=True).count(),
         'verified': Student.query.filter_by(is_verified=True).count(),
-        'eligible': Student.query.filter_by(is_voter=True).count()
+        'active': Student.query.filter_by(is_active=True).count(),
+        'voters': Student.query.filter_by(is_voter=True).count()
     }
 
     return render_template(
         'admin/students/index.html',
         students=students,
-        faculties=Faculty.query.order_by(Faculty.name).all(),
+        faculties=faculties,
         stats=stats,
         search=search,
         faculty_id=faculty_id,
         verified=verified,
-        status=status
+        status=status,
+        bulk_form=bulk_form
     )
-
 @main.route('/admin/students/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @super_admin_required
@@ -2073,28 +2078,21 @@ def delete_student(id):
 # ==========================================
 # Bulk Student Actions
 # ==========================================
-
 @main.route('/admin/students/bulk-action', methods=['POST'])
 @login_required
 @super_admin_required
 def bulk_student_action():
 
-    action = request.form.get('action')
     student_ids = request.form.getlist('student_ids')
+    action = request.form.get('action')
 
     if not student_ids:
 
-        flash(
-            'Please select at least one student.',
-            'warning'
-        )
+        flash('Please select at least one student.', 'warning')
 
         return redirect(url_for('main.students'))
 
     try:
-
-        # Convert to integers
-        student_ids = [int(sid) for sid in student_ids]
 
         students = Student.query.filter(
             Student.id.in_(student_ids)
@@ -2102,68 +2100,99 @@ def bulk_student_action():
 
         if not students:
 
-            flash(
-                'Selected students were not found.',
-                'danger'
-            )
+            flash('No valid students selected.', 'danger')
 
             return redirect(url_for('main.students'))
 
         # -----------------------------
-        # Bulk Verify
+        # VERIFY
         # -----------------------------
         if action == 'verify':
 
             for student in students:
+
                 student.is_verified = True
 
-            message = f'{len(students)} students verified successfully.'
+                log_action(
+                    current_user.id,
+                    'STUDENT_VERIFIED',
+                    'Student',
+                    student.id,
+                    f'Bulk verified student {student.student_id}'
+                )
+
+            message = f'{len(students)} student(s) verified successfully.'
 
         # -----------------------------
-        # Bulk Activate
+        # ACTIVATE
         # -----------------------------
         elif action == 'activate':
 
             for student in students:
+
                 student.is_active = True
 
-            message = f'{len(students)} students activated successfully.'
+                log_action(
+                    current_user.id,
+                    'STUDENT_ACTIVATED',
+                    'Student',
+                    student.id,
+                    f'Bulk activated student {student.student_id}'
+                )
+
+            message = f'{len(students)} student(s) activated successfully.'
 
         # -----------------------------
-        # Bulk Deactivate
+        # DEACTIVATE
         # -----------------------------
         elif action == 'deactivate':
 
             for student in students:
+
                 student.is_active = False
 
-            message = f'{len(students)} students deactivated successfully.'
+                log_action(
+                    current_user.id,
+                    'STUDENT_DEACTIVATED',
+                    'Student',
+                    student.id,
+                    f'Bulk deactivated student {student.student_id}'
+                )
+
+            message = f'{len(students)} student(s) deactivated successfully.'
 
         # -----------------------------
-        # Bulk Delete
+        # DELETE
         # -----------------------------
         elif action == 'delete':
 
+            count = len(students)
+
             for student in students:
 
-                # Delete photo if exists
+                # Delete photo from filesystem
                 if student.photo:
+
                     delete_student_photo(student.photo)
+
+                log_action(
+                    current_user.id,
+                    'STUDENT_DELETED',
+                    'Student',
+                    student.id,
+                    f'Bulk deleted student {student.student_id}'
+                )
 
                 db.session.delete(student)
 
-            message = f'{len(students)} students deleted successfully.'
+            message = f'{count} student(s) deleted successfully.'
 
         else:
 
-            flash(
-                'Invalid bulk action.',
-                'danger'
-            )
+            flash('Invalid bulk action.', 'danger')
 
             return redirect(url_for('main.students'))
 
-        # Commit transaction
         db.session.commit()
 
         flash(message, 'success')
@@ -2172,12 +2201,10 @@ def bulk_student_action():
 
         db.session.rollback()
 
-        flash(
-            f'Bulk operation failed: {str(e)}',
-            'danger'
-        )
+        flash(f'Bulk operation failed: {str(e)}', 'danger')
 
     return redirect(url_for('main.students'))
+
 @main.route("/admin/students/profile/<int:id>")
 @login_required
 @super_admin_required
