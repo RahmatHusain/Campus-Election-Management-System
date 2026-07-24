@@ -6,3 +6,4 @@ from app.models.academic_year import AcademicYear
 from app.models.semester import Semester
 from app.models.program import Program
 from app.models.student import Student
+from app.models.election import Election
