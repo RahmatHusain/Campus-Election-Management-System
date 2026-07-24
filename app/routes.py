@@ -2611,7 +2611,12 @@ def manage_elections():
 
     page = request.args.get("page", 1, type=int)
 
+    show_archived = request.args.get("archived")
+
     query = Election.query
+
+    if not show_archived:
+        query = query.filter_by(is_active=True)
 
     # Search
 
@@ -2640,12 +2645,12 @@ def manage_elections():
         page=page,
         per_page=10
     )
-
     stats = {
-        "total": Election.query.count(),
-        "draft": Election.query.filter_by(status="draft").count(),
-        "active": Election.query.filter_by(status="active").count(),
-        "completed": Election.query.filter_by(status="completed").count(),
+    "total": Election.query.count(),
+    "active": Election.query.filter_by(is_active=True).count(),
+    "archived": Election.query.filter_by(is_active=False).count(),
+    "running": Election.query.filter_by(status="active").count(),
+    "completed": Election.query.filter_by(status="completed").count(),
     }
 
     return render_template(
@@ -2756,6 +2761,32 @@ def delete_election(election_id):
         current_app.logger.error(e)
 
     return redirect(url_for("main.manage_elections"))
+
+@main.route("/admin/elections/<int:election_id>/archive", methods=["POST"])
+@login_required
+@super_admin_required
+def archive_election(election_id):
+
+    election = Election.query.get_or_404(election_id)
+
+    election.is_active = False
+
+    db.session.commit()
+
+    log_action(
+        user=current_user,
+        action="Archive Election",
+        description=f"Archived election '{election.title}'"
+    )
+
+    flash(
+        "Election archived successfully.",
+        "warning"
+    )
+
+    return redirect(
+        url_for("main.manage_elections")
+    )
 
 @main.route("/admin/elections/<int:election_id>/edit",
             methods=["GET", "POST"])

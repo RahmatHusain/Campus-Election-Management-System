@@ -179,7 +179,17 @@
 
     </div>
 
+    <a href="{{ url_for('main.manage_elections') }}" class="btn btn-outline-secondary">
 
+        Active
+
+    </a>
+
+    <a href="{{ url_for('main.manage_elections', archived=1) }}" class="btn btn-outline-warning">
+
+        Archived
+
+    </a>
     <!-- Table -->
     <div class="card shadow-sm border-0">
 
@@ -252,7 +262,7 @@
 
                             <a href="{{ url_for('main.edit_election', election_id=election.id) }}"
                                 class="btn btn-sm btn-outline-primary" title="Edit">
-                                
+
                                 <i class="bi bi-pencil-square"></i>
 
                             </a>
@@ -263,17 +273,34 @@
 
                             </a>
 
-                            <form method="POST" action="{{ url_for('main.delete_election',
-                                 election_id=election.id) }}" class="d-inline">
+                            {% if election.is_active %}
 
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                    onclick="return confirm('Delete this election permanently?')">
+                            <form method="POST" action="{{ url_for('main.archive_election',
+      election_id=election.id) }}" class="d-inline">
 
-                                    <i class="bi bi-trash"></i>
+                                <button class="btn btn-sm btn-outline-danger"
+                                    onclick="return confirm('Archive this election?')">
+
+                                    <i class="bi bi-archive"></i>
 
                                 </button>
 
                             </form>
+
+                            {% else %}
+
+                            <form method="POST" action="{{ url_for('main.restore_election',
+      election_id=election.id) }}" class="d-inline">
+
+                                <button class="btn btn-sm btn-outline-success">
+
+                                    <i class="bi bi-arrow-clockwise"></i>
+
+                                </button>
+
+                            </form>
+
+                            {% endif %}
 
                             </a>
 
