@@ -2700,6 +2700,63 @@ def create_election():
         "admin/elections/create.html",
             form=form
     )
+@main.route("/admin/elections/<int:election_id>/delete", methods=["POST"])
+@login_required
+@super_admin_required
+def delete_election(election_id):
+    """
+    Soft Delete Election
+    """
+
+    election = Election.query.filter_by(
+        id=election_id,
+        is_active=True
+    ).first_or_404()
+
+    # Prevent deleting active elections
+    if election.status == "active":
+        flash(
+            "Active elections cannot be deleted. Complete the election first.",
+            "danger"
+        )
+        return redirect(url_for("main.manage_elections"))
+
+    try:
+        # Soft Delete
+        election.is_active = False
+
+        db.session.commit()
+
+        # Audit Log
+        log = AuditLog(
+            user_id=current_user.id,
+            action="delete_election",
+            entity_type="election",
+            entity_id=election.id,
+            description=f"Deleted election '{election.title}'"
+        )
+
+        db.session.add(log)
+        db.session.commit()
+
+        flash(
+            "Election deleted successfully.",
+            "success"
+        )
+
+    except Exception as e:
+
+        db.session.rollback()
+
+        flash(
+            "Failed to delete election.",
+            "danger"
+        )
+
+        current_app.logger.error(e)
+
+    return redirect(url_for("main.manage_elections"))
+
 @main.route("/admin/elections/<int:election_id>/edit",
             methods=["GET", "POST"])
 @login_required
