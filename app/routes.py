@@ -2667,6 +2667,7 @@ def create_election():
 
         election = Election(
             title=form.title.data,
+            academic_year=form.academic_year.data,
 
             election_type=form.election_type.data,
             description=form.description.data,
@@ -2699,7 +2700,49 @@ def create_election():
         "admin/elections/create.html",
             form=form
     )
+@main.route("/admin/elections/<int:election_id>/edit",
+            methods=["GET", "POST"])
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def edit_election(election_id):
 
+    election = Election.query.get_or_404(election_id)
+
+    form = ElectionForm(obj=election)
+
+    if form.validate_on_submit():
+
+        election.title = form.title.data
+        election.academic_year = form.academic_year.data
+        election.election_type = form.election_type.data
+        election.description = form.description.data
+        election.start_datetime = form.start_datetime.data
+        election.end_datetime = form.end_datetime.data
+        election.status = form.status.data
+
+        db.session.commit()
+
+        log_action(
+            action="Election Updated",
+            entity_type="Election",
+            entity_id=election.id,
+            description=f"Updated election '{election.title}'"
+        )
+
+        flash(
+            "Election updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for("main.manage_elections")
+        )
+
+    return render_template(
+        "admin/elections/edit.html",
+        form=form,
+        election=election
+    )
 # ==========================
 # Profile
 # ==========================
