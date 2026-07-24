@@ -2619,11 +2619,11 @@ def create_election():
             academic_year=form.academic_year.data,
             election_type=form.election_type.data,
             description=form.description.data,
-            start_date=form.start_date.data,
-            end_date=form.end_date.data,
+            start_datetime=form.start_datetime.data,
+            end_datetime=form.end_datetime.data,
             status=form.status.data,
             created_by=current_user.id
-        )
+            )
 
         db.session.add(election)
         db.session.commit()
@@ -2642,11 +2642,11 @@ def create_election():
 
         flash("Election created successfully!", "success")
 
-        return redirect(url_for("main.elections"))
+        return redirect(url_for("main.manage_elections"))
 
     return render_template(
         "admin/elections/create.html",
-        form=form
+            form=form
     )
 
 # ==========================
