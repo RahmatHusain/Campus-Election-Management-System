@@ -197,9 +197,11 @@ def login():
 
             session.permanent = True
             log = AuditLog(
-            user_id=user.id,
-            action="User Logged In",
-            ip_address=request.remote_addr
+                user_id=user.id,
+                action="User Logged In",
+                entity_type="user",
+                entity_id=user.id,
+                ip_address=request.remote_addr
             )
 
             db.session.add(log)
