@@ -1,11 +1,188 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    
-</body>
-</html>
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Create Election{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-calendar-event text-primary"></i>
+                Create Election
+            </h2>
+
+            <p class="text-muted mb-0">
+                Configure a new election for your campus.
+            </p>
+        </div>
+
+        <a href="{{ url_for('main.elections') }}"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back
+
+        </a>
+
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                Election Information
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="row">
+
+                    <!-- Title -->
+
+                    <div class="col-md-6 mb-3">
+
+                        {{ form.title.label(class="form-label fw-semibold") }}
+
+                        {{ form.title(class="form-control") }}
+
+                        {% for error in form.title.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Academic Year -->
+
+                    <div class="col-md-6 mb-3">
+
+                        {{ form.academic_year.label(class="form-label fw-semibold") }}
+
+                        {{ form.academic_year(class="form-control") }}
+
+                        {% for error in form.academic_year.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Election Type -->
+
+                    <div class="col-md-6 mb-3">
+
+                        {{ form.election_type.label(class="form-label fw-semibold") }}
+
+                        {{ form.election_type(class="form-select") }}
+
+                        {% for error in form.election_type.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Status -->
+
+                    <div class="col-md-6 mb-3">
+
+                        {{ form.status.label(class="form-label fw-semibold") }}
+
+                        {{ form.status(class="form-select") }}
+
+                        {% for error in form.status.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Start Date -->
+
+                    <div class="col-md-6 mb-3">
+
+                        {{ form.start_date.label(class="form-label fw-semibold") }}
+
+                        {{ form.start_date(class="form-control") }}
+
+                        {% for error in form.start_date.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- End Date -->
+
+                    <div class="col-md-6 mb-3">
+
+                        {{ form.end_date.label(class="form-label fw-semibold") }}
+
+                        {{ form.end_date(class="form-control") }}
+
+                        {% for error in form.end_date.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                    <!-- Description -->
+
+                    <div class="col-12 mb-4">
+
+                        {{ form.description.label(class="form-label fw-semibold") }}
+
+                        {{ form.description(class="form-control", rows="5") }}
+
+                        {% for error in form.description.errors %}
+                        <div class="text-danger small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a href="{{ url_for('main.elections') }}"
+                       class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    {{ form.submit(class="btn btn-primary") }}
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -20,6 +20,8 @@ from app.forms.auth_forms import RegisterForm, LoginForm
 from app.forms.faculty_forms import FacultyForm
 from app.forms.department_form import DepartmentForm
 from app.forms.semester_form import SemesterForm
+from app.forms.election_form import ElectionForm
+from app.models.election import Election
 from app.forms.program_form import (
     ProgramForm,
     EditProgramForm
@@ -62,8 +64,7 @@ from app.forms.semester_form import (
     SemesterForm,
     EditSemesterForm
 )
-from app.forms.election import ElectionForm
-from app.models.election import Election
+
 
 
 from sqlalchemy import or_
