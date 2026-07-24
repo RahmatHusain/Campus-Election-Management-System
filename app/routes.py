@@ -8,12 +8,13 @@ from flask_login import (
     login_required,
     current_user
 )
-
 from app.decorators import (
     super_admin_required,
     election_officer_required,
     student_required,
 )
+from app.decorators import role_required
+
 from flask import session
 from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
@@ -471,13 +472,6 @@ def officer_dashboard():
         "officer_dashboard.html",
         stats=stats
     )
-
-@main.route("/officer/elections")
-@login_required
-@election_officer_required
-def manage_elections():
-
-    return render_template("officer/manage_elections.html")
 
 
 @main.route("/officer/candidates")
@@ -2604,7 +2598,64 @@ Rahmat,Husain,Male,2004-05-12,rahmat@example.com,9800000000,Science,Information 
         as_attachment=True,
         download_name='student_import_template.csv'
     )
+@main.route("/admin/elections")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def manage_elections():
 
+    search = request.args.get("search", "").strip()
+
+    status = request.args.get("status", "")
+
+    election_type = request.args.get("type", "")
+
+    page = request.args.get("page", 1, type=int)
+
+    query = Election.query
+
+    # Search
+
+    if search:
+        query = query.filter(
+            Election.title.ilike(f"%{search}%")
+        )
+
+    # Status Filter
+
+    if status:
+        query = query.filter(
+            Election.status == status
+        )
+
+    # Election Type
+
+    if election_type:
+        query = query.filter(
+            Election.election_type == election_type
+        )
+
+    elections = query.order_by(
+        Election.created_at.desc()
+    ).paginate(
+        page=page,
+        per_page=10
+    )
+
+    stats = {
+        "total": Election.query.count(),
+        "draft": Election.query.filter_by(status="draft").count(),
+        "active": Election.query.filter_by(status="active").count(),
+        "completed": Election.query.filter_by(status="completed").count(),
+    }
+
+    return render_template(
+        "admin/elections/manage.html",
+        elections=elections,
+        stats=stats,
+        search=search,
+        status=status,
+        election_type=election_type
+    )
 @main.route("/admin/elections/create", methods=["GET", "POST"])
 @login_required
 @super_admin_required
@@ -2616,7 +2667,7 @@ def create_election():
 
         election = Election(
             title=form.title.data,
-            academic_year=form.academic_year.data,
+
             election_type=form.election_type.data,
             description=form.description.data,
             start_datetime=form.start_datetime.data,

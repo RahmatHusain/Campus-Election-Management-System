@@ -95,6 +95,10 @@ class Election(db.Model):
     @property
     def is_completed(self):
         return self.status == "completed"
-
+    
+    academic_year = db.Column(
+    db.String(20),
+    nullable=False
+    )
     def __repr__(self):
         return f"<Election {self.title}>"
