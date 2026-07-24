@@ -62,6 +62,10 @@ from app.forms.semester_form import (
     SemesterForm,
     EditSemesterForm
 )
+from app.forms.election import ElectionForm
+from app.models.election import Election
+
+
 from sqlalchemy import or_
 
 
@@ -2596,6 +2600,50 @@ Rahmat,Husain,Male,2004-05-12,rahmat@example.com,9800000000,Science,Information 
         mimetype='text/csv',
         as_attachment=True,
         download_name='student_import_template.csv'
+    )
+
+@main.route("/admin/elections/create", methods=["GET", "POST"])
+@login_required
+@super_admin_required
+def create_election():
+
+    form = ElectionForm()
+
+    if form.validate_on_submit():
+
+        election = Election(
+            title=form.title.data,
+            academic_year=form.academic_year.data,
+            election_type=form.election_type.data,
+            description=form.description.data,
+            start_date=form.start_date.data,
+            end_date=form.end_date.data,
+            status=form.status.data,
+            created_by=current_user.id
+        )
+
+        db.session.add(election)
+        db.session.commit()
+
+        # Audit Log
+        log = AuditLog(
+            user_id=current_user.id,
+            action="create_election",
+            entity_type="election",
+            entity_id=election.id,
+            description=f"Created election '{election.title}'"
+        )
+
+        db.session.add(log)
+        db.session.commit()
+
+        flash("Election created successfully!", "success")
+
+        return redirect(url_for("main.elections"))
+
+    return render_template(
+        "admin/elections/create.html",
+        form=form
     )
 
 # ==========================
