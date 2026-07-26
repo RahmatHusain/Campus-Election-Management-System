@@ -2,80 +2,146 @@ from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
     TextAreaField,
+    IntegerField,
     SelectField,
-    DateTimeLocalField,
-    SubmitField,
+    SubmitField
 )
 from wtforms.validators import (
     DataRequired,
     Length,
-    ValidationError,
+    NumberRange,
+    ValidationError
 )
 
+from app.models.position import Position
 
-class ElectionForm(FlaskForm):
+
+class PositionForm(FlaskForm):
+    """
+    Production Position Form
+
+    Used for:
+        • Create Position
+        • Edit Position
+    """
+
+    election_id = SelectField(
+        "Election",
+        coerce=int,
+        validators=[
+            DataRequired(message="Please select an election.")
+        ]
+    )
 
     title = StringField(
-        "Election Title",
+        "Position Title",
         validators=[
-            DataRequired(),
-            Length(max=200)
-        ]
-    )
-
-    academic_year = StringField(
-        "Academic Year",
-        validators=[
-            DataRequired(),
-            Length(max=20)
-        ]
-    )
-
-    election_type = SelectField(
-        "Election Type",
-        choices=[
-            ("general", "General Election"),
-            ("department", "Department Election"),
-            ("club", "Club Election"),
+            DataRequired(message="Position title is required."),
+            Length(
+                min=3,
+                max=100,
+                message="Position title must be between 3 and 100 characters."
+            )
         ],
-        validators=[DataRequired()]
+        render_kw={
+            "placeholder": "President"
+        }
     )
 
     description = TextAreaField(
-        "Description"
+        "Description",
+        validators=[
+            Length(max=500)
+        ],
+        render_kw={
+            "rows": 4,
+            "placeholder": "Optional description..."
+        }
     )
 
-    start_datetime = DateTimeLocalField(
-        "Start Date & Time",
-        format="%Y-%m-%dT%H:%M",
-        validators=[DataRequired()]
+    max_candidates = IntegerField(
+        "Maximum Candidates",
+        default=10,
+        validators=[
+            DataRequired(),
+            NumberRange(
+                min=1,
+                max=100,
+                message="Maximum candidates must be between 1 and 100."
+            )
+        ]
     )
 
-    end_datetime = DateTimeLocalField(
-        "End Date & Time",
-        format="%Y-%m-%dT%H:%M",
-        validators=[DataRequired()]
+    max_votes = IntegerField(
+        "Maximum Votes Per Student",
+        default=1,
+        validators=[
+            DataRequired(),
+            NumberRange(
+                min=1,
+                max=20,
+                message="Maximum votes must be between 1 and 20."
+            )
+        ]
+    )
+
+    display_order = IntegerField(
+        "Display Order",
+        default=1,
+        validators=[
+            DataRequired(),
+            NumberRange(
+                min=1,
+                max=1000
+            )
+        ]
     )
 
     status = SelectField(
         "Status",
         choices=[
-            ("draft", "Draft"),
-            ("scheduled", "Scheduled"),
             ("active", "Active"),
-            ("completed", "Completed"),
+            ("inactive", "Inactive"),
+            ("archived", "Archived")
         ],
-        default="draft"
+        default="active"
     )
 
-    submit = SubmitField("Create Election")
+    submit = SubmitField("Save Position")
 
-    def validate_end_datetime(self, field):
+    # --------------------------------------------------
+    # Validation
+    # --------------------------------------------------
+
+    def validate_title(self, field):
+        """
+        Prevent duplicate position names
+        within the same election.
+        """
+
+        if not self.election_id.data:
+            return
+
+        existing = Position.query.filter(
+            Position.election_id == self.election_id.data,
+            Position.title.ilike(field.data.strip())
+        ).first()
+
+        if existing:
+            raise ValidationError(
+                "This position already exists for the selected election."
+            )
+
+    def validate_max_votes(self, field):
+        """
+        Votes cannot exceed
+        candidate limit.
+        """
+
         if (
-            self.start_datetime.data
-            and field.data
-            and field.data <= self.start_datetime.data
+            self.max_candidates.data
+            and field.data > self.max_candidates.data
         ):
             raise ValidationError(
-                "End Date must be after Start Date."
+                "Maximum votes cannot exceed maximum candidates."
             )
