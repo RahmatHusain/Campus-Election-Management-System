@@ -86,13 +86,18 @@ class Position(db.Model):
     # ----------------------------
 
     @property
-    def is_archived(self):
-        return self.status == "archived"
+    def candidate_count(self):
+        return len(self.candidates)
+
 
     @property
-    def is_open(self):
-        return self.status == "active"
+    def is_filled(self):
+        return self.candidate_count >= self.max_candidates
 
+
+    @property
+    def remaining_slots(self):
+        return max(0, self.max_candidates - self.candidate_count)
     def __repr__(self):
         return (
             f"<Position {self.title}>"

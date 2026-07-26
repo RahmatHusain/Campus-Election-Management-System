@@ -2871,28 +2871,50 @@ def manage_positions(election_id):
     )
 
     stats = {
-        "total": Position.query.filter_by(
+    "total": Position.query.filter_by(
+        election_id=election.id
+        ).count(),
+
+    "active": Position.query.filter_by(
+        election_id=election.id,
+        status="active"
+        ).count(),
+
+    "archived": Position.query.filter_by(
+        election_id=election.id,
+        status="archived"
+        ).count(),
+
+    "filled": sum(
+        1
+        for p in Position.query.filter_by(
             election_id=election.id
-        ).count(),
+        ).all()
+        if p.is_filled
+        ),
 
-        "active": Position.query.filter_by(
-            election_id=election.id,
-            status="active"
-        ).count(),
+    "empty": sum(
+        1
+        for p in Position.query.filter_by(
+            election_id=election.id
+        ).all()
+        if p.candidate_count == 0
+        ),
 
-        "archived": Position.query.filter_by(
-            election_id=election.id,
-            status="archived"
-        ).count(),
-    }
-
+    "candidates": sum(
+        p.candidate_count
+        for p in Position.query.filter_by(
+            election_id=election.id
+        ).all()
+        )
+        }
     return render_template(
-        "admin/positions/manage.html",
-        election=election,
-        positions=positions,
-        stats=stats,
-        search=search,
-        status=status
+    "admin/positions/manage.html",
+    election=election,
+    positions=positions,
+    stats=stats,
+    search=search,
+    status=status
     )
 
 @main.route(

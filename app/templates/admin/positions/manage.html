@@ -5,7 +5,73 @@ Manage Positions
 {% endblock %}
 
 {% block content %}
+<div class="row mb-4">
 
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h3>{{ stats.total }}</h3>
+                <small>Total Positions</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h3 class="text-success">
+                    {{ stats.active }}
+                </h3>
+                <small>Active</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h3 class="text-secondary">
+                    {{ stats.archived }}
+                </h3>
+                <small>Archived</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h3 class="text-primary">
+                    {{ stats.candidates }}
+                </h3>
+                <small>Candidates</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h3 class="text-warning">
+                    {{ stats.filled }}
+                </h3>
+                <small>Filled</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-2">
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center">
+                <h3 class="text-danger">
+                    {{ stats.empty }}
+                </h3>
+                <small>Empty</small>
+            </div>
+        </div>
+    </div>
+
+</div>
 <div class="container-fluid">
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -74,6 +140,31 @@ Manage Positions
                     <th>#</th>
 
                     <th>Position</th>
+                    <td width="180">
+
+<div class="progress">
+
+    {% set percentage = (position.candidate_count / position.max_candidates * 100)
+        if position.max_candidates > 0 else 0 %}
+
+    <div class="progress-bar
+        {% if percentage >=100 %}
+            bg-success
+        {% elif percentage >=70 %}
+            bg-warning
+        {% else %}
+            bg-info
+        {% endif %}"
+
+        style="width: {{ percentage }}%;">
+
+        {{ position.candidate_count }}/{{ position.max_candidates }}
+
+    </div>
+
+</div>
+
+</td>
 
                     <th>Max Candidates</th>
 
