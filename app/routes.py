@@ -24,7 +24,7 @@ from app.forms.semester_form import SemesterForm
 from app.forms.election_form import ElectionForm
 from app.models.position import Position
 from app.services.position_service import PositionService
-PositionService.create_position(form)
+from app.models.position import Position
 from app.models.election import Election
 from app.forms.program_form import (
     ProgramForm,
@@ -2834,6 +2834,32 @@ def edit_election(election_id):
         form=form,
         election=election
     )
+
+@main.route(
+    "/admin/elections/<int:election_id>/positions"
+)
+@login_required
+@role_required(
+    User.SUPER_ADMIN,
+    User.ELECTION_OFFICER
+)
+def manage_positions(election_id):
+
+    election = Election.query.get_or_404(election_id)
+
+    positions = Position.query.filter_by(
+        election_id=election.id
+    ).order_by(
+        Position.display_order.asc(),
+        Position.created_at.asc()
+    ).all()
+
+    return render_template(
+        "admin/positions/manage.html",
+        election=election,
+        positions=positions
+    )
+
 @main.route(
     "/admin/elections/<int:election_id>/positions/create",
     methods=["GET", "POST"]
@@ -2894,6 +2920,76 @@ def create_position(election_id):
         "admin/positions/create.html",
         form=form,
         election=election
+    )
+
+@main.route("/admin/elections/<int:election_id>/positions")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def manage_positions(election_id):
+
+    election = Election.query.get_or_404(election_id)
+
+    search = request.args.get("search", "").strip()
+    status = request.args.get("status", "")
+    page = request.args.get("page", 1, type=int)
+
+    query = Position.query.filter(
+        Position.election_id == election.id
+    )
+
+    if search:
+        query = query.filter(
+            Position.title.ilike(f"%{search}%")
+        )
+
+    if status:
+        query = query.filter(
+            Position.status == status
+        )
+
+    positions = query.order_by(
+        Position.display_order.asc(),
+        Position.title.asc()
+    ).paginate(
+        page=page,
+        per_page=10,
+        error_out=False
+    )
+
+    stats = {
+
+        "total":
+        Position.query.filter_by(
+            election_id=election.id
+        ).count(),
+
+        "active":
+        Position.query.filter_by(
+            election_id=election.id,
+            status="active"
+        ).count(),
+
+        "inactive":
+        Position.query.filter_by(
+            election_id=election.id,
+            status="inactive"
+        ).count(),
+
+        "archived":
+        Position.query.filter_by(
+            election_id=election.id,
+            status="archived"
+        ).count()
+
+    }
+
+    return render_template(
+        "admin/positions/manage.html",
+        election=election,
+        positions=positions,
+        stats=stats,
+        search=search,
+        status=status
     )
 
 # ==========================
