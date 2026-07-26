@@ -22,6 +22,7 @@ from app.forms.faculty_forms import FacultyForm
 from app.forms.department_form import DepartmentForm
 from app.forms.semester_form import SemesterForm
 from app.forms.election_form import ElectionForm
+from app.models.position import Position
 from app.forms.position_form import PositionForm
 from app.models.election import Election
 from app.forms.program_form import (
@@ -2832,6 +2833,94 @@ def edit_election(election_id):
         form=form,
         election=election
     )
+
+@main.route(
+    "/admin/elections/<int:election_id>/positions/create",
+    methods=["GET", "POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def create_position(election_id):
+
+    election = Election.query.get_or_404(election_id)
+
+    form = PositionForm()
+
+    if form.validate_on_submit():
+
+        duplicate = Position.query.filter_by(
+            election_id=election.id,
+            title=form.title.data.strip()
+        ).first()
+
+        if duplicate:
+            flash(
+                "A position with this title already exists in this election.",
+                "danger"
+            )
+            return render_template(
+                "admin/positions/create.html",
+                form=form,
+                election=election
+            )
+
+        try:
+
+            position = Position(
+                election_id=election.id,
+                title=form.title.data.strip(),
+                description=form.description.data,
+                max_candidates=form.max_candidates.data,
+                max_votes=form.max_votes.data,
+                display_order=form.display_order.data,
+                status=form.status.data
+            )
+
+            db.session.add(position)
+
+            db.session.flush()
+
+            audit = AuditLog(
+                user_id=current_user.id,
+                action="create_position",
+                entity_type="position",
+                entity_id=position.id,
+                description=f"Created position '{position.title}'"
+            )
+
+            db.session.add(audit)
+
+            db.session.commit()
+
+            flash(
+                "Position created successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.manage_positions",
+                    election_id=election.id
+                )
+            )
+
+        except Exception:
+
+            db.session.rollback()
+
+            flash(
+                "Unable to create position.",
+                "danger"
+            )
+
+    return render_template(
+        "admin/positions/create.html",
+        form=form,
+        election=election
+    )
+
+
+
 # ==========================
 # Profile
 # ==========================
