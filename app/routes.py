@@ -23,7 +23,8 @@ from app.forms.department_form import DepartmentForm
 from app.forms.semester_form import SemesterForm
 from app.forms.election_form import ElectionForm
 from app.models.position import Position
-from app.forms.position_form import PositionForm
+from app.services.position_service import PositionService
+PositionService.create_position(form)
 from app.models.election import Election
 from app.forms.program_form import (
     ProgramForm,
@@ -2833,7 +2834,6 @@ def edit_election(election_id):
         form=form,
         election=election
     )
-
 @main.route(
     "/admin/elections/<int:election_id>/positions/create",
     methods=["GET", "POST"]
@@ -2846,50 +2846,27 @@ def create_position(election_id):
 
     form = PositionForm()
 
+    # Populate Election dropdown
+    form.election_id.choices = [
+        (election.id, election.title)
+    ]
+    form.election_id.data = election.id
+
     if form.validate_on_submit():
-
-        duplicate = Position.query.filter_by(
-            election_id=election.id,
-            title=form.title.data.strip()
-        ).first()
-
-        if duplicate:
-            flash(
-                "A position with this title already exists in this election.",
-                "danger"
-            )
-            return render_template(
-                "admin/positions/create.html",
-                form=form,
-                election=election
-            )
 
         try:
 
-            position = Position(
-                election_id=election.id,
-                title=form.title.data.strip(),
-                description=form.description.data,
-                max_candidates=form.max_candidates.data,
-                max_votes=form.max_votes.data,
-                display_order=form.display_order.data,
-                status=form.status.data
-            )
+            position = PositionService.create_position(form)
 
-            db.session.add(position)
-
-            db.session.flush()
-
-            audit = AuditLog(
+            log = AuditLog(
                 user_id=current_user.id,
                 action="create_position",
                 entity_type="position",
                 entity_id=position.id,
-                description=f"Created position '{position.title}'"
+                description=f"Created position '{position.title}' for election '{election.title}'."
             )
 
-            db.session.add(audit)
-
+            db.session.add(log)
             db.session.commit()
 
             flash(
@@ -2904,12 +2881,12 @@ def create_position(election_id):
                 )
             )
 
-        except Exception:
+        except Exception as e:
 
             db.session.rollback()
 
             flash(
-                "Unable to create position.",
+                f"Unable to create position. {str(e)}",
                 "danger"
             )
 
@@ -2918,8 +2895,6 @@ def create_position(election_id):
         form=form,
         election=election
     )
-
-
 
 # ==========================
 # Profile
