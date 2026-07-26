@@ -2834,14 +2834,10 @@ def edit_election(election_id):
         form=form,
         election=election
     )
-@main.route(
-    "/admin/elections/<int:election_id>/positions"
-)
+
+@main.route("/admin/elections/<int:election_id>/positions")
 @login_required
-@role_required(
-    User.SUPER_ADMIN,
-    User.ELECTION_OFFICER
-)
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def manage_positions(election_id):
 
     election = Election.query.get_or_404(election_id)
@@ -2850,11 +2846,7 @@ def manage_positions(election_id):
 
     status = request.args.get("status", "")
 
-    page = request.args.get(
-        "page",
-        1,
-        type=int
-    )
+    page = request.args.get("page", 1, type=int)
 
     query = Position.query.filter_by(
         election_id=election.id
@@ -2871,11 +2863,11 @@ def manage_positions(election_id):
         )
 
     positions = query.order_by(
-        Position.display_order.asc(),
-        Position.created_at.asc()
+        Position.display_order.asc()
     ).paginate(
         page=page,
-        per_page=10
+        per_page=10,
+        error_out=False
     )
 
     stats = {
@@ -2891,7 +2883,7 @@ def manage_positions(election_id):
         "archived": Position.query.filter_by(
             election_id=election.id,
             status="archived"
-        ).count()
+        ).count(),
     }
 
     return render_template(
