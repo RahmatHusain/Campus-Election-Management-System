@@ -80,6 +80,13 @@ class Election(db.Model):
         "User",
         backref="created_elections"
     )
+    positions = db.relationship(
+    "Position",
+    back_populates="election",
+    lazy=True,
+    cascade="all, delete-orphan",
+    order_by="Position.display_order"
+    )
 
     # ===========================
     # Helper Properties
