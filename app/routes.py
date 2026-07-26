@@ -2834,7 +2834,6 @@ def edit_election(election_id):
         form=form,
         election=election
     )
-
 @main.route(
     "/admin/elections/<int:election_id>/positions"
 )
@@ -2847,17 +2846,61 @@ def manage_positions(election_id):
 
     election = Election.query.get_or_404(election_id)
 
-    positions = Position.query.filter_by(
+    search = request.args.get("search", "").strip()
+
+    status = request.args.get("status", "")
+
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
+
+    query = Position.query.filter_by(
         election_id=election.id
-    ).order_by(
+    )
+
+    if search:
+        query = query.filter(
+            Position.title.ilike(f"%{search}%")
+        )
+
+    if status:
+        query = query.filter(
+            Position.status == status
+        )
+
+    positions = query.order_by(
         Position.display_order.asc(),
         Position.created_at.asc()
-    ).all()
+    ).paginate(
+        page=page,
+        per_page=10
+    )
+
+    stats = {
+        "total": Position.query.filter_by(
+            election_id=election.id
+        ).count(),
+
+        "active": Position.query.filter_by(
+            election_id=election.id,
+            status="active"
+        ).count(),
+
+        "archived": Position.query.filter_by(
+            election_id=election.id,
+            status="archived"
+        ).count()
+    }
 
     return render_template(
         "admin/positions/manage.html",
         election=election,
-        positions=positions
+        positions=positions,
+        stats=stats,
+        search=search,
+        status=status
     )
 
 @main.route(
