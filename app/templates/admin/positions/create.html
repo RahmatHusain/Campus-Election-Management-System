@@ -1,0 +1,193 @@
+```html
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Create Position{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                Create Position
+            </h2>
+
+            <p class="text-muted mb-0">
+                Add a new position for
+                <strong>{{ election.title }}</strong>
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('main.manage_elections') }}"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back
+
+        </a>
+
+    </div>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                Position Information
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <!-- Position Title -->
+
+                <div class="mb-3">
+
+                    {{ form.title.label(class="form-label fw-semibold") }}
+
+                    {{ form.title(
+                        class="form-control",
+                        placeholder="Example: President"
+                    ) }}
+
+                    {% for error in form.title.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <!-- Description -->
+
+                <div class="mb-3">
+
+                    {{ form.description.label(class="form-label fw-semibold") }}
+
+                    {{ form.description(
+                        class="form-control",
+                        rows="4",
+                        placeholder="Describe responsibilities of this position..."
+                    ) }}
+
+                    {% for error in form.description.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-4">
+
+                        <div class="mb-3">
+
+                            {{ form.max_candidates.label(class="form-label fw-semibold") }}
+
+                            {{ form.max_candidates(class="form-control") }}
+
+                            {% for error in form.max_candidates.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="mb-3">
+
+                            {{ form.max_votes.label(class="form-label fw-semibold") }}
+
+                            {{ form.max_votes(class="form-control") }}
+
+                            {% for error in form.max_votes.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-4">
+
+                        <div class="mb-3">
+
+                            {{ form.display_order.label(class="form-label fw-semibold") }}
+
+                            {{ form.display_order(class="form-control") }}
+
+                            {% for error in form.display_order.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                            {% endfor %}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Status -->
+
+                <div class="mb-4">
+
+                    {{ form.status.label(class="form-label fw-semibold") }}
+
+                    {{ form.status(class="form-select") }}
+
+                    {% for error in form.status.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                    {% endfor %}
+
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-end">
+
+                    <a href="{{ url_for('main.manage_elections') }}"
+                       class="btn btn-light me-2">
+
+                        Cancel
+
+                    </a>
+
+                    {{ form.submit(class="btn btn-primary") }}
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+```
