@@ -8,3 +8,4 @@ from app.models.program import Program
 from app.forms.program_form import ProgramForm
 from app.forms.student_form import StudentForm
 from app.forms.election_form import ElectionForm
+from app.forms.position_form import PositionForm

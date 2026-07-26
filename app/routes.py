@@ -22,6 +22,7 @@ from app.forms.faculty_forms import FacultyForm
 from app.forms.department_form import DepartmentForm
 from app.forms.semester_form import SemesterForm
 from app.forms.election_form import ElectionForm
+from app.forms.position_form import PositionForm
 from app.models.election import Election
 from app.forms.program_form import (
     ProgramForm,
