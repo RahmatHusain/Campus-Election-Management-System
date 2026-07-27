@@ -6,21 +6,42 @@ from wtforms import (
     SelectField,
     SubmitField
 )
-
 from wtforms.validators import (
     DataRequired,
     Length,
-    NumberRange
+    NumberRange,
+    ValidationError
 )
+
+from app.models.position import Position
 
 
 class PositionForm(FlaskForm):
+    """
+    Production Position Form
+
+    Used for:
+        • Create Position
+        • Edit Position
+    """
+
+    election_id = SelectField(
+        "Election",
+        coerce=int,
+        validators=[
+            DataRequired(message="Please select an election.")
+        ]
+    )
 
     title = StringField(
         "Position Title",
         validators=[
-            DataRequired(),
-            Length(min=3, max=100)
+            DataRequired(message="Position title is required."),
+            Length(
+                min=3,
+                max=100,
+                message="Position title must be between 3 and 100 characters."
+            )
         ],
         render_kw={
             "placeholder": "President"
@@ -34,7 +55,7 @@ class PositionForm(FlaskForm):
         ],
         render_kw={
             "rows": 4,
-            "placeholder": "Position description..."
+            "placeholder": "Optional description..."
         }
     )
 
@@ -45,19 +66,21 @@ class PositionForm(FlaskForm):
             DataRequired(),
             NumberRange(
                 min=1,
-                max=100
+                max=100,
+                message="Maximum candidates must be between 1 and 100."
             )
         ]
     )
 
     max_votes = IntegerField(
-        "Maximum Votes Allowed",
+        "Maximum Votes Per Student",
         default=1,
         validators=[
             DataRequired(),
             NumberRange(
                 min=1,
-                max=20
+                max=20,
+                message="Maximum votes must be between 1 and 20."
             )
         ]
     )
@@ -69,7 +92,7 @@ class PositionForm(FlaskForm):
             DataRequired(),
             NumberRange(
                 min=1,
-                max=100
+                max=1000
             )
         ]
     )
@@ -85,3 +108,48 @@ class PositionForm(FlaskForm):
     )
 
     submit = SubmitField("Save Position")
+
+    # --------------------------------------------------
+    # Validation
+    # --------------------------------------------------
+
+    def validate_title(self, field):
+        """
+        Prevent duplicate position names
+        within the same election.
+        """
+
+        if not self.election_id.data:
+            return
+
+        existing = Position.query.filter(
+            Position.election_id == self.election_id.data,
+            Position.title.ilike(field.data.strip())
+        ).first()
+
+        if hasattr(self, "position_id"):
+
+            if existing and existing.id != self.position_id:
+                raise ValidationError(
+                    "This position already exists."
+                )
+
+        elif existing:
+
+            raise ValidationError(
+                "This position already exists."
+            )
+
+    def validate_max_votes(self, field):
+        """
+        Votes cannot exceed
+        candidate limit.
+        """
+
+        if (
+            self.max_candidates.data
+            and field.data > self.max_candidates.data
+        ):
+            raise ValidationError(
+                "Maximum votes cannot exceed maximum candidates."
+            )

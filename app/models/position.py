@@ -11,25 +11,21 @@ class Position(db.Model):
         primary_key=True
     )
 
-    # Relationships
     election_id = db.Column(
         db.Integer,
         db.ForeignKey("elections.id"),
         nullable=False
     )
 
-    # Basic Information
     title = db.Column(
         db.String(100),
         nullable=False
     )
 
     description = db.Column(
-        db.Text,
-        nullable=True
+        db.Text
     )
 
-    # Configuration
     max_candidates = db.Column(
         db.Integer,
         nullable=False,
@@ -48,7 +44,6 @@ class Position(db.Model):
         default=1
     )
 
-    # Status
     status = db.Column(
         db.String(20),
         nullable=False,
@@ -60,7 +55,6 @@ class Position(db.Model):
         default=True
     )
 
-    # Audit Fields
     created_at = db.Column(
         db.DateTime,
         default=datetime.utcnow
@@ -72,33 +66,63 @@ class Position(db.Model):
         onupdate=datetime.utcnow
     )
 
-    # ----------------------------
+    # -----------------------------------
     # Relationships
-    # ----------------------------
+    # -----------------------------------
 
     election = db.relationship(
         "Election",
         back_populates="positions"
     )
 
-    # ----------------------------
+    # -----------------------------------
     # Helper Properties
-    # ----------------------------
-
+    # -----------------------------------
     @property
     def candidate_count(self):
-        return len(self.candidates)
+        """
+        Temporary until Candidate module (Day 13)
+        """
+        return 0
 
 
     @property
     def is_filled(self):
-        return self.candidate_count >= self.max_candidates
+        """
+        Temporary until Candidate module (Day 13)
+        """
+        return False
 
 
     @property
     def remaining_slots(self):
-        return max(0, self.max_candidates - self.candidate_count)
-    def __repr__(self):
-        return (
-            f"<Position {self.title}>"
+        """
+        Temporary until Candidate module (Day 13)
+        """
+        return self.max_candidates
+
+    @property
+    def progress_percentage(self):
+        if self.max_candidates == 0:
+            return 0
+
+        return round(
+            (self.candidate_count / self.max_candidates) * 100
         )
+
+    @property
+    def badge_color(self):
+
+        if self.status == "archived":
+            return "secondary"
+
+        if self.is_filled:
+            return "success"
+
+        if self.candidate_count == 0:
+            return "danger"
+
+        return "primary"
+
+    def __repr__(self):
+        return f"<Position {self.title}>"

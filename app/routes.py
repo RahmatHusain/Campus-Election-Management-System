@@ -22,7 +22,7 @@ from app.forms.faculty_forms import FacultyForm
 from app.forms.department_form import DepartmentForm
 from app.forms.semester_form import SemesterForm
 from app.forms.election_form import ElectionForm
-from app.models.position import Position
+from app.forms.position_form import PositionForm
 from app.services.position_service import PositionService
 from app.models.position import Position
 from app.models.election import Election
@@ -2979,76 +2979,141 @@ def create_position(election_id):
         election=election
     )
 
-@main.route("/admin/elections/<int:election_id>/positions")
+@main.route(
+    "/admin/positions/<int:position_id>/edit",
+    methods=["GET", "POST"]
+)
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def manage_positions(election_id):
+def edit_position(position_id):
 
-    election = Election.query.get_or_404(election_id)
+    position = Position.query.get_or_404(position_id)
 
-    search = request.args.get("search", "").strip()
-    status = request.args.get("status", "")
-    page = request.args.get("page", 1, type=int)
+    form = PositionForm(obj=position)
 
-    query = Position.query.filter(
-        Position.election_id == election.id
-    )
+    # Election should not change
+    form.election_id.choices = [
+        (position.election.id, position.election.title)
+    ]
+    form.election_id.data = position.election_id
 
-    if search:
-        query = query.filter(
-            Position.title.ilike(f"%{search}%")
-        )
+    if form.validate_on_submit():
 
-    if status:
-        query = query.filter(
-            Position.status == status
-        )
+        duplicate = Position.query.filter(
+            Position.election_id == position.election_id,
+            Position.title == form.title.data.strip(),
+            Position.id != position.id
+        ).first()
 
-    positions = query.order_by(
-        Position.display_order.asc(),
-        Position.title.asc()
-    ).paginate(
-        page=page,
-        per_page=10,
-        error_out=False
-    )
+        if duplicate:
+            flash(
+                "A position with this title already exists.",
+                "danger"
+            )
+            return render_template(
+                "admin/positions/edit.html",
+                form=form,
+                position=position,
+                election=position.election
+            )
 
-    stats = {
+        try:
 
-        "total":
-        Position.query.filter_by(
-            election_id=election.id
-        ).count(),
+            position.title = form.title.data.strip()
+            position.description = form.description.data
+            position.max_candidates = form.max_candidates.data
+            position.max_votes = form.max_votes.data
+            position.display_order = form.display_order.data
+            position.status = form.status.data
 
-        "active":
-        Position.query.filter_by(
-            election_id=election.id,
-            status="active"
-        ).count(),
+            audit = AuditLog(
+                user_id=current_user.id,
+                action="edit_position",
+                entity_type="position",
+                entity_id=position.id,
+                description=f"Updated position '{position.title}'"
+            )
 
-        "inactive":
-        Position.query.filter_by(
-            election_id=election.id,
-            status="inactive"
-        ).count(),
+            db.session.add(audit)
 
-        "archived":
-        Position.query.filter_by(
-            election_id=election.id,
-            status="archived"
-        ).count()
+            db.session.commit()
 
-    }
+            flash(
+                "Position updated successfully.",
+                "success"
+            )
+
+            return redirect(
+                url_for(
+                    "main.manage_positions",
+                    election_id=position.election_id
+                )
+            )
+
+        except Exception:
+
+            db.session.rollback()
+
+            flash(
+                "Unable to update position.",
+                "danger"
+            )
 
     return render_template(
-        "admin/positions/manage.html",
-        election=election,
-        positions=positions,
-        stats=stats,
-        search=search,
-        status=status
+        "admin/positions/edit.html",
+        form=form,
+        position=position,
+        election=position.election
     )
 
+@main.route(
+    "/admin/positions/<int:position_id>/archive",
+    methods=["POST", "GET"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def archive_position(position_id):
+
+    position = Position.query.get_or_404(position_id)
+
+    try:
+
+        position.status = "archived"
+        position.is_active = False
+
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="archive_position",
+            entity_type="position",
+            entity_id=position.id,
+            description=f"Archived position '{position.title}'"
+        )
+
+        db.session.add(audit)
+
+        db.session.commit()
+
+        flash(
+            "Position archived successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        db.session.rollback()
+
+        flash(
+            "Unable to archive position.",
+            "danger"
+        )
+
+    return redirect(
+        url_for(
+            "main.manage_positions",
+            election_id=position.election_id
+        )
+    )
+    
 # ==========================
 # Profile
 # ==========================
