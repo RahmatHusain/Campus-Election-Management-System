@@ -114,30 +114,26 @@ class PositionForm(FlaskForm):
     # --------------------------------------------------
 
     def validate_title(self, field):
-        """
-        Prevent duplicate position names
-        within the same election.
-        """
 
         if not self.election_id.data:
             return
 
-        existing = Position.query.filter(
+        query = Position.query.filter(
             Position.election_id == self.election_id.data,
             Position.title.ilike(field.data.strip())
-        ).first()
+        )
 
-        if hasattr(self, "position_id"):
+        # Ignore the current position while editing
+        if self.original_position_id:
+            query = query.filter(
+                Position.id != self.original_position_id
+            )
 
-            if existing and existing.id != self.position_id:
-                raise ValidationError(
-                    "This position already exists."
-                )
+        existing = query.first()
 
-        elif existing:
-
+        if existing:
             raise ValidationError(
-                "This position already exists."
+                "This position already exists in this election."
             )
 
     def validate_max_votes(self, field):
@@ -153,3 +149,8 @@ class PositionForm(FlaskForm):
             raise ValidationError(
                 "Maximum votes cannot exceed maximum candidates."
             )
+
+
+    def __init__(self, original_position_id=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_position_id = original_position_id

@@ -2989,7 +2989,10 @@ def edit_position(position_id):
 
     position = Position.query.get_or_404(position_id)
 
-    form = PositionForm(obj=position)
+    form = PositionForm(
+    original_position_id=position.id,
+    obj=position
+    )
 
     # Election should not change
     form.election_id.choices = [
