@@ -2835,6 +2835,25 @@ def edit_election(election_id):
         election=election
     )
 
+@main.route("/admin/elections/<int:election_id>")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def election_detail(election_id):
+
+    election = Election.query.get_or_404(election_id)
+
+    positions = Position.query.filter(
+        Position.election_id == election.id
+    ).order_by(
+        Position.display_order
+    ).all()
+
+    return render_template(
+        "admin/elections/detail.html",
+        election=election,
+        positions=positions
+    )
+
 @main.route("/admin/elections/<int:election_id>/positions")
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)

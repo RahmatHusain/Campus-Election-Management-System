@@ -276,12 +276,20 @@
                             {% if election.is_active %}
 
                             <form method="POST" action="{{ url_for('main.archive_election',
-      election_id=election.id) }}" class="d-inline">
+                                    election_id=election.id) }}" 
+                                    class="d-inline">
 
                                 <button class="btn btn-sm btn-outline-danger"
                                     onclick="return confirm('Archive this election?')">
 
                                     <i class="bi bi-archive"></i>
+                                    <a href="{{ url_for('main.election_detail', election_id=election.id) }}"
+                                        class="btn btn-primary btn-sm">
+
+                                        <i class="bi bi-eye"></i>
+                                        View
+
+                                    </a>
 
                                 </button>
 
@@ -290,7 +298,8 @@
                             {% else %}
 
                             <form method="POST" action="{{ url_for('main.restore_election',
-      election_id=election.id) }}" class="d-inline">
+                                election_id=election.id) }}" 
+                                class="d-inline">
 
                                 <button class="btn btn-sm btn-outline-success">
 

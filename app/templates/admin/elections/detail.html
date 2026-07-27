@@ -1,0 +1,136 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}
+Election Details
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2>{{ election.title }}</h2>
+            <p class="text-muted">
+                {{ election.description }}
+            </p>
+        </div>
+
+        <a href="{{ url_for('main.create_position', election_id=election.id) }}"
+           class="btn btn-primary">
+
+            <i class="bi bi-plus-circle"></i>
+            Add Position
+
+        </a>
+
+    </div>
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header">
+
+            <h5 class="mb-0">
+
+                Positions
+
+            </h5>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover">
+
+                <thead>
+
+                <tr>
+
+                    <th>Order</th>
+
+                    <th>Position</th>
+
+                    <th>Max Candidates</th>
+
+                    <th>Votes</th>
+
+                    <th>Status</th>
+
+                    <th>Actions</th>
+
+                </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for position in positions %}
+
+                <tr>
+
+                    <td>{{ position.display_order }}</td>
+
+                    <td>{{ position.title }}</td>
+
+                    <td>{{ position.max_candidates }}</td>
+
+                    <td>{{ position.max_votes }}</td>
+
+                    <td>
+
+                        <span class="badge bg-success">
+
+                            {{ position.status.title() }}
+
+                        </span>
+
+                    </td>
+
+                    <td>
+
+                        <a class="btn btn-warning btn-sm"
+                           href="{{ url_for('main.edit_position', position_id=position.id) }}">
+                            Edit
+                        </a>
+
+                        <a class="btn btn-info btn-sm"
+                           href="#">
+                            Candidates
+                        </a>
+
+                        <a class="btn btn-danger btn-sm"
+                           href="{{ url_for('main.archive_position', position_id=position.id) }}">
+                            Archive
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="6" class="text-center">
+
+                        No positions found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
