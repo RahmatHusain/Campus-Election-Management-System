@@ -2952,6 +2952,10 @@ def create_position(election_id):
             db.session.add(log)
             db.session.commit()
 
+            
+
+
+
             flash(
                 "Position created successfully.",
                 "success"
@@ -3095,6 +3099,8 @@ def archive_position(position_id):
         db.session.add(audit)
 
         db.session.commit()
+
+        
 
         flash(
             "Position archived successfully.",

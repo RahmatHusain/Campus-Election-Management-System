@@ -135,7 +135,32 @@ class PositionForm(FlaskForm):
             raise ValidationError(
                 "This position already exists in this election."
             )
+    def validate_display_order(self, field):
+        """
+        Prevent duplicate display order
+        inside the same election.
+        """
 
+        if not self.election_id.data:
+            return
+
+        query = Position.query.filter(
+            Position.election_id == self.election_id.data,
+            Position.display_order == field.data
+        )
+
+        # Ignore current record while editing
+        if getattr(self, "original_position_id", None):
+            query = query.filter(
+                Position.id != self.original_position_id
+            )
+
+        existing = query.first()
+
+        if existing:
+            raise ValidationError(
+                "This display order is already used in this election."
+            )
     def validate_max_votes(self, field):
         """
         Votes cannot exceed
