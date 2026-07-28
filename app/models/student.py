@@ -211,7 +211,10 @@ class Student(db.Model):
             lazy=True
         )
     )
-
+    candidates = db.relationship(
+        "Candidate",
+        back_populates="student"
+    )
     # ==========================
     # Helper Properties
     # ==========================

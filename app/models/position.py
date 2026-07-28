@@ -74,16 +74,17 @@ class Position(db.Model):
         "Election",
         back_populates="positions"
     )
-
+    candidates = db.relationship(
+        "Candidate",
+        back_populates="position",
+        cascade="all, delete-orphan"
+    )
     # -----------------------------------
     # Helper Properties
     # -----------------------------------
     @property
     def candidate_count(self):
-        """
-        Temporary until Candidate module (Day 13)
-        """
-        return 0
+        return len(self.candidates)
 
 
     @property

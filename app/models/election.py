@@ -87,6 +87,11 @@ class Election(db.Model):
     cascade="all, delete-orphan",
     order_by="Position.display_order"
     )
+    candidates = db.relationship(
+        "Candidate",
+        back_populates="election",
+        cascade="all, delete-orphan"
+    )
 
     # ===========================
     # Helper Properties
