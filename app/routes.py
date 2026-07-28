@@ -25,6 +25,8 @@ from app.forms.election_form import ElectionForm
 from app.forms.position_form import PositionForm
 from app.services.position_service import PositionService
 from app.models.position import Position
+from app.forms.candidate_form import CandidateForm
+from app.models.candidate import Candidate
 from app.models.election import Election
 from app.forms.program_form import (
     ProgramForm,
@@ -3141,7 +3143,84 @@ def archive_position(position_id):
             election_id=position.election_id
         )
     )
-    
+
+@main.route(
+    "/admin/positions/<int:position_id>/candidates/create",
+    methods=["GET", "POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def create_candidate(position_id):
+
+    position = Position.query.get_or_404(position_id)
+
+    form = CandidateForm()
+
+    # Load students as dropdown
+    students = Student.query.order_by(Student.first_name).all()
+
+    form.student_id.choices = [
+        (s.id, f"{s.student_id} - {s.first_name} {s.last_name}")
+        for s in students
+    ]
+
+    if form.validate_on_submit():
+
+        # Prevent duplicate student in same position
+        duplicate = Candidate.query.filter_by(
+            position_id=position.id,
+            student_id=form.student_id.data
+        ).first()
+
+        if duplicate:
+            flash(
+                "Student is already a candidate for this position.",
+                "danger"
+            )
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position
+            )
+
+        candidate = Candidate(
+            position_id=position.id,
+            student_id=form.student_id.data,
+            slogan=form.slogan.data,
+            manifesto=form.manifesto.data,
+            symbol=form.symbol.data,
+            status=form.status.data
+        )
+
+        db.session.add(candidate)
+
+        log_action(
+            action="Create Candidate",
+            entity_type="Candidate",
+            entity_id=0,
+            description=f"Candidate added to {position.title}"
+        )
+
+        db.session.commit()
+
+        flash(
+            "Candidate created successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    return render_template(
+        "admin/candidates/create.html",
+        form=form,
+        position=position
+    )
+
 # ==========================
 # Profile
 # ==========================
