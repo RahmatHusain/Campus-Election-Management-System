@@ -1,8 +1,4 @@
-```jinja
-app/templates/admin/candidates/manage.html
-```
 
-```jinja
 {% extends "layouts/admin_base.html" %}
 
 {% block title %}Candidate Management{% endblock %}
@@ -181,9 +177,9 @@ app/templates/admin/candidates/manage.html
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 mt-4">
-                    <a href="{{ url_for('main.manage_candidates',
-                    position_id=position.id) }}"
-                     class="btn btn-outline-secondary">
+                    <a href="{{ url_for('main.candidate_dashboard') }}"
+   class="btn btn-outline-secondary">
+                     
                         <i class="bi bi-arrow-clockwise"></i>
                         Reset
                     </a>
@@ -333,11 +329,10 @@ app/templates/admin/candidates/manage.html
                         </td>
 
                         <td>
-
                             <div class="dropdown">
-
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                                        type="button"
+                                        data-bs-toggle="dropdown">
                                     Actions
                                 </button>
 
@@ -345,7 +340,7 @@ app/templates/admin/candidates/manage.html
 
                                     <li>
                                         <a class="dropdown-item"
-                                            href="{{ url_for('main.view_candidate', candidate_id=candidate.id) }}">
+                                           href="{{ url_for('main.view_candidate', candidate_id=candidate.id) }}">
                                             <i class="bi bi-eye me-2"></i>
                                             View
                                         </a>
@@ -353,19 +348,17 @@ app/templates/admin/candidates/manage.html
 
                                     <li>
                                         <a class="dropdown-item"
-                                            href="{{ url_for('main.edit_candidate', candidate_id=candidate.id) }}">
+                                           href="{{ url_for('main.edit_candidate', candidate_id=candidate.id) }}">
                                             <i class="bi bi-pencil me-2"></i>
                                             Edit
                                         </a>
                                     </li>
 
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
 
                                     <li>
                                         <a class="dropdown-item text-success"
-                                            href="{{ url_for('main.approve_candidate', candidate_id=candidate.id) }}">
+                                           href="{{ url_for('main.approve_candidate', candidate_id=candidate.id) }}">
                                             <i class="bi bi-check-circle me-2"></i>
                                             Approve
                                         </a>
@@ -373,7 +366,7 @@ app/templates/admin/candidates/manage.html
 
                                     <li>
                                         <a class="dropdown-item text-danger"
-                                            href="{{ url_for('main.reject_candidate', candidate_id=candidate.id) }}">
+                                           href="{{ url_for('main.reject_candidate', candidate_id=candidate.id) }}">
                                             <i class="bi bi-x-circle me-2"></i>
                                             Reject
                                         </a>
@@ -381,18 +374,16 @@ app/templates/admin/candidates/manage.html
 
                                     <li>
                                         <a class="dropdown-item text-secondary"
-                                            href="{{ url_for('main.archive_candidate', candidate_id=candidate.id) }}">
+                                           href="{{ url_for('main.archive_candidate', candidate_id=candidate.id) }}">
                                             <i class="bi bi-archive me-2"></i>
                                             Archive
                                         </a>
                                     </li>
 
                                 </ul>
-
                             </div>
 
                         </td>
-
                     </tr>
 
                     {% endfor %}
@@ -410,10 +401,14 @@ app/templates/admin/candidates/manage.html
                                 No candidates match the selected filters.
                             </p>
 
-                            <a href="{{ url_for('main.create_candidate') }}" class="btn btn-primary">
+                            {% if positions.items %}
+                            <a href="{{ url_for('main.create_candidate',
+                                                position_id=positions.items[0].id) }}"
+                               class="btn btn-primary">
                                 <i class="bi bi-plus-circle"></i>
                                 Add First Candidate
                             </a>
+                            {% endif %}
 
                         </td>
                     </tr>
@@ -427,71 +422,74 @@ app/templates/admin/candidates/manage.html
         </div>
 
 
-        <!-- Pagination -->
-        {% if candidates.pages is defined and candidates.pages > 1 %}
-
         <div class="card-footer bg-white">
 
             <nav>
-
                 <ul class="pagination justify-content-center mb-0">
 
                     {% if candidates.has_prev %}
-
                     <li class="page-item">
                         <a class="page-link"
-                            href="{{ url_for('main.manage_candidates', page=candidates.prev_num, search=search, status=status, verified=verified) }}">
+                           href="{{ url_for('main.manage_candidates',
+                                            position_id=request.args.get('position'),
+                                            page=candidates.prev_num,
+                                            search=search,
+                                            status=status,
+                                            verified=verified) }}">
                             Previous
                         </a>
                     </li>
-
                     {% else %}
-
                     <li class="page-item disabled">
                         <span class="page-link">Previous</span>
                     </li>
-
                     {% endif %}
 
 
-                    {% for page_num in candidates.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
-                    %}
+                        {% if page_num %}
 
-                    {% if page_num %}
+                            {% if page_num == candidates.page %}
 
-                    {% if page_num == candidates.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
 
-                    <li class="page-item active">
-                        <span class="page-link">{{ page_num }}</span>
-                    </li>
+                            {% else %}
 
-                    {% else %}
+                            <li class="page-item">
+                                <a class="page-link"
+                                   href="{{ url_for('main.manage_candidates',
+                                                    position_id=request.args.get('position'),
+                                                    page=page_num,
+                                                    search=search,
+                                                    status=status,
+                                                    verified=verified) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
 
-                    <li class="page-item">
-                        <a class="page-link"
-                            href="{{ url_for('main.manage_candidates', page=page_num, search=search, status=status, verified=verified) }}">
-                            {{ page_num }}
-                        </a>
-                    </li>
+                            {% endif %}
 
-                    {% endif %}
+                        {% else %}
 
-                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
 
-                    <li class="page-item disabled">
-                        <span class="page-link">…</span>
-                    </li>
+                        {% endif %}
 
-                    {% endif %}
-
-                    {% endfor %}
-
+                    
 
                     {% if candidates.has_next %}
 
                     <li class="page-item">
                         <a class="page-link"
-                            href="{{ url_for('main.manage_candidates', page=candidates.next_num, search=search, status=status, verified=verified) }}">
+                           href="{{ url_for('main.manage_candidates',
+                                            position_id=request.args.get('position'),
+                                            page=candidates.next_num,
+                                            search=search,
+                                            status=status,
+                                            verified=verified) }}">
                             Next
                         </a>
                     </li>
@@ -502,10 +500,9 @@ app/templates/admin/candidates/manage.html
                         <span class="page-link">Next</span>
                     </li>
 
-                    {% endif %}
+                    
 
                 </ul>
-
             </nav>
 
         </div>
@@ -515,7 +512,6 @@ app/templates/admin/candidates/manage.html
     </div>
 
 </div>
-
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
