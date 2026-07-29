@@ -1,0 +1,558 @@
+```jinja
+app/templates/admin/candidates/manage.html
+```
+
+```jinja
+{% extends "layouts/admin_base.html" %}
+
+{% block title %}Candidate Management{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-4 gap-3">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                Candidate Management
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage election candidates
+            </p>
+        </div>
+
+        <div class="d-flex gap-2">
+
+            <a href="{{ url_for('main.manage_elections') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i>
+                Back
+            </a>
+
+            {% if positions %}
+<a href="{{ url_for('main.create_candidate', position_id=positions[0].id) }}"
+   class="btn btn-primary">
+    <i class="bi bi-plus-circle"></i>
+    Add Candidate
+</a>
+{% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- Statistics Cards -->
+    <div class="row g-3 mb-4">
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-people-fill text-primary fs-1"></i>
+                    <h3 class="fw-bold mt-2 mb-0">{{ stats.total }}</h3>
+                    <small class="text-muted">Total</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-patch-check-fill text-success fs-1"></i>
+                    <h3 class="fw-bold mt-2 mb-0">{{ stats.verified }}</h3>
+                    <small class="text-muted">Verified</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-hourglass-split text-warning fs-1"></i>
+                    <h3 class="fw-bold mt-2 mb-0">{{ stats.pending }}</h3>
+                    <small class="text-muted">Pending</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-check-circle-fill text-info fs-1"></i>
+                    <h3 class="fw-bold mt-2 mb-0">{{ stats.approved }}</h3>
+                    <small class="text-muted">Approved</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-x-circle-fill text-danger fs-1"></i>
+                    <h3 class="fw-bold mt-2 mb-0">{{ stats.rejected }}</h3>
+                    <small class="text-muted">Rejected</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-archive-fill text-secondary fs-1"></i>
+                    <h3 class="fw-bold mt-2 mb-0">{{ stats.archived }}</h3>
+                    <small class="text-muted">Archived</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="bi bi-funnel"></i>
+                Search & Filters
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form method="GET">
+
+                <div class="row g-3">
+
+                    <div class="col-lg-3">
+                        <label class="form-label fw-semibold">Search</label>
+                        <input type="text" name="search" class="form-control" placeholder="Name / Student ID"
+                            value="{{ search }}">
+                    </div>
+
+                    <div class="col-lg-3">
+                        <label class="form-label fw-semibold">Election</label>
+                        <select name="election" class="form-select">
+                            <option value="">All Elections</option>
+                            {% for election in elections %}
+                            <option value="{{ election.id }}" {% if request.args.get('election')==election.id|string
+                                %}selected{% endif %}>
+                                {{ election.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Position</label>
+                        <select name="position" class="form-select">
+                            <option value="">All Positions</option>
+                            {% for position in positions %}
+                            <option value="{{ position.id }}" {% if request.args.get('position')==position.id|string
+                                %}selected{% endif %}>
+                                {{ position.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Status</option>
+                            <option value="pending" {% if status=='pending' %}selected{% endif %}>Pending</option>
+                            <option value="approved" {% if status=='approved' %}selected{% endif %}>Approved</option>
+                            <option value="rejected" {% if status=='rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="archived" {% if status=='archived' %}selected{% endif %}>Archived</option>
+                        </select>
+                    </div>
+
+                    <div class="col-lg-2">
+                        <label class="form-label fw-semibold">Verification</label>
+                        <select name="verified" class="form-select">
+                            <option value="">All</option>
+                            <option value="1" {% if verified=='1' %}selected{% endif %}>Verified</option>
+                            <option value="0" {% if verified=='0' %}selected{% endif %}>Not Verified</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ url_for('main.manage_candidates',
+                    position_id=position.id) }}"
+                     class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Reset
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                        Apply Filters
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- Candidate Table -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+
+            <h5 class="mb-0">Candidate List</h5>
+
+            <span class="badge bg-primary rounded-pill">
+                {{ candidates.total if candidates is defined and candidates.total is defined else candidates|length }}
+                Candidates
+            </span>
+
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="table table-hover align-middle mb-0">
+
+                <thead class="table-light">
+                    <tr>
+                        <th width="70">Photo</th>
+                        <th>Candidate</th>
+                        <th>Position</th>
+                        <th>Election</th>
+                        <th>Verified</th>
+                        <th>Status</th>
+                        <th width="120">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% if candidates.items %}
+
+                    {% for candidate in candidates.items %}
+
+                    {% for candidate in candidate_list %}
+                    {% endfor %}
+                    {% else %}
+
+                    <tr>
+
+                        <td>
+
+                            {% if candidate.student.photo %}
+
+                            <img src="{{ url_for('static', filename='uploads/students/' ~ candidate.student.photo) }}"
+                                class="rounded-circle border" width="48" height="48" style="object-fit: cover;">
+
+                            {% else %}
+
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                style="width:48px;height:48px;">
+                                <i class="bi bi-person"></i>
+                            </div>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="fw-semibold">
+                                {{ candidate.student.first_name }} {{ candidate.student.last_name }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ candidate.student.student_id }}
+                            </small>
+
+                        </td>
+
+                        <td>
+
+                            <span class="badge bg-info-subtle text-info border border-info-subtle">
+                                {{ candidate.position.title }}
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <small class="text-muted">
+                                {{ candidate.position.election.title }}
+                            </small>
+
+                        </td>
+
+                        <td>
+
+                            {% if candidate.student.is_verified %}
+
+                            <span class="badge bg-success">
+                                <i class="bi bi-check-circle"></i>
+                                Verified
+                            </span>
+
+                            {% else %}
+
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-exclamation-circle"></i>
+                                Pending
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            {% if candidate.status == 'approved' %}
+
+                            <span class="badge bg-success">Approved</span>
+
+                            {% elif candidate.status == 'pending' %}
+
+                            <span class="badge bg-warning text-dark">Pending</span>
+
+                            {% elif candidate.status == 'rejected' %}
+
+                            <span class="badge bg-danger">Rejected</span>
+
+                            {% else %}
+
+                            <span class="badge bg-secondary">Archived</span>
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+
+                            <div class="dropdown">
+
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                    Actions
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ url_for('main.view_candidate', candidate_id=candidate.id) }}">
+                                            <i class="bi bi-eye me-2"></i>
+                                            View
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                            href="{{ url_for('main.edit_candidate', candidate_id=candidate.id) }}">
+                                            <i class="bi bi-pencil me-2"></i>
+                                            Edit
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item text-success"
+                                            href="{{ url_for('main.approve_candidate', candidate_id=candidate.id) }}">
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            Approve
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item text-danger"
+                                            href="{{ url_for('main.reject_candidate', candidate_id=candidate.id) }}">
+                                            <i class="bi bi-x-circle me-2"></i>
+                                            Reject
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item text-secondary"
+                                            href="{{ url_for('main.archive_candidate', candidate_id=candidate.id) }}">
+                                            <i class="bi bi-archive me-2"></i>
+                                            Archive
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    {% else %}
+
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+
+                            <i class="bi bi-people display-4 text-muted"></i>
+
+                            <h5 class="mt-3">No Candidates Found</h5>
+
+                            <p class="text-muted mb-3">
+                                No candidates match the selected filters.
+                            </p>
+
+                            <a href="{{ url_for('main.create_candidate') }}" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i>
+                                Add First Candidate
+                            </a>
+
+                        </td>
+                    </tr>
+
+                    {% endif %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- Pagination -->
+        {% if candidates.pages is defined and candidates.pages > 1 %}
+
+        <div class="card-footer bg-white">
+
+            <nav>
+
+                <ul class="pagination justify-content-center mb-0">
+
+                    {% if candidates.has_prev %}
+
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('main.manage_candidates', page=candidates.prev_num, search=search, status=status, verified=verified) }}">
+                            Previous
+                        </a>
+                    </li>
+
+                    {% else %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+
+                    {% endif %}
+
+
+                    {% for page_num in candidates.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2)
+                    %}
+
+                    {% if page_num %}
+
+                    {% if page_num == candidates.page %}
+
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+
+                    {% else %}
+
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('main.manage_candidates', page=page_num, search=search, status=status, verified=verified) }}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+
+                    {% endif %}
+
+                    {% else %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">…</span>
+                    </li>
+
+                    {% endif %}
+
+                    {% endfor %}
+
+
+                    {% if candidates.has_next %}
+
+                    <li class="page-item">
+                        <a class="page-link"
+                            href="{{ url_for('main.manage_candidates', page=candidates.next_num, search=search, status=status, verified=verified) }}">
+                            Next
+                        </a>
+                    </li>
+
+                    {% else %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+
+                    {% endif %}
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                Are you sure you want to delete this candidate?
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
+                    Delete
+                </a>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function setDeleteUrl(url) {
+        document.getElementById("confirmDeleteBtn").href = url;
+    }
+</script>
+
+{% endblock %}
+```

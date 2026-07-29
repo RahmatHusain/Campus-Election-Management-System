@@ -479,13 +479,6 @@ def officer_dashboard():
     )
 
 
-@main.route("/officer/candidates")
-@login_required
-@election_officer_required
-def manage_candidates():
-
-    return render_template("officer/manage_candidates.html")
-
 
 @main.route("/officer/approvals")
 @login_required
@@ -3144,6 +3137,36 @@ def archive_position(position_id):
         )
     )
 
+
+@main.route("/admin/candidates")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def candidate_dashboard():
+    candidates = Candidate.query.all()
+
+    positions = Position.query.all()
+
+    elections = Election.query.filter_by(is_active=True).all()
+
+    stats = {
+        "total": len(candidates),
+        "verified": 0,
+        "pending": 0,
+        "approved": 0,
+        "rejected": 0,
+        "archived": 0,
+    }
+
+    return render_template(
+        "admin/candidates/manage.html",
+        candidates=candidates,
+        positions=positions,
+        elections=elections,
+        stats=stats,
+        search="",
+        status="",
+        verified=""
+    )
 @main.route(
     "/admin/positions/<int:position_id>/candidates/create",
     methods=["GET", "POST"]
@@ -3220,7 +3243,53 @@ def create_candidate(position_id):
         form=form,
         position=position
     )
+@main.route("/admin/positions/<int:position_id>/candidates")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def manage_candidates(position_id):
 
+    position = Position.query.get_or_404(position_id)
+
+    search = request.args.get("search", "").strip()
+
+    status = request.args.get("status", "")
+
+    page = request.args.get("page", 1, type=int)
+
+    query = Candidate.query.filter_by(position_id=position.id)
+
+    if search:
+        query = query.filter(
+            Candidate.full_name.ilike(f"%{search}%")
+        )
+
+    if status:
+        query = query.filter(
+            Candidate.status == status
+        )
+
+    candidates = query.order_by(
+        Candidate.created_at.desc()
+    ).paginate(
+        page=page,
+        per_page=10
+    )
+
+    stats = {
+        "total": Candidate.query.filter_by(position_id=position.id).count(),
+        "approved": Candidate.query.filter_by(position_id=position.id, status="approved").count(),
+        "pending": Candidate.query.filter_by(position_id=position.id, status="pending").count(),
+        "rejected": Candidate.query.filter_by(position_id=position.id, status="rejected").count(),
+    }
+
+    return render_template(
+        "admin/candidates/manage.html",
+        position=position,
+        candidates=candidates,
+        stats=stats,
+        search=search,
+        status=status
+    )
 # ==========================
 # Profile
 # ==========================
