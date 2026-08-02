@@ -3290,6 +3290,87 @@ def manage_candidates(position_id):
         search=search,
         status=status
     )
+
+@main.route("/admin/candidates/<int:candidate_id>/approve", methods=["POST"])
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def approve_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    # Candidate must be verified before approval
+    if not candidate.is_verified:
+        flash(
+            "Candidate must be verified before approval.",
+            "warning"
+        )
+        return redirect(request.referrer or url_for("main.manage_candidates"))
+
+    # Prevent unnecessary duplicate approval
+    if candidate.status == "approved":
+        flash(
+            "Candidate is already approved.",
+            "info"
+        )
+        return redirect(request.referrer or url_for("main.manage_candidates"))
+
+    candidate.status = "approved"
+
+    db.session.commit()
+
+    flash(
+        "Candidate approved successfully.",
+        "success"
+    )
+
+    return redirect(
+        request.referrer
+        or url_for(
+            "main.manage_candidates",
+            position_id=candidate.position_id
+        )
+    )
+
+@main.route(
+    "/admin/candidates/<int:candidate_id>/verify",
+    methods=["POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def verify_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    if candidate.is_verified:
+        flash(
+            "Candidate is already verified.",
+            "info"
+        )
+        return redirect(
+            request.referrer
+            or url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    candidate.is_verified = True
+
+    db.session.commit()
+
+    flash(
+        "Candidate verified successfully.",
+        "success"
+    )
+
+    return redirect(
+        request.referrer
+        or url_for(
+            "main.manage_candidates",
+            position_id=candidate.position_id
+        )
+    )    
+
 # ==========================
 # Profile
 # ==========================
