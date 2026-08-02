@@ -3167,6 +3167,8 @@ def candidate_dashboard():
         status="",
         verified=""
     )
+
+
 @main.route(
     "/admin/positions/<int:position_id>/candidates/create",
     methods=["GET", "POST"]
@@ -3175,59 +3177,150 @@ def candidate_dashboard():
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def create_candidate(position_id):
 
+    # --------------------------------------------------
+    # Load Position
+    # --------------------------------------------------
+
     position = Position.query.get_or_404(position_id)
+
+    # --------------------------------------------------
+    # Get Election from Position
+    # --------------------------------------------------
+
+    election = Election.query.get_or_404(
+        position.election_id
+    )
+
+    # --------------------------------------------------
+    # Create Form
+    # --------------------------------------------------
 
     form = CandidateForm()
 
-    # Load students as dropdown
-    students = Student.query.order_by(Student.first_name).all()
+    # --------------------------------------------------
+    # Load Students
+    # --------------------------------------------------
+
+    students = Student.query.order_by(
+        Student.first_name.asc(),
+        Student.last_name.asc()
+    ).all()
 
     form.student_id.choices = [
-        (s.id, f"{s.student_id} - {s.first_name} {s.last_name}")
-        for s in students
+        (
+            student.id,
+            f"{student.student_id} - "
+            f"{student.first_name} {student.last_name}"
+        )
+        for student in students
     ]
+
+    # --------------------------------------------------
+    # Handle Submission
+    # --------------------------------------------------
 
     if form.validate_on_submit():
 
-        # Prevent duplicate student in same position
-        duplicate = Candidate.query.filter_by(
-            position_id=position.id,
-            student_id=form.student_id.data
+        # ----------------------------------------------
+        # Prevent Duplicate Student in Same Position
+        # ----------------------------------------------
+
+        duplicate = Candidate.query.filter(
+            Candidate.position_id == position.id,
+            Candidate.student_id == form.student_id.data,
+            Candidate.is_active.is_(True)
         ).first()
 
         if duplicate:
+
             flash(
-                "Student is already a candidate for this position.",
+                "This student is already a candidate "
+                "for this position.",
                 "danger"
             )
+
             return render_template(
                 "admin/candidates/create.html",
                 form=form,
-                position=position
+                position=position,
+                election=election
             )
 
+        # ----------------------------------------------
+        # Check Candidate Limit
+        # ----------------------------------------------
+
+        candidate_count = Candidate.query.filter(
+            Candidate.position_id == position.id,
+            Candidate.is_active.is_(True)
+        ).count()
+
+        if (
+            position.max_candidates is not None
+            and candidate_count >= position.max_candidates
+        ):
+
+            flash(
+                "The maximum number of candidates "
+                "for this position has been reached.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        # ----------------------------------------------
+        # Create Candidate
+        # ----------------------------------------------
+
         candidate = Candidate(
+            election_id=position.election_id,
             position_id=position.id,
             student_id=form.student_id.data,
             slogan=form.slogan.data,
             manifesto=form.manifesto.data,
             symbol=form.symbol.data,
-            status=form.status.data
+            status="pending",
+            is_active=True
         )
 
         db.session.add(candidate)
 
+        # ----------------------------------------------
+        # Flush
+        # ----------------------------------------------
+        # Generates candidate.id before audit logging.
+
+        db.session.flush()
+
+        # ----------------------------------------------
+        # Audit Log
+        # ----------------------------------------------
+
         log_action(
             action="Create Candidate",
             entity_type="Candidate",
-            entity_id=0,
-            description=f"Candidate added to {position.title}"
+            entity_id=candidate.id,
+            description=(
+                f"Candidate created for position "
+                f"'{position.title}' in election "
+                f"'{election.title}'"
+            )
         )
+
+        # ----------------------------------------------
+        # Commit
+        # ----------------------------------------------
 
         db.session.commit()
 
         flash(
-            "Candidate created successfully.",
+            "Candidate created successfully and "
+            "is pending approval.",
             "success"
         )
 
@@ -3238,49 +3331,122 @@ def create_candidate(position_id):
             )
         )
 
+    # --------------------------------------------------
+    # GET Request
+    # --------------------------------------------------
+
     return render_template(
         "admin/candidates/create.html",
         form=form,
-        position=position
+        position=position,
+        election=election
     )
+
 @main.route("/admin/positions/<int:position_id>/candidates")
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def manage_candidates(position_id):
 
+    # --------------------------------------------------
+    # Get Position
+    # --------------------------------------------------
+
     position = Position.query.get_or_404(position_id)
 
+    # --------------------------------------------------
+    # Filters
+    # --------------------------------------------------
+
     search = request.args.get("search", "").strip()
+    status = request.args.get("status", "").strip()
 
-    status = request.args.get("status", "")
+    page = request.args.get(
+        "page",
+        1,
+        type=int
+    )
 
-    page = request.args.get("page", 1, type=int)
+    # --------------------------------------------------
+    # Base Query
+    # --------------------------------------------------
 
-    query = Candidate.query.filter_by(position_id=position.id)
+    query = Candidate.query.filter(
+        Candidate.position_id == position.id,
+        Candidate.is_active.is_(True)
+    )
+
+    # --------------------------------------------------
+    # Search Student Name / Student ID
+    # --------------------------------------------------
 
     if search:
-        query = query.filter(
-            Candidate.full_name.ilike(f"%{search}%")
+
+        search_pattern = f"%{search}%"
+
+        query = query.join(
+            Student,
+            Candidate.student_id == Student.id
+        ).filter(
+            db.or_(
+                Student.first_name.ilike(search_pattern),
+                Student.last_name.ilike(search_pattern),
+                Student.student_id.ilike(search_pattern)
+            )
         )
 
+    # --------------------------------------------------
+    # Status Filter
+    # --------------------------------------------------
+
     if status:
+
         query = query.filter(
             Candidate.status == status
         )
+
+    # --------------------------------------------------
+    # Pagination
+    # --------------------------------------------------
 
     candidates = query.order_by(
         Candidate.created_at.desc()
     ).paginate(
         page=page,
-        per_page=10
+        per_page=10,
+        error_out=False
+    )
+
+    # --------------------------------------------------
+    # Statistics
+    # --------------------------------------------------
+
+    base_stats_query = Candidate.query.filter(
+        Candidate.position_id == position.id
     )
 
     stats = {
-        "total": Candidate.query.filter_by(position_id=position.id).count(),
-        "approved": Candidate.query.filter_by(position_id=position.id, status="approved").count(),
-        "pending": Candidate.query.filter_by(position_id=position.id, status="pending").count(),
-        "rejected": Candidate.query.filter_by(position_id=position.id, status="rejected").count(),
+        "total": base_stats_query.count(),
+
+        "approved": base_stats_query.filter(
+            Candidate.status == "approved"
+        ).count(),
+
+        "pending": base_stats_query.filter(
+            Candidate.status == "pending"
+        ).count(),
+
+        "rejected": base_stats_query.filter(
+            Candidate.status == "rejected"
+        ).count(),
+
+        "archived": base_stats_query.filter(
+            Candidate.is_active.is_(False)
+        ).count()
     }
+
+    # --------------------------------------------------
+    # Render
+    # --------------------------------------------------
 
     return render_template(
         "admin/candidates/manage.html",
@@ -3291,30 +3457,34 @@ def manage_candidates(position_id):
         status=status
     )
 
-@main.route("/admin/candidates/<int:candidate_id>/approve", methods=["POST"])
+@main.route("/admin/candidates/<int:candidate_id>/approve")
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def approve_candidate(candidate_id):
 
     candidate = Candidate.query.get_or_404(candidate_id)
 
-    # Candidate must be verified before approval
-    if not candidate.is_verified:
+    if candidate.status != "pending":
         flash(
-            "Candidate must be verified before approval.",
+            "Only pending candidates can be approved.",
             "warning"
         )
-        return redirect(request.referrer or url_for("main.manage_candidates"))
 
-    # Prevent unnecessary duplicate approval
-    if candidate.status == "approved":
-        flash(
-            "Candidate is already approved.",
-            "info"
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
         )
-        return redirect(request.referrer or url_for("main.manage_candidates"))
 
     candidate.status = "approved"
+
+    log_action(
+        action="Approve Candidate",
+        entity_type="Candidate",
+        entity_id=candidate.id,
+        description=f"Candidate approved for {candidate.position.title}"
+    )
 
     db.session.commit()
 
@@ -3324,8 +3494,50 @@ def approve_candidate(candidate_id):
     )
 
     return redirect(
-        request.referrer
-        or url_for(
+        url_for(
+            "main.manage_candidates",
+            position_id=candidate.position_id
+        )
+    )
+
+@main.route("/admin/candidates/<int:candidate_id>/reject")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def reject_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    if candidate.status != "pending":
+        flash(
+            "Only pending candidates can be rejected.",
+            "warning"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    candidate.status = "rejected"
+
+    log_action(
+        action="Reject Candidate",
+        entity_type="Candidate",
+        entity_id=candidate.id,
+        description=f"Candidate rejected for {candidate.position.title}"
+    )
+
+    db.session.commit()
+
+    flash(
+        "Candidate rejected successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for(
             "main.manage_candidates",
             position_id=candidate.position_id
         )
