@@ -3308,24 +3308,22 @@ def logout():
 
     current_user.last_logout = datetime.utcnow()
 
-    log = AuditLog(
+    audit_log = AuditLog(
         user_id=current_user.id,
         action="User Logged Out",
+        entity_type="User",
+        entity_id=current_user.id,
+        description="User logged out successfully",
         ip_address=request.remote_addr
     )
 
-    db.session.add(log)
+    db.session.add(audit_log)
     db.session.commit()
 
-    session.clear()
     logout_user()
 
-    flash(
-        "You have successfully logged out.",
-        "success"
-    )
-
-    return redirect(url_for("main.home"))
+    flash("You have been logged out successfully.", "success")
+    return redirect(url_for("main.login"))
 
 @main.route("/admin-test")
 @super_admin_required
