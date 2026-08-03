@@ -3346,10 +3346,23 @@ def create_candidate(position_id):
 def manage_all_candidates():
 
     page = request.args.get("page", 1, type=int)
+
     search = request.args.get("search", "").strip()
-    election_id = request.args.get("election_id", type=int)
-    position_id = request.args.get("position_id", type=int)
-    status = request.args.get("status", "").strip()
+
+    election_id = request.args.get(
+        "election_id",
+        type=int
+    )
+
+    position_id = request.args.get(
+        "position_id",
+        type=int
+    )
+
+    status = request.args.get(
+        "status",
+        ""
+    ).strip().lower()
 
     query = (
         Candidate.query
@@ -3358,8 +3371,12 @@ def manage_all_candidates():
         .join(Candidate.election)
     )
 
-    # Search student name / student ID
+    # ---------------------------------------------
+    # Search
+    # ---------------------------------------------
+
     if search:
+
         search_pattern = f"%{search}%"
 
         query = query.filter(
@@ -3370,23 +3387,46 @@ def manage_all_candidates():
             )
         )
 
+    # ---------------------------------------------
     # Election filter
+    # ---------------------------------------------
+
     if election_id:
+
         query = query.filter(
             Candidate.election_id == election_id
         )
 
+    # ---------------------------------------------
     # Position filter
+    # ---------------------------------------------
+
     if position_id:
+
         query = query.filter(
             Candidate.position_id == position_id
         )
 
+    # ---------------------------------------------
     # Status filter
-    if status:
+    # ---------------------------------------------
+
+    allowed_statuses = {
+        "pending",
+        "approved",
+        "rejected",
+        "withdrawn"
+    }
+
+    if status in allowed_statuses:
+
         query = query.filter(
             Candidate.status == status
         )
+
+    # ---------------------------------------------
+    # Pagination
+    # ---------------------------------------------
 
     candidates = (
         query
@@ -3400,6 +3440,10 @@ def manage_all_candidates():
             error_out=False
         )
     )
+
+    # ---------------------------------------------
+    # Statistics
+    # ---------------------------------------------
 
     stats = {
         "total": Candidate.query.count(),
@@ -3419,25 +3463,45 @@ def manage_all_candidates():
         "withdrawn": Candidate.query.filter_by(
             status="withdrawn"
         ).count(),
+
+        "archived": Candidate.query.filter_by(
+            is_active=False
+        ).count()
     }
 
-    elections = Election.query.order_by(
-        Election.name.asc()
-    ).all()
+    # ---------------------------------------------
+    # Filter dropdown data
+    # ---------------------------------------------
 
-    positions = Position.query.order_by(
-        Position.title.asc()
-    ).all()
+    elections = (
+        Election.query
+        .order_by(Election.title.asc())
+        .all()
+    )
+
+    positions = (
+        Position.query
+        .order_by(Position.title.asc())
+        .all()
+    )
 
     return render_template(
         "admin/candidates/manage.html",
+
         candidates=candidates,
+
         stats=stats,
+
         elections=elections,
+
         positions=positions,
+
         search=search,
+
         election_id=election_id,
+
         position_id=position_id,
+
         status=status
     )
 
