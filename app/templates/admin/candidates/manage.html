@@ -39,6 +39,7 @@
 
 
     <!-- Statistics Cards -->
+
     <div class="row g-3 mb-4">
 
         <div class="col-xl-2 col-md-4 col-sm-6">
@@ -215,70 +216,187 @@
 
                 <thead class="table-light">
                     <tr>
-                        <th width="70">Photo</th>
+                        <th>Photo</th>
                         <th>Candidate</th>
                         <th>Position</th>
                         <th>Election</th>
-                        <th>Verified</th>
+                        <th>Verification</th>
                         <th>Status</th>
-                        <th width="120">Actions</th>
+                        <th>Created</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
 
                 <tbody>
 
-                    {% if candidates.items %}
-
                     {% for candidate in candidates.items %}
 
                     <tr>
 
+                        <!-- Photo -->
                         <td>
-                            {{ candidate.id }}
+                            {% if candidate.photo %}
+                            <img src="{{ url_for('static', filename='uploads/candidates/' ~ candidate.photo) }}"
+                                alt="Candidate photo" width="45" height="45" class="rounded-circle object-fit-cover">
+                            {% else %}
+                            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                                style="width:45px;height:45px;">
+                                <i class="bi bi-person"></i>
+                            </div>
+                            {% endif %}
                         </td>
 
+                        <!-- Candidate -->
                         <td>
-                            {{ candidate.student.first_name }}
-                            {{ candidate.student.last_name }}
+                            <div class="fw-semibold">
+                                {{ candidate.student.first_name }}
+                                {{ candidate.student.last_name }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ candidate.student.student_id }}
+                            </small>
                         </td>
 
+                        <!-- Position -->
                         <td>
                             {{ candidate.position.title }}
                         </td>
 
                         <!-- Election -->
                         <td>
-                            {{ candidate.election.title }}
+                            {{ candidate.election.name }}
+                        </td>
+
+                        <!-- Verification -->
+                        <td>
+                            {% if candidate.status == "approved" %}
+                            <span class="badge bg-success">
+                                Approved
+                            </span>
+
+                            {% elif candidate.status == "rejected" %}
+                            <span class="badge bg-danger">
+                                Rejected
+                            </span>
+
+                            {% elif candidate.status == "withdrawn" %}
+                            <span class="badge bg-secondary">
+                                Withdrawn
+                            </span>
+
+                            {% else %}
+                            <span class="badge bg-warning text-dark">
+                                Pending
+                            </span>
+                            {% endif %}
                         </td>
 
                         <!-- Status -->
                         <td>
-                            {{ candidate.status }}
-                        </td>
-
-                        <!-- Student ID -->
-                        <td>
-                            {{ candidate.student.student_id }}
+                            {% if candidate.is_active %}
+                            <span class="badge bg-success-subtle text-success">
+                                Active
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">
+                                Inactive
+                            </span>
+                            {% endif %}
                         </td>
 
                         <!-- Created -->
                         <td>
-                            {{ candidate.created_at }}
+                            <small>
+                                {{ candidate.created_at.strftime("%Y-%m-%d") }}
+                            </small>
+                        </td>
+
+                        <!-- Actions -->
+                        <td>
+                            <div class="dropdown">
+
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
+                                    Actions
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-menu-end">
+
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for(
+                            'main.view_candidate',
+                            candidate_id=candidate.id
+                        ) }}">
+                                            <i class="bi bi-eye me-2"></i>
+                                            View
+                                        </a>
+                                    </li>
+
+                                    {% if candidate.status == "pending" %}
+
+                                    <li>
+                                        <form method="POST" action="{{ url_for(
+                            'main.approve_candidate',
+                            candidate_id=candidate.id
+                        ) }}">
+                                            {{ csrf_token() }}
+
+                                            <button type="submit" class="dropdown-item text-success" onclick="return confirm(
+                                'Approve this candidate?'
+                            );">
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                Approve
+                                            </button>
+                                        </form>
+                                    </li>
+
+                                    <li>
+                                        <form method="POST" action="{{ url_for(
+                            'main.reject_candidate',
+                            candidate_id=candidate.id
+                        ) }}">
+                                            {{ csrf_token() }}
+
+                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm(
+                                'Reject this candidate?'
+                            );">
+                                                <i class="bi bi-x-circle me-2"></i>
+                                                Reject
+                                            </button>
+                                        </form>
+                                    </li>
+
+                                    {% endif %}
+
+                                </ul>
+
+                            </div>
                         </td>
 
                     </tr>
-
-                    {% endfor %}
 
                     {% else %}
 
                     <tr>
-                        <td colspan="7" class="text-center py-5">
-                            No Candidates Found
+                        <td colspan="8" class="text-center py-5">
+
+                            <div class="text-muted">
+
+                                <i class="bi bi-person-x fs-1 d-block mb-3"></i>
+
+                                <h5>No Candidates Found</h5>
+
+                                <p class="mb-0">
+                                    No candidates match the selected filters.
+                                </p>
+
+                            </div>
+
                         </td>
                     </tr>
 
-                    {% endif %}
+                    {% endfor %}
 
                 </tbody>
 
@@ -413,4 +531,3 @@
 </script>
 
 {% endblock %}
-```

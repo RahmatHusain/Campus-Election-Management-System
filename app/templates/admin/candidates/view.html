@@ -1,0 +1,77 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Candidate Details</h2>
+            <p class="text-muted mb-0">
+                View candidate information
+            </p>
+        </div>
+
+        <a href="{{ url_for(
+            'main.manage_candidates',
+            position_id=candidate.position_id
+        ) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+            Back to Candidates
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <h4>
+                {{ candidate.student.first_name }}
+                {{ candidate.student.last_name }}
+            </h4>
+
+            <hr>
+
+            <p>
+                <strong>Student ID:</strong>
+                {{ candidate.student.student_id }}
+            </p>
+
+            <p>
+                <strong>Election:</strong>
+                {{ candidate.election.name }}
+            </p>
+
+            <p>
+                <strong>Position:</strong>
+                {{ candidate.position.title }}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+                {{ candidate.status|capitalize }}
+            </p>
+
+            {% if candidate.slogan %}
+            <p>
+                <strong>Slogan:</strong>
+                {{ candidate.slogan }}
+            </p>
+            {% endif %}
+
+            {% if candidate.manifesto %}
+            <div class="mt-4">
+                <h5>Manifesto</h5>
+                <p class="text-muted">
+                    {{ candidate.manifesto }}
+                </p>
+            </div>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

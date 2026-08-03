@@ -1,0 +1,159 @@
+{% extends "layouts/admin_base.html" %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="h3 mb-1">Edit Candidate</h1>
+
+            <p class="text-muted mb-0">
+                Update candidate information for
+                <strong>{{ position.title }}</strong>
+            </p>
+        </div>
+
+        <a href="{{ url_for(
+            'main.manage_candidates',
+            position_id=position.id
+        ) }}" class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left me-1"></i>
+            Back
+        </a>
+
+    </div>
+
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                Candidate Information
+            </h5>
+
+        </div>
+
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+
+                <div class="mb-3">
+
+                    {{ form.student_id.label(
+                    class="form-label"
+                    ) }}
+
+                    {{ form.student_id(
+                    class="form-select"
+                    ) }}
+
+                    {% for error in form.student_id.errors %}
+
+                    <div class="text-danger small">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.slogan.label(
+                    class="form-label"
+                    ) }}
+
+                    {{ form.slogan(
+                    class="form-control"
+                    ) }}
+
+                    {% for error in form.slogan.errors %}
+
+                    <div class="text-danger small">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.manifesto.label(
+                    class="form-label"
+                    ) }}
+
+                    {{ form.manifesto(
+                    class="form-control",
+                    rows="6"
+                    ) }}
+
+                    {% for error in form.manifesto.errors %}
+
+                    <div class="text-danger small">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.status.label(
+                    class="form-label"
+                    ) }}
+
+                    {{ form.status(
+                    class="form-select"
+                    ) }}
+
+                    {% for error in form.status.errors %}
+
+                    <div class="text-danger small">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a href="{{ url_for(
+                        'main.manage_candidates',
+                        position_id=position.id
+                    ) }}" class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+
+                    {{ form.submit(
+                    class="btn btn-primary"
+                    ) }}
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

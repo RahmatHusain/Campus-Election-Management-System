@@ -14,9 +14,7 @@ from app.decorators import (
     student_required,
 )
 from app.decorators import role_required
-
 from flask import session
-from app import db
 from app.forms.auth_forms import RegisterForm, LoginForm
 from app.forms.faculty_forms import FacultyForm
 from app.forms.department_form import DepartmentForm
@@ -28,6 +26,7 @@ from app.models.position import Position
 from app.forms.candidate_form import CandidateForm
 from app.models.candidate import Candidate
 from app.models.election import Election
+from app import db
 from app.forms.program_form import (
     ProgramForm,
     EditProgramForm
@@ -3341,6 +3340,107 @@ def create_candidate(position_id):
         election=election
     )
 
+@main.route("/admin/candidates")
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def manage_all_candidates():
+
+    page = request.args.get("page", 1, type=int)
+    search = request.args.get("search", "").strip()
+    election_id = request.args.get("election_id", type=int)
+    position_id = request.args.get("position_id", type=int)
+    status = request.args.get("status", "").strip()
+
+    query = (
+        Candidate.query
+        .join(Candidate.student)
+        .join(Candidate.position)
+        .join(Candidate.election)
+    )
+
+    # Search student name / student ID
+    if search:
+        search_pattern = f"%{search}%"
+
+        query = query.filter(
+            db.or_(
+                Student.first_name.ilike(search_pattern),
+                Student.last_name.ilike(search_pattern),
+                Student.student_id.ilike(search_pattern)
+            )
+        )
+
+    # Election filter
+    if election_id:
+        query = query.filter(
+            Candidate.election_id == election_id
+        )
+
+    # Position filter
+    if position_id:
+        query = query.filter(
+            Candidate.position_id == position_id
+        )
+
+    # Status filter
+    if status:
+        query = query.filter(
+            Candidate.status == status
+        )
+
+    candidates = (
+        query
+        .order_by(
+            Candidate.created_at.desc(),
+            Candidate.id.desc()
+        )
+        .paginate(
+            page=page,
+            per_page=10,
+            error_out=False
+        )
+    )
+
+    stats = {
+        "total": Candidate.query.count(),
+
+        "pending": Candidate.query.filter_by(
+            status="pending"
+        ).count(),
+
+        "approved": Candidate.query.filter_by(
+            status="approved"
+        ).count(),
+
+        "rejected": Candidate.query.filter_by(
+            status="rejected"
+        ).count(),
+
+        "withdrawn": Candidate.query.filter_by(
+            status="withdrawn"
+        ).count(),
+    }
+
+    elections = Election.query.order_by(
+        Election.name.asc()
+    ).all()
+
+    positions = Position.query.order_by(
+        Position.title.asc()
+    ).all()
+
+    return render_template(
+        "admin/candidates/manage.html",
+        candidates=candidates,
+        stats=stats,
+        elections=elections,
+        positions=positions,
+        search=search,
+        election_id=election_id,
+        position_id=position_id,
+        status=status
+    )
+
 @main.route("/admin/positions/<int:position_id>/candidates")
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
@@ -3456,7 +3556,11 @@ def manage_candidates(position_id):
         status=status
     )
 
-@main.route("/admin/candidates/<int:candidate_id>/approve")
+
+@main.route(
+    "/admin/candidates/<int:candidate_id>/approve",
+    methods=["POST"]
+)
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def approve_candidate(candidate_id):
@@ -3468,7 +3572,6 @@ def approve_candidate(candidate_id):
             "Only pending candidates can be approved.",
             "warning"
         )
-
         return redirect(
             url_for(
                 "main.manage_candidates",
@@ -3482,7 +3585,7 @@ def approve_candidate(candidate_id):
         action="Approve Candidate",
         entity_type="Candidate",
         entity_id=candidate.id,
-        description=f"Candidate approved for {candidate.position.title}"
+        description=f"Candidate {candidate.id} approved"
     )
 
     db.session.commit()
@@ -3499,7 +3602,11 @@ def approve_candidate(candidate_id):
         )
     )
 
-@main.route("/admin/candidates/<int:candidate_id>/reject")
+
+@main.route(
+    "/admin/candidates/<int:candidate_id>/reject",
+    methods=["POST"]
+)
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def reject_candidate(candidate_id):
@@ -3511,7 +3618,6 @@ def reject_candidate(candidate_id):
             "Only pending candidates can be rejected.",
             "warning"
         )
-
         return redirect(
             url_for(
                 "main.manage_candidates",
@@ -3525,7 +3631,7 @@ def reject_candidate(candidate_id):
         action="Reject Candidate",
         entity_type="Candidate",
         entity_id=candidate.id,
-        description=f"Candidate rejected for {candidate.position.title}"
+        description=f"Candidate {candidate.id} rejected"
     )
 
     db.session.commit()
@@ -3541,6 +3647,7 @@ def reject_candidate(candidate_id):
             position_id=candidate.position_id
         )
     )
+
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/verify",
@@ -3581,6 +3688,169 @@ def verify_candidate(candidate_id):
             position_id=candidate.position_id
         )
     )    
+
+@main.route(
+    "/admin/candidates/<int:candidate_id>",
+    methods=["GET"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def view_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    return render_template(
+        "admin/candidates/view.html",
+        candidate=candidate
+    )
+
+@main.route(
+    "/admin/candidates/<int:candidate_id>/edit",
+    methods=["GET", "POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def edit_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    form = CandidateForm(obj=candidate)
+
+    # Load students
+    students = Student.query.order_by(
+        Student.first_name.asc(),
+        Student.last_name.asc()
+    ).all()
+
+    form.student_id.choices = [
+        (
+            student.id,
+            f"{student.student_id} - "
+            f"{student.first_name} {student.last_name}"
+        )
+        for student in students
+    ]
+
+    if form.validate_on_submit():
+
+        # Prevent assigning same student to another candidate
+        duplicate = Candidate.query.filter(
+            Candidate.position_id == candidate.position_id,
+            Candidate.student_id == form.student_id.data,
+            Candidate.id != candidate.id
+        ).first()
+
+        if duplicate:
+            flash(
+                "This student is already a candidate for this position.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/edit.html",
+                form=form,
+                candidate=candidate,
+                position=candidate.position
+            )
+
+        candidate.student_id = form.student_id.data
+        candidate.slogan = form.slogan.data
+        candidate.manifesto = form.manifesto.data
+        candidate.status = form.status.data
+
+        # Only update symbol if your form actually has it
+        if hasattr(form, "symbol"):
+            candidate.symbol = form.symbol.data
+
+        candidate.updated_at = datetime.utcnow()
+
+        db.session.commit()
+
+        log_action(
+            action="Update Candidate",
+            entity_type="Candidate",
+            entity_id=candidate.id,
+            description=(
+                f"Candidate {candidate.id} updated "
+                f"for {candidate.position.title}"
+            )
+        )
+
+        db.session.commit()
+
+        flash(
+            "Candidate updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    return render_template(
+        "admin/candidates/edit.html",
+        form=form,
+        candidate=candidate,
+        position=candidate.position
+    )
+
+@main.route(
+    "/admin/candidates/<int:candidate_id>/archive",
+    methods=["POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def archive_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    # Already archived
+    if not candidate.is_active:
+        flash(
+            "Candidate is already archived.",
+            "info"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    # Do not archive an active approved candidate accidentally
+    candidate.is_active = False
+    candidate.status = "withdrawn"
+    candidate.updated_at = datetime.utcnow()
+
+    log_action(
+        action="Archive Candidate",
+        entity_type="Candidate",
+        entity_id=candidate.id,
+        description=(
+            f"Candidate {candidate.id} archived from "
+            f"{candidate.position.title}"
+        )
+    )
+
+    db.session.commit()
+
+    flash(
+        "Candidate archived successfully.",
+        "success"
+    )
+
+    return redirect(
+        url_for(
+            "main.manage_candidates",
+            position_id=candidate.position_id
+        )
+    )
+
+
 
 # ==========================
 # Profile
