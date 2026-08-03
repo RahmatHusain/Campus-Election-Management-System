@@ -3287,7 +3287,6 @@ def create_candidate(position_id):
             status="pending",
             is_active=True
         )
-
         db.session.add(candidate)
 
         # ----------------------------------------------

@@ -1,16 +1,17 @@
 from flask_wtf import FlaskForm
 from wtforms import (
     SelectField,
+    StringField,
     TextAreaField,
     SubmitField
 )
-from wtforms.validators import DataRequired, Length
-
+from wtforms.validators import (
+    DataRequired,
+    Optional,
+    Length
+    )
 
 class CandidateForm(FlaskForm):
-    """
-    Candidate Create/Edit Form
-    """
 
     student_id = SelectField(
         "Student",
@@ -20,23 +21,43 @@ class CandidateForm(FlaskForm):
         ]
     )
 
-    position_id = SelectField(
-        "Position",
-        coerce=int,
+    slogan = StringField(
+        "Slogan",
         validators=[
-            DataRequired()
+            Optional(),
+            Length(max=255)
         ]
     )
 
     manifesto = TextAreaField(
         "Manifesto",
         validators=[
-            Length(max=2000)
-        ],
-        render_kw={
-            "rows": 6,
-            "placeholder": "Candidate manifesto..."
-        }
+            Optional()
+        ]
     )
 
-    submit = SubmitField("Save Candidate")
+    symbol = StringField(
+        "Election Symbol",
+        validators=[
+            Optional(),
+            Length(max=255)
+        ]
+    )
+
+    status = SelectField(
+        "Status",
+        choices=[
+            ("pending", "Pending"),
+            ("approved", "Approved"),
+            ("rejected", "Rejected"),
+            ("withdrawn", "Withdrawn")
+        ],
+        default="pending",
+        validators=[
+            DataRequired()
+        ]
+    )
+
+    submit = SubmitField(
+        "Save Candidate"
+    )
