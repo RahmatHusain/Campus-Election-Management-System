@@ -1,12 +1,104 @@
-from .auth_forms import RegisterForm
-from app.forms.academic_year_forms import (
-    AcademicYearForm,
-    EditAcademicYearForm
+from flask_wtf import FlaskForm
+from wtforms import (
+    SelectField,
+    StringField,
+    TextAreaField,
+    SubmitField
 )
-from app.forms.semester_form import SemesterForm
-from app.models.program import Program
-from app.forms.program_form import ProgramForm
-from app.forms.student_form import StudentForm
-from app.forms.election_form import ElectionForm
-from app.forms.position_form import PositionForm
-from app.forms.candidate_form import CandidateForm
+from wtforms.validators import (
+    DataRequired,
+    Optional,
+    Length
+)
+
+
+class CandidateForm(FlaskForm):
+
+    student_id = SelectField(
+        "Student",
+        choices=[],
+        coerce=int,
+        validators=[
+            DataRequired()
+        ]
+    )
+
+    slogan = StringField(
+        "Slogan",
+        validators=[
+            Optional(),
+            Length(max=255)
+        ]
+    )
+
+    manifesto = TextAreaField(
+        "Manifesto",
+        validators=[
+            Optional()
+        ]
+    )
+
+    symbol = StringField(
+        "Election Symbol",
+        validators=[
+            Optional(),
+            Length(max=255)
+        ]
+    )
+
+    status = SelectField(
+        "Status",
+        choices=[
+            ("pending", "Pending"),
+            ("approved", "Approved"),
+            ("rejected", "Rejected"),
+            ("withdrawn", "Withdrawn")
+        ],
+        default="pending",
+        validators=[
+            DataRequired()
+        ]
+    )
+
+    submit = SubmitField("Save Candidate")
+
+
+class CandidateEditForm(FlaskForm):
+
+    slogan = StringField(
+        "Slogan",
+        validators=[
+            Optional(),
+            Length(max=255)
+        ]
+    )
+
+    manifesto = TextAreaField(
+        "Manifesto",
+        validators=[
+            Optional()
+        ]
+    )
+
+    symbol = StringField(
+        "Election Symbol",
+        validators=[
+            Optional(),
+            Length(max=255)
+        ]
+    )
+
+    status = SelectField(
+        "Status",
+        choices=[
+            ("pending", "Pending"),
+            ("approved", "Approved"),
+            ("rejected", "Rejected"),
+            ("withdrawn", "Withdrawn")
+        ],
+        validators=[
+            DataRequired()
+        ]
+    )
+
+    submit = SubmitField("Save Changes")
