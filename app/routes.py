@@ -34,7 +34,7 @@ from app.forms.election_form import ElectionForm
 from app.forms.position_form import PositionForm
 from app.services.position_service import PositionService
 from app.models.position import Position
-from app.forms.candidate_form import CandidateForm
+from app.forms import CandidateForm, CandidateEditForm
 from app.models.candidate import Candidate
 from app.models.election import Election
 from app import db
@@ -3177,7 +3177,6 @@ def candidate_dashboard():
         status="",
         verified=""
     )
-
 @main.route("/admin/positions/<int:position_id>/candidates")
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
@@ -3375,7 +3374,7 @@ def create_candidate(position_id):
     # Create Form
     # --------------------------------------------------
 
-    form = CandidateForm()
+    form = CandidateEditForm(obj=candidate)
 
     # --------------------------------------------------
     # Load Eligible Students
@@ -3614,151 +3613,97 @@ def create_candidate(position_id):
     methods=["GET", "POST"]
 )
 @login_required
-@role_required(
-    User.SUPER_ADMIN,
-    User.ELECTION_OFFICER
-)
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
 def edit_candidate(candidate_id):
 
-    # ==================================================
+    # =========================================================
     # LOAD CANDIDATE
-    # ==================================================
+    # =========================================================
 
     candidate = Candidate.query.get_or_404(candidate_id)
 
-    # ==================================================
-    # LOAD RELATED POSITION
-    # ==================================================
+    # =========================================================
+    # LOAD POSITION
+    # =========================================================
 
     position = Position.query.get_or_404(
         candidate.position_id
     )
 
-    # ==================================================
-    # LOAD RELATED ELECTION
-    # ==================================================
+    # =========================================================
+    # LOAD ELECTION
+    # =========================================================
 
     election = Election.query.get_or_404(
         candidate.election_id
     )
 
-    # ==================================================
-    # CREATE FORM
-    # ==================================================
+    # =========================================================
+    # IMPORTANT:
+    # EDIT MUST USE CandidateEditForm
+    # NOT CandidateForm
+    # =========================================================
 
-    form = CandidateForm()
+    form = CandidateEditForm(obj=candidate)
 
-    # ==================================================
-    # HANDLE POST
-    # ==================================================
+    # =========================================================
+    # GET REQUEST
+    # =========================================================
 
+    if request.method == "GET":
+
+        form.slogan.data = candidate.slogan or ""
+
+        form.manifesto.data = candidate.manifesto or ""
+
+        form.symbol.data = candidate.symbol or ""
+
+        form.status.data = candidate.status or "pending"
+
+    # =========================================================
+    # POST REQUEST
+    # =========================================================
+    print("FORM CLASS:", type(form).__name__)
     if form.validate_on_submit():
 
-        # ----------------------------------------------
-        # Store old values for audit
-        # ----------------------------------------------
-
-        old_slogan = candidate.slogan
-        old_manifesto = candidate.manifesto
-        old_symbol = candidate.symbol
         old_status = candidate.status
 
-        # ----------------------------------------------
-        # Update allowed fields
-        # ----------------------------------------------
+        # -----------------------------------------------------
+        # UPDATE EDITABLE FIELDS ONLY
+        # -----------------------------------------------------
 
-        candidate.slogan = (
-            form.slogan.data.strip()
-            if form.slogan.data
-            else None
-        )
+        candidate.slogan = form.slogan.data
 
-        candidate.manifesto = (
-            form.manifesto.data.strip()
-            if form.manifesto.data
-            else None
-        )
+        candidate.manifesto = form.manifesto.data
 
-        candidate.symbol = (
-            form.symbol.data.strip()
-            if form.symbol.data
-            else None
-        )
+        candidate.symbol = form.symbol.data
 
         candidate.status = form.status.data
 
-        # ----------------------------------------------
-        # Audit description
-        # ----------------------------------------------
+        candidate.updated_at = datetime.utcnow()
 
-        changes = []
+        # -----------------------------------------------------
+        # AUDIT LOG
+        # -----------------------------------------------------
 
-        if old_slogan != candidate.slogan:
-            changes.append("slogan updated")
-
-        if old_manifesto != candidate.manifesto:
-            changes.append("manifesto updated")
-
-        if old_symbol != candidate.symbol:
-            changes.append("symbol updated")
-
-        if old_status != candidate.status:
-            changes.append(
-                f"status changed from "
-                f"'{old_status}' to "
-                f"'{candidate.status}'"
+        log_action(
+            action="Update Candidate",
+            entity_type="Candidate",
+            entity_id=candidate.id,
+            description=(
+                f"Candidate information updated for "
+                f"{candidate.student.first_name} "
+                f"{candidate.student.last_name}. "
+                f"Status changed from "
+                f"{old_status} to {candidate.status}."
             )
+        )
 
-        # ----------------------------------------------
-        # Only log actual changes
-        # ----------------------------------------------
+        # -----------------------------------------------------
+        # SAVE
+        # -----------------------------------------------------
 
-        if changes:
-
-            log_action(
-                action="Update Candidate",
-                entity_type="Candidate",
-                entity_id=candidate.id,
-                description=(
-                    f"Candidate #{candidate.id} updated: "
-                    + ", ".join(changes)
-                )
-            )
-
-        # ----------------------------------------------
-        # Commit safely
-        # ----------------------------------------------
-
-        try:
-
-            db.session.commit()
-
-        except Exception:
-
-            db.session.rollback()
-
-            current_app.logger.exception(
-                "Failed to update candidate %s",
-                candidate.id
-            )
-
-            flash(
-                "An unexpected error occurred while "
-                "updating the candidate.",
-                "danger"
-            )
-
-            return render_template(
-                "admin/candidates/edit.html",
-                form=form,
-                candidate=candidate,
-                position=position,
-                election=election
-            )
-
-        # ----------------------------------------------
-        # Success
-        # ----------------------------------------------
+        db.session.commit()
 
         flash(
             "Candidate updated successfully.",
@@ -3772,20 +3717,24 @@ def edit_candidate(candidate_id):
             )
         )
 
-    # ==================================================
-    # GET REQUEST
-    # ==================================================
+    # =========================================================
+    # POST VALIDATION FAILED
+    # =========================================================
 
-    if request.method == "GET":
+    if request.method == "POST":
 
-        form.slogan.data = candidate.slogan
-        form.manifesto.data = candidate.manifesto
-        form.symbol.data = candidate.symbol
-        form.status.data = candidate.status
+        # Temporary debugging
+        print("EDIT CANDIDATE FORM ERRORS:")
+        print(form.errors)
 
-    # ==================================================
+        flash(
+            "Please correct the errors shown below.",
+            "danger"
+        )
+
+    # =========================================================
     # RENDER
-    # ==================================================
+    # =========================================================
 
     return render_template(
         "admin/candidates/edit.html",
@@ -4035,21 +3984,27 @@ def approve_candidate(candidate_id):
         )
     )
 
+
 @main.route(
-    "/admin/candidates/<int:candidate_id>/reject",
+    "/admin/candidates/<int:candidate_id>/archive",
     methods=["POST"]
 )
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def reject_candidate(candidate_id):
+def archive_candidate(candidate_id):
 
     candidate = Candidate.query.get_or_404(candidate_id)
 
-    if candidate.status != "pending":
+    # -----------------------------------------
+    # Prevent repeated archiving
+    # -----------------------------------------
+
+    if not candidate.is_active:
         flash(
-            "Only pending candidates can be rejected.",
+            "Candidate is already archived.",
             "warning"
         )
+
         return redirect(
             url_for(
                 "main.manage_candidates",
@@ -4057,21 +4012,61 @@ def reject_candidate(candidate_id):
             )
         )
 
-    candidate.status = "rejected"
+    # -----------------------------------------
+    # Preserve original state for audit
+    # -----------------------------------------
+
+    old_status = candidate.status
+
+    # -----------------------------------------
+    # Soft delete / archive
+    # -----------------------------------------
+
+    candidate.is_active = False
+
+    # -----------------------------------------
+    # Audit Log
+    # -----------------------------------------
 
     log_action(
-        action="Reject Candidate",
+        action="Archive Candidate",
         entity_type="Candidate",
         entity_id=candidate.id,
-        description=f"Candidate {candidate.id} rejected"
+        description=(
+            f"Candidate archived: "
+            f"{candidate.student.first_name} "
+            f"{candidate.student.last_name}. "
+            f"Previous status: {old_status}."
+        )
     )
 
-    db.session.commit()
+    # -----------------------------------------
+    # Commit
+    # -----------------------------------------
 
-    flash(
-        "Candidate rejected successfully.",
-        "success"
-    )
+    try:
+
+        db.session.commit()
+
+        flash(
+            "Candidate archived successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Failed to archive candidate %s",
+            candidate.id
+        )
+
+        flash(
+            "Unable to archive candidate. "
+            "Please try again.",
+            "danger"
+        )
 
     return redirect(
         url_for(
@@ -4080,6 +4075,71 @@ def reject_candidate(candidate_id):
         )
     )
 
+@main.route(
+    "/admin/candidates/<int:candidate_id>/restore",
+    methods=["POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def restore_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    if candidate.is_active:
+        flash(
+            "Candidate is already active.",
+            "warning"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    candidate.is_active = True
+
+    log_action(
+        action="Restore Candidate",
+        entity_type="Candidate",
+        entity_id=candidate.id,
+        description=(
+            f"Candidate restored: "
+            f"{candidate.student.first_name} "
+            f"{candidate.student.last_name}."
+        )
+    )
+
+    try:
+
+        db.session.commit()
+
+        flash(
+            "Candidate restored successfully.",
+            "success"
+        )
+
+    except Exception:
+
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Failed to restore candidate %s",
+            candidate.id
+        )
+
+        flash(
+            "Unable to restore candidate.",
+            "danger"
+        )
+
+    return redirect(
+        url_for(
+            "main.manage_candidates",
+            position_id=candidate.position_id
+        )
+    )
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/verify",

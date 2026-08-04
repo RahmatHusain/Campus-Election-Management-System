@@ -290,7 +290,7 @@
 
                         <!-- ELECTION -->
                         <td>
-                            {{ candidate.election.name }}
+                            {{ candidate.election.title }}
                         </td>
 
 
@@ -359,87 +359,156 @@
                         <!-- ACTIONS -->
                         <td>
 
-                            <div class="dropdown">
+                            <ul class="dropdown-menu dropdown-menu-end">
 
-                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    Actions
-                                </button>
+                                <!-- View -->
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for(
+               'main.view_candidate',
+               candidate_id=candidate.id
+           ) }}">
+                                        <i class="bi bi-eye me-2"></i>
+                                        View Candidate
+                                    </a>
+                                </li>
 
+                                <!-- Edit -->
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for(
+               'main.edit_candidate',
+               candidate_id=candidate.id
+           ) }}">
+                                        <i class="bi bi-pencil me-2"></i>
+                                        Edit Candidate
+                                    </a>
+                                </li>
 
-                                <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
 
+                                <!-- Approve -->
+                                {% if candidate.is_active and candidate.status == "pending" %}
+                                <li>
+                                    <form method="POST" action="{{ url_for(
+                  'main.approve_candidate',
+                  candidate_id=candidate.id
+              ) }}">
 
-                                    <!-- VIEW -->
-                                    <li>
+                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
 
-                                        <a class="dropdown-item" href="{{ url_for(
-                                'main.view_candidate',
-                                candidate_id=candidate.id
-                            ) }}">
+                                        <button type="submit" class="dropdown-item text-success"
+                                            onclick="return confirm('Approve this candidate?');">
 
-                                            <i class="bi bi-eye me-2"></i>
-                                            View Candidate
+                                            <i class="bi bi-check-circle me-2"></i>
+                                            Approve Candidate
 
-                                        </a>
+                                        </button>
 
-                                    </li>
-
-
-                                    <!-- EDIT -->
-                                    <li>
-
-                                        <a class="dropdown-item" href="{{ url_for(
-                                'main.edit_candidate',
-                                candidate_id=candidate.id
-                            ) }}">
-
-                                            <i class="bi bi-pencil me-2"></i>
-                                            Edit Candidate
-
-                                        </a>
-
-                                    </li>
-
-
-                                    {% if candidate.status == "pending"
-                                    and candidate.is_active %}
-
-
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-
-
-                                    <!-- APPROVE -->
-                                    <li>
-
-                                        <form method="POST" action="{{ url_for(
-                                'main.approve_candidate',
-                                candidate_id=candidate.id
-                            ) }}" class="px-2">
-
-                                            {{ csrf_token() }}
-
-                                            <button type="submit" class="dropdown-item text-success" onclick="return confirm(
-                                    'Are you sure you want to approve this candidate?'
-                                );">
-
-                                                <i class="bi bi-check-circle me-2"></i>
-                                                Approve Candidate
-
-                                            </button>
-
-                                        </form>
-
-                                    </li>
-
-                                    {% endif %}
+                                    </form>
+                                </li>
+                                {% endif %}
 
 
-                                </ul>
+                                <!-- Reject -->
+                                {% if candidate.is_active and
+                                candidate.status in ["pending", "approved"] %}
+                                <li>
+                                    <form method="POST" action="{{ url_for(
+                  'main.reject_candidate',
+                  candidate_id=candidate.id
+              ) }}">
 
-                            </div>
+                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+
+                                        <button type="submit" class="dropdown-item text-danger"
+                                            onclick="return confirm('Reject this candidate?');">
+
+                                            <i class="bi bi-x-circle me-2"></i>
+                                            Reject Candidate
+
+                                        </button>
+
+                                    </form>
+                                </li>
+                                {% endif %}
+
+
+                                <!-- Withdraw -->
+                                {% if candidate.is_active and
+                                candidate.status in ["pending", "approved"] %}
+                                <li>
+                                    <form method="POST" action="{{ url_for(
+                  'main.withdraw_candidate',
+                  candidate_id=candidate.id
+              ) }}">
+
+                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+
+                                        <button type="submit" class="dropdown-item text-warning"
+                                            onclick="return confirm('Withdraw this candidate?');">
+
+                                            <i class="bi bi-person-dash me-2"></i>
+                                            Withdraw Candidate
+
+                                        </button>
+
+                                    </form>
+                                </li>
+                                {% endif %}
+
+
+                                <!-- Restore -->
+                                {% if not candidate.is_active %}
+                                <li>
+                                    <form method="POST" action="{{ url_for(
+                  'main.restore_candidate',
+                  candidate_id=candidate.id
+              ) }}">
+
+                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+
+                                        <button type="submit" class="dropdown-item text-primary"
+                                            onclick="return confirm('Restore this candidate?');">
+
+                                            <i class="bi bi-arrow-counterclockwise me-2"></i>
+                                            Restore Candidate
+
+                                        </button>
+
+                                    </form>
+                                </li>
+                                {% endif %}
+
+
+                                <!-- Delete -->
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                {% if candidate.is_active %}
+                                <li>
+                                    <form method="POST" action="{{ url_for(
+              'main.archive_candidate',
+              candidate_id=candidate.id
+          ) }}" onsubmit="return confirm(
+              'Archive this candidate? The candidate will be removed from the active list but preserved in the system.'
+          );">
+
+                                        {{ csrf_token() }}
+
+                                        <button type="submit" class="dropdown-item text-danger">
+
+                                            <i class="bi bi-archive me-2"></i>
+                                            Archive Candidate
+
+                                        </button>
+
+                                    </form>
+                                </li>
+                                {% endif %}
+
+                            </ul>
 
                         </td>
 
