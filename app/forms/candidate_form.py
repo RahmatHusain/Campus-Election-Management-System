@@ -1,25 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import (
-    SelectField,
-    StringField,
-    TextAreaField,
-    SubmitField
-)
-from wtforms.validators import (
-    DataRequired,
-    Optional,
-    Length
-    )
+from wtforms import StringField, TextAreaField, SelectField, SubmitField
+from wtforms.validators import Optional, Length, DataRequired
 
-class CandidateForm(FlaskForm):
 
-    student_id = SelectField(
-        "Student",
-        coerce=int,
-        validators=[
-            DataRequired()
-        ]
-    )
+class CandidateEditForm(FlaskForm):
 
     slogan = StringField(
         "Slogan",
@@ -52,12 +36,9 @@ class CandidateForm(FlaskForm):
             ("rejected", "Rejected"),
             ("withdrawn", "Withdrawn")
         ],
-        default="pending",
         validators=[
             DataRequired()
         ]
     )
 
-    submit = SubmitField(
-        "Save Candidate"
-    )
+    submit = SubmitField("Save Changes")

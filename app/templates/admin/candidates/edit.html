@@ -4,20 +4,21 @@
 
 <div class="container-fluid">
 
-    <!-- Page Header -->
+    <!-- =========================================================
+         PAGE HEADER
+    ========================================================== -->
 
     <div class="d-flex justify-content-between align-items-center mb-4">
 
         <div>
-
             <h2 class="fw-bold mb-1">
+                <i class="bi bi-pencil-square me-2"></i>
                 Edit Candidate
             </h2>
 
             <p class="text-muted mb-0">
                 Update candidate information
             </p>
-
         </div>
 
         <a href="{{ url_for(
@@ -25,57 +26,133 @@
             position_id=position.id
         ) }}" class="btn btn-outline-secondary">
 
-            <i class="bi bi-arrow-left"></i>
-            Back
+            <i class="bi bi-arrow-left me-1"></i>
+            Back to Candidates
 
         </a>
 
     </div>
 
 
-    <!-- Candidate Information -->
+    <!-- =========================================================
+         GLOBAL FORM ERRORS
+    ========================================================== -->
+
+    {% if form.errors %}
+
+    <div class="alert alert-danger shadow-sm">
+
+        <div class="d-flex align-items-start">
+
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+
+            <div>
+
+                <strong>
+                    Please correct the following errors:
+                </strong>
+
+                <ul class="mb-0 mt-2">
+
+                    {% for field_name, errors in form.errors.items() %}
+
+                    {% for error in errors %}
+
+                    <li>
+                        <strong>
+                            {{ field_name|replace('_', ' ')|title }}:
+                        </strong>
+
+                        {{ error }}
+                    </li>
+
+                    {% endfor %}
+
+                    {% endfor %}
+
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- =========================================================
+         CANDIDATE INFORMATION
+    ========================================================== -->
 
     <div class="card shadow-sm border-0 mb-4">
 
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                <i class="bi bi-person-badge me-2"></i>
+                Candidate Information
+            </h5>
+
+        </div>
+
         <div class="card-body">
 
-            <div class="row">
+            <div class="row g-4">
+
+                <!-- Candidate -->
 
                 <div class="col-md-4">
 
-                    <small class="text-muted">
+                    <small class="text-muted d-block">
                         Candidate
                     </small>
 
-                    <div class="fw-semibold">
+                    <div class="fw-semibold fs-6">
+
                         {{ candidate.student.first_name }}
                         {{ candidate.student.last_name }}
+
                     </div>
+
+                    <small class="text-muted">
+
+                        {{ candidate.student.student_id }}
+
+                    </small>
 
                 </div>
 
 
+                <!-- Position -->
+
                 <div class="col-md-4">
 
-                    <small class="text-muted">
+                    <small class="text-muted d-block">
                         Position
                     </small>
 
                     <div class="fw-semibold">
+
                         {{ position.title }}
+
                     </div>
 
                 </div>
 
 
+                <!-- Election -->
+
                 <div class="col-md-4">
 
-                    <small class="text-muted">
+                    <small class="text-muted d-block">
                         Election
                     </small>
 
                     <div class="fw-semibold">
+
                         {{ election.title }}
+
                     </div>
 
                 </div>
@@ -87,7 +164,9 @@
     </div>
 
 
-    <!-- Edit Form -->
+    <!-- =========================================================
+         EDIT FORM
+    ========================================================== -->
 
     <div class="card shadow-sm border-0">
 
@@ -95,7 +174,7 @@
 
             <h5 class="mb-0">
 
-                <i class="bi bi-pencil-square"></i>
+                <i class="bi bi-pencil-square me-2"></i>
 
                 Candidate Details
 
@@ -106,34 +185,45 @@
 
         <div class="card-body">
 
-            <form method="POST">
+            <form method="POST" action="{{ url_for(
+                      'main.edit_candidate',
+                      candidate_id=candidate.id
+                  ) }}">
 
                 {{ form.hidden_tag() }}
 
 
-                <!-- Student -->
+                <!-- =================================================
+                     STUDENT
+                ================================================== -->
 
-                <div class="mb-3">
+                <div class="mb-4">
 
                     <label class="form-label fw-semibold">
                         Student
                     </label>
 
-                    <input type="text" class="form-control" value="{{ candidate.student.student_id }} -
-                                {{ candidate.student.first_name }}
-                                {{ candidate.student.last_name }}" disabled>
+                    <input type="text" class="form-control"
+                        value="{{ candidate.student.student_id }} - {{ candidate.student.first_name }} {{ candidate.student.last_name }}"
+                        disabled>
 
                     <div class="form-text">
-                        Student identity cannot be changed
-                        after candidate registration.
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        Student identity cannot be changed after
+                        candidate registration.
+
                     </div>
 
                 </div>
 
 
-                <!-- Slogan -->
+                <!-- =================================================
+                     SLOGAN
+                ================================================== -->
 
-                <div class="mb-3">
+                <div class="mb-4">
 
                     {{ form.slogan.label(
                     class="form-label fw-semibold"
@@ -141,23 +231,34 @@
 
                     {{ form.slogan(
                     class="form-control",
-                    placeholder="Enter candidate slogan"
+                    placeholder="Enter candidate slogan",
+                    maxlength="255"
                     ) }}
+
+                    {% if form.slogan.errors %}
 
                     {% for error in form.slogan.errors %}
 
-                    <div class="text-danger small">
+                    <div class="text-danger small mt-1">
+
+                        <i class="bi bi-exclamation-circle me-1"></i>
+
                         {{ error }}
+
                     </div>
 
                     {% endfor %}
 
+                    {% endif %}
+
                 </div>
 
 
-                <!-- Manifesto -->
+                <!-- =================================================
+                     MANIFESTO
+                ================================================== -->
 
-                <div class="mb-3">
+                <div class="mb-4">
 
                     {{ form.manifesto.label(
                     class="form-label fw-semibold"
@@ -169,20 +270,30 @@
                     placeholder="Enter candidate manifesto"
                     ) }}
 
+                    {% if form.manifesto.errors %}
+
                     {% for error in form.manifesto.errors %}
 
-                    <div class="text-danger small">
+                    <div class="text-danger small mt-1">
+
+                        <i class="bi bi-exclamation-circle me-1"></i>
+
                         {{ error }}
+
                     </div>
 
                     {% endfor %}
 
+                    {% endif %}
+
                 </div>
 
 
-                <!-- Symbol -->
+                <!-- =================================================
+                     ELECTION SYMBOL
+                ================================================== -->
 
-                <div class="mb-3">
+                <div class="mb-4">
 
                     {{ form.symbol.label(
                     class="form-label fw-semibold"
@@ -190,21 +301,32 @@
 
                     {{ form.symbol(
                     class="form-control",
-                    placeholder="Enter election symbol"
+                    placeholder="Enter election symbol",
+                    maxlength="255"
                     ) }}
+
+                    {% if form.symbol.errors %}
 
                     {% for error in form.symbol.errors %}
 
-                    <div class="text-danger small">
+                    <div class="text-danger small mt-1">
+
+                        <i class="bi bi-exclamation-circle me-1"></i>
+
                         {{ error }}
+
                     </div>
 
                     {% endfor %}
 
+                    {% endif %}
+
                 </div>
 
 
-                <!-- Status -->
+                <!-- =================================================
+                     STATUS
+                ================================================== -->
 
                 <div class="mb-4">
 
@@ -216,18 +338,28 @@
                     class="form-select"
                     ) }}
 
+                    {% if form.status.errors %}
+
                     {% for error in form.status.errors %}
 
-                    <div class="text-danger small">
+                    <div class="text-danger small mt-1">
+
+                        <i class="bi bi-exclamation-circle me-1"></i>
+
                         {{ error }}
+
                     </div>
 
                     {% endfor %}
 
+                    {% endif %}
+
                 </div>
 
 
-                <!-- Actions -->
+                <!-- =================================================
+                     ACTION BUTTONS
+                ================================================== -->
 
                 <div class="d-flex justify-content-end gap-2">
 
@@ -236,14 +368,20 @@
                         position_id=position.id
                     ) }}" class="btn btn-outline-secondary">
 
+                        <i class="bi bi-x-circle me-1"></i>
+
                         Cancel
 
                     </a>
 
 
-                    {{ form.submit(
-                    class="btn btn-primary"
-                    ) }}
+                    <button type="submit" name="submit" class="btn btn-primary">
+
+                        <i class="bi bi-check-circle me-1"></i>
+
+                        Save Changes
+
+                    </button>
 
                 </div>
 
