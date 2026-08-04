@@ -247,21 +247,29 @@
 
                     <tr>
 
-                        <!-- Photo -->
+                        <!-- PHOTO -->
                         <td>
                             {% if candidate.photo %}
-                            <img src="{{ url_for('static', filename='uploads/candidates/' ~ candidate.photo) }}"
-                                alt="Candidate photo" width="45" height="45" class="rounded-circle object-fit-cover">
+
+                            <img src="{{ url_for(
+                    'static',
+                    filename='uploads/candidates/' ~ candidate.photo
+                ) }}" alt="Candidate photo" width="45" height="45" class="rounded-circle object-fit-cover">
+
                             {% else %}
+
                             <div class="rounded-circle bg-light d-flex align-items-center justify-content-center"
                                 style="width:45px;height:45px;">
                                 <i class="bi bi-person"></i>
                             </div>
+
                             {% endif %}
                         </td>
 
-                        <!-- Candidate -->
+
+                        <!-- CANDIDATE -->
                         <td>
+
                             <div class="fw-semibold">
                                 {{ candidate.student.first_name }}
                                 {{ candidate.student.last_name }}
@@ -270,148 +278,189 @@
                             <small class="text-muted">
                                 {{ candidate.student.student_id }}
                             </small>
+
                         </td>
 
-                        <!-- Position -->
+
+                        <!-- POSITION -->
                         <td>
                             {{ candidate.position.title }}
                         </td>
 
-                        <!-- Election -->
+
+                        <!-- ELECTION -->
                         <td>
                             {{ candidate.election.name }}
                         </td>
 
-                        <!-- Verification -->
+
+                        <!-- CANDIDATE STATUS -->
                         <td>
+
                             {% if candidate.status == "approved" %}
+
                             <span class="badge bg-success">
                                 Approved
                             </span>
 
                             {% elif candidate.status == "rejected" %}
+
                             <span class="badge bg-danger">
                                 Rejected
                             </span>
 
                             {% elif candidate.status == "withdrawn" %}
+
                             <span class="badge bg-secondary">
                                 Withdrawn
                             </span>
 
                             {% else %}
+
                             <span class="badge bg-warning text-dark">
                                 Pending
                             </span>
+
                             {% endif %}
+
                         </td>
 
-                        <!-- Status -->
+
+                        <!-- ACTIVE STATUS -->
                         <td>
+
                             {% if candidate.is_active %}
+
                             <span class="badge bg-success-subtle text-success">
                                 Active
                             </span>
+
                             {% else %}
+
                             <span class="badge bg-secondary">
                                 Inactive
                             </span>
+
                             {% endif %}
+
                         </td>
 
-                        <!-- Created -->
+
+                        <!-- CREATED -->
                         <td>
+
                             <small>
                                 {{ candidate.created_at.strftime("%Y-%m-%d") }}
                             </small>
+
                         </td>
 
-                        <!-- Actions -->
+
+                        <!-- ACTIONS -->
                         <td>
+
                             <div class="dropdown">
 
                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                    data-bs-toggle="dropdown">
+                                    data-bs-toggle="dropdown" aria-expanded="false">
                                     Actions
                                 </button>
 
+
                                 <ul class="dropdown-menu dropdown-menu-end">
 
-                                    <div class="btn-group">
 
-                                        <a href="{{ url_for(
-                                                'main.view_candidate',
-                                                candidate_id=candidate.id
-                                            ) }}" class="btn btn-sm btn-outline-info" title="View Candidate">
+                                    <!-- VIEW -->
+                                    <li>
 
-                                            <i class="bi bi-eye">View</i>
+                                        <a class="dropdown-item" href="{{ url_for(
+                                'main.view_candidate',
+                                candidate_id=candidate.id
+                            ) }}">
 
-                                        </a>
-
-                                        <a href="{{ url_for(
-                                                    'main.edit_candidate',
-                                                    candidate_id=candidate.id
-                                                ) }}" class="btn btn-sm btn-outline-info" title="Edit Candidate">
-
-                                            <i class="bi bi-eye">Edit</i>
+                                            <i class="bi bi-eye me-2"></i>
+                                            View Candidate
 
                                         </a>
 
-                                    </div>
+                                    </li>
 
-                                    {% if candidate.status == "pending" %}
+
+                                    <!-- EDIT -->
+                                    <li>
+
+                                        <a class="dropdown-item" href="{{ url_for(
+                                'main.edit_candidate',
+                                candidate_id=candidate.id
+                            ) }}">
+
+                                            <i class="bi bi-pencil me-2"></i>
+                                            Edit Candidate
+
+                                        </a>
+
+                                    </li>
+
+
+                                    {% if candidate.status == "pending"
+                                    and candidate.is_active %}
+
 
                                     <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
+
+
+                                    <!-- APPROVE -->
+                                    <li>
+
                                         <form method="POST" action="{{ url_for(
-                            'main.approve_candidate',
-                            candidate_id=candidate.id
-                        ) }}">
+                                'main.approve_candidate',
+                                candidate_id=candidate.id
+                            ) }}" class="px-2">
+
                                             {{ csrf_token() }}
 
                                             <button type="submit" class="dropdown-item text-success" onclick="return confirm(
-                                'Approve this candidate?'
-                            );">
+                                    'Are you sure you want to approve this candidate?'
+                                );">
+
                                                 <i class="bi bi-check-circle me-2"></i>
-                                                Approve
-                                            </button>
-                                        </form>
-                                    </li>
+                                                Approve Candidate
 
-                                    <li>
-                                        <form method="POST" action="{{ url_for(
-                            'main.reject_candidate',
-                            candidate_id=candidate.id
-                        ) }}">
-                                            {{ csrf_token() }}
-
-                                            <button type="submit" class="dropdown-item text-danger" onclick="return confirm(
-                                'Reject this candidate?'
-                            );">
-                                                <i class="bi bi-x-circle me-2"></i>
-                                                Reject
                                             </button>
+
                                         </form>
+
                                     </li>
 
                                     {% endif %}
 
+
                                 </ul>
 
                             </div>
+
                         </td>
 
                     </tr>
 
+
                     {% else %}
 
+                    <!-- EMPTY STATE -->
+
                     <tr>
+
                         <td colspan="8" class="text-center py-5">
 
                             <div class="text-muted">
 
                                 <i class="bi bi-person-x fs-1 d-block mb-3"></i>
 
-                                <h5>No Candidates Found</h5>
+                                <h5>
+                                    No Candidates Found
+                                </h5>
 
                                 <p class="mb-0">
                                     No candidates match the selected filters.
@@ -420,12 +469,12 @@
                             </div>
 
                         </td>
+
                     </tr>
 
                     {% endfor %}
 
                 </tbody>
-
             </table>
 
         </div>

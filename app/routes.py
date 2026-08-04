@@ -3855,16 +3855,39 @@ def view_candidate(candidate_id):
         election=election
     )
 
-
 @main.route(
     "/admin/candidates/<int:candidate_id>/approve",
     methods=["POST"]
 )
 @login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+@role_required(
+    User.SUPER_ADMIN,
+    User.ELECTION_OFFICER
+)
 def approve_candidate(candidate_id):
 
     candidate = Candidate.query.get_or_404(candidate_id)
+
+    position = Position.query.get_or_404(candidate.position_id)
+    election = Election.query.get_or_404(candidate.election_id)
+    student = Student.query.get_or_404(candidate.student_id)
+
+    # --------------------------------------------------
+    # DATA INTEGRITY
+    # --------------------------------------------------
+
+    if position.election_id != election.id:
+        current_app.logger.error(
+            "Candidate/election mismatch: candidate=%s position=%s election=%s",
+            candidate.id,
+            position.id,
+            election.id
+        )
+        abort(404)
+
+    # --------------------------------------------------
+    # STATUS VALIDATION
+    # --------------------------------------------------
 
     if candidate.status != "pending":
         flash(
@@ -3874,20 +3897,131 @@ def approve_candidate(candidate_id):
         return redirect(
             url_for(
                 "main.manage_candidates",
-                position_id=candidate.position_id
+                position_id=position.id
             )
         )
 
+    if not candidate.is_active:
+        flash(
+            "Inactive candidates cannot be approved.",
+            "danger"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # STUDENT VALIDATION
+    # --------------------------------------------------
+
+    if not student.is_active:
+        flash(
+            "An inactive student cannot be approved as a candidate.",
+            "danger"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    if not student.is_verified:
+        flash(
+            "The student must be verified before the candidate can be approved.",
+            "danger"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # POSITION VALIDATION
+    # --------------------------------------------------
+
+    if not position.is_active or position.status != "active":
+        flash(
+            "Candidates cannot be approved for an inactive position.",
+            "danger"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # ELECTION VALIDATION
+    # --------------------------------------------------
+
+    if not election.is_active:
+        flash(
+            "Candidates cannot be approved for an inactive election.",
+            "danger"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # APPROVE
+    # --------------------------------------------------
+
     candidate.status = "approved"
+    candidate.updated_at = datetime.utcnow()
+
+    # --------------------------------------------------
+    # AUDIT LOG
+    # --------------------------------------------------
 
     log_action(
         action="Approve Candidate",
         entity_type="Candidate",
         entity_id=candidate.id,
-        description=f"Candidate {candidate.id} approved"
+        description=(
+            f"Candidate #{candidate.id} "
+            f"({student.first_name} {student.last_name}) "
+            f"approved for position '{position.title}' "
+            f"in election '{election.name}'"
+        )
     )
 
-    db.session.commit()
+    # --------------------------------------------------
+    # DATABASE TRANSACTION
+    # --------------------------------------------------
+
+    try:
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Failed to approve candidate %s",
+            candidate.id
+        )
+
+        flash(
+            "An unexpected error occurred while approving the candidate.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
 
     flash(
         "Candidate approved successfully.",
@@ -3897,10 +4031,9 @@ def approve_candidate(candidate_id):
     return redirect(
         url_for(
             "main.manage_candidates",
-            position_id=candidate.position_id
+            position_id=position.id
         )
     )
-
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/reject",
