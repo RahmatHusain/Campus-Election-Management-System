@@ -13,6 +13,17 @@ from app.decorators import (
     election_officer_required,
     student_required,
 )
+
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    request,
+    flash,
+    abort,
+    current_app
+)
+
 from app.decorators import role_required
 from flask import session
 from app.forms.auth_forms import RegisterForm, LoginForm
@@ -3785,6 +3796,67 @@ def edit_candidate(candidate_id):
     )
 
 @main.route(
+    "/admin/candidates/<int:candidate_id>",
+    methods=["GET"]
+)
+@login_required
+@role_required(
+    User.SUPER_ADMIN,
+    User.ELECTION_OFFICER
+)
+def view_candidate(candidate_id):
+
+    # ==================================================
+    # LOAD CANDIDATE
+    # ==================================================
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    # ==================================================
+    # LOAD POSITION
+    # ==================================================
+
+    position = Position.query.get_or_404(
+        candidate.position_id
+    )
+
+    # ==================================================
+    # LOAD ELECTION
+    # ==================================================
+
+    election = Election.query.get_or_404(
+        candidate.election_id
+    )
+
+    # ==================================================
+    # SECURITY / DATA CONSISTENCY CHECK
+    # ==================================================
+
+    if position.election_id != election.id:
+
+        current_app.logger.error(
+            "Candidate relationship mismatch: "
+            "candidate_id=%s position_id=%s election_id=%s",
+            candidate.id,
+            position.id,
+            election.id
+        )
+
+        abort(404)
+
+    # ==================================================
+    # RENDER
+    # ==================================================
+
+    return render_template(
+        "admin/candidates/view.html",
+        candidate=candidate,
+        position=position,
+        election=election
+    )
+
+
+@main.route(
     "/admin/candidates/<int:candidate_id>/approve",
     methods=["POST"]
 )
@@ -3916,20 +3988,6 @@ def verify_candidate(candidate_id):
         )
     )    
 
-@main.route(
-    "/admin/candidates/<int:candidate_id>",
-    methods=["GET"]
-)
-@login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def view_candidate(candidate_id):
-
-    candidate = Candidate.query.get_or_404(candidate_id)
-
-    return render_template(
-        "admin/candidates/view.html",
-        candidate=candidate
-    )
 
 
 @main.route(

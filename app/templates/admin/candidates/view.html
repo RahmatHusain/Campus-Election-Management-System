@@ -4,69 +4,562 @@
 
 <div class="container-fluid">
 
+    <!-- ============================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ============================================= -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
+
         <div>
-            <h2 class="mb-1">Candidate Details</h2>
+
+            <h2 class="fw-bold mb-1">
+                Candidate Profile
+            </h2>
+
             <p class="text-muted mb-0">
-                View candidate information
+                View complete candidate information
             </p>
+
         </div>
 
-        <a href="{{ url_for(
-            'main.manage_candidates',
-            position_id=candidate.position_id
-        ) }}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i>
-            Back to Candidates
-        </a>
+        <div class="d-flex gap-2">
+
+            <a href="{{ url_for(
+                'main.manage_candidates',
+                position_id=position.id
+            ) }}" class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+                Back
+
+            </a>
+
+            <a href="{{ url_for(
+                'main.edit_candidate',
+                candidate_id=candidate.id
+            ) }}" class="btn btn-primary">
+
+                <i class="bi bi-pencil"></i>
+                Edit
+
+            </a>
+
+        </div>
+
     </div>
 
-    <div class="card shadow-sm">
+
+    <!-- ============================================= -->
+    <!-- CANDIDATE HEADER -->
+    <!-- ============================================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
 
         <div class="card-body">
 
-            <h4>
-                {{ candidate.student.first_name }}
-                {{ candidate.student.last_name }}
-            </h4>
+            <div class="row align-items-center">
 
-            <hr>
+                <!-- PHOTO -->
 
-            <p>
-                <strong>Student ID:</strong>
-                {{ candidate.student.student_id }}
-            </p>
+                <div class="col-md-2 text-center">
 
-            <p>
-                <strong>Election:</strong>
-                {{ candidate.election.name }}
-            </p>
+                    {% if candidate.photo %}
 
-            <p>
-                <strong>Position:</strong>
-                {{ candidate.position.title }}
-            </p>
+                    <img src="{{ url_for(
+                                'static',
+                                filename=candidate.photo
+                            ) }}" alt="Candidate Photo" class="rounded-circle shadow-sm" width="120" height="120"
+                        style="object-fit: cover;">
 
-            <p>
-                <strong>Status:</strong>
-                {{ candidate.status|capitalize }}
-            </p>
+                    {% else %}
 
-            {% if candidate.slogan %}
-            <p>
-                <strong>Slogan:</strong>
-                {{ candidate.slogan }}
-            </p>
-            {% endif %}
+                    <div class="bg-secondary rounded-circle
+                                   d-flex align-items-center
+                                   justify-content-center
+                                   mx-auto" style="
+                                width:120px;
+                                height:120px;
+                            ">
+
+                        <i class="bi bi-person text-white fs-1"></i>
+
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- BASIC INFORMATION -->
+
+                <div class="col-md-7">
+
+                    <h3 class="fw-bold mb-1">
+
+                        {{ candidate.student.first_name }}
+                        {{ candidate.student.last_name }}
+
+                    </h3>
+
+                    <p class="text-muted mb-2">
+
+                        {{ candidate.student.student_id }}
+
+                    </p>
+
+                    <div class="mb-2">
+
+                        <span class="badge bg-primary">
+                            {{ position.title }}
+                        </span>
+
+                        {% if candidate.status == "approved" %}
+
+                        <span class="badge bg-success">
+                            Approved
+                        </span>
+
+                        {% elif candidate.status == "pending" %}
+
+                        <span class="badge bg-warning text-dark">
+                            Pending
+                        </span>
+
+                        {% elif candidate.status == "rejected" %}
+
+                        <span class="badge bg-danger">
+                            Rejected
+                        </span>
+
+                        {% elif candidate.status == "withdrawn" %}
+
+                        <span class="badge bg-secondary">
+                            Withdrawn
+                        </span>
+
+                        {% endif %}
+
+                        {% if candidate.is_active %}
+
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-secondary">
+                            Inactive
+                        </span>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% if candidate.slogan %}
+
+                    <blockquote class="blockquote mb-0">
+
+                        <p class="mb-0">
+                            "{{ candidate.slogan }}"
+                        </p>
+
+                    </blockquote>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- VOTE COUNT -->
+
+                <div class="col-md-3 text-center">
+
+                    <div class="border rounded p-3">
+
+                        <div class="text-muted small">
+                            Current Votes
+                        </div>
+
+                        <div class="display-6 fw-bold">
+                            {{ candidate.vote_count or 0 }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- STUDENT INFORMATION -->
+    <!-- ============================================= -->
+
+    <div class="row">
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="bi bi-person"></i>
+                        Student Information
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted">
+                                Student ID
+                            </small>
+
+                            <div class="fw-semibold">
+                                {{ candidate.student.student_id }}
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted">
+                                Roll Number
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                {{ candidate.student.roll_number
+                                or '-' }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted">
+                                First Name
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                {{ candidate.student.first_name }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted">
+                                Last Name
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                {{ candidate.student.last_name }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted">
+                                Program
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                {{ candidate.student.program.name
+                                if candidate.student.program
+                                else '-' }}
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-md-6">
+
+                            <small class="text-muted">
+                                Semester
+                            </small>
+
+                            <div class="fw-semibold">
+
+                                {{ candidate.student.semester.name
+                                if candidate.student.semester
+                                else '-' }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================================= -->
+        <!-- ELECTION INFORMATION -->
+        <!-- ========================================= -->
+
+        <div class="col-lg-6 mb-4">
+
+            <div class="card shadow-sm border-0 h-100">
+
+                <div class="card-header bg-white">
+
+                    <h5 class="mb-0">
+
+                        <i class="bi bi-calendar-event"></i>
+                        Election Information
+
+                    </h5>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+
+                        <small class="text-muted">
+                            Election
+                        </small>
+
+                        <div class="fw-semibold">
+
+                            {{ election.title }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <small class="text-muted">
+                            Position
+                        </small>
+
+                        <div class="fw-semibold">
+
+                            {{ position.title }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <small class="text-muted">
+                            Position Candidate Limit
+                        </small>
+
+                        <div class="fw-semibold">
+
+                            {{ position.max_candidates }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div>
+
+                        <small class="text-muted">
+                            Candidate Display Order
+                        </small>
+
+                        <div class="fw-semibold">
+
+                            {{ candidate.display_order or '-' }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- MANIFESTO -->
+    <!-- ============================================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-megaphone"></i>
+                Candidate Manifesto
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
 
             {% if candidate.manifesto %}
-            <div class="mt-4">
-                <h5>Manifesto</h5>
-                <p class="text-muted">
-                    {{ candidate.manifesto }}
-                </p>
+
+            <div class="p-3 bg-light rounded">
+
+                {{ candidate.manifesto
+                | replace('\n', '<br>')
+                | safe }}
+
             </div>
+
+            {% else %}
+
+            <p class="text-muted mb-0">
+                No manifesto has been provided.
+            </p>
+
             {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- SYMBOL -->
+    <!-- ============================================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-award"></i>
+                Election Symbol
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            {% if candidate.symbol %}
+
+            <div class="fw-semibold">
+
+                {{ candidate.symbol }}
+
+            </div>
+
+            {% else %}
+
+            <span class="text-muted">
+                No election symbol assigned.
+            </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- ============================================= -->
+    <!-- RECORD INFORMATION -->
+    <!-- ============================================= -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+
+                <i class="bi bi-clock-history"></i>
+                Record Information
+
+            </h5>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-4">
+
+                    <small class="text-muted">
+                        Candidate ID
+                    </small>
+
+                    <div class="fw-semibold">
+                        #{{ candidate.id }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <small class="text-muted">
+                        Created
+                    </small>
+
+                    <div class="fw-semibold">
+
+                        {{ candidate.created_at.strftime(
+                        "%Y-%m-%d %H:%M"
+                        ) if candidate.created_at else '-' }}
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <small class="text-muted">
+                        Last Updated
+                    </small>
+
+                    <div class="fw-semibold">
+
+                        {{ candidate.updated_at.strftime(
+                        "%Y-%m-%d %H:%M"
+                        ) if candidate.updated_at else '-' }}
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
