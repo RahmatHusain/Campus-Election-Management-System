@@ -1,20 +1,92 @@
 {% extends "layouts/admin_base.html" %}
 
-{% block title %}
-Create Candidate
-{% endblock %}
-
 {% block content %}
 
-<div class="container">
+<div class="container-fluid">
 
-    <div class="card shadow">
+    <!-- Page Header -->
 
-        <div class="card-header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-            <h4>Add Candidate</h4>
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                Register Candidate
+            </h2>
+
+            <p class="text-muted mb-0">
+                Register a candidate for
+                <strong>{{ position.title }}</strong>
+            </p>
 
         </div>
+
+        <a href="{{ url_for(
+            'main.manage_candidates',
+            position_id=position.id
+        ) }}" class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back
+
+        </a>
+
+    </div>
+
+
+    <!-- Election / Position Information -->
+
+    <div class="card shadow-sm border-0 mb-4">
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-6">
+
+                    <small class="text-muted">
+                        Election
+                    </small>
+
+                    <div class="fw-semibold">
+                        {{ election.title }}
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <small class="text-muted">
+                        Position
+                    </small>
+
+                    <div class="fw-semibold">
+                        {{ position.title }}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Candidate Form -->
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white">
+
+            <h5 class="mb-0">
+                <i class="bi bi-person-plus"></i>
+                Candidate Information
+            </h5>
+
+        </div>
+
 
         <div class="card-body">
 
@@ -22,38 +94,137 @@ Create Candidate
 
                 {{ form.hidden_tag() }}
 
-                <div class="mb-3">
-                    {{ form.student_id.label(class="form-label") }}
-                    {{ form.student_id(class="form-select") }}
-                </div>
+
+                <!-- Student -->
 
                 <div class="mb-3">
-                    {{ form.symbol.label(class="form-label") }}
-                    {{ form.symbol(class="form-control") }}
+
+                    {{ form.student_id.label(
+                    class="form-label fw-semibold"
+                    ) }}
+
+                    {{ form.student_id(
+                    class="form-select"
+                    ) }}
+
+                    {% for error in form.student_id.errors %}
+
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
                 </div>
+
+
+                <!-- Slogan -->
 
                 <div class="mb-3">
-                    {{ form.slogan.label(class="form-label") }}
-                    {{ form.slogan(class="form-control") }}
+
+                    {{ form.slogan.label(
+                    class="form-label fw-semibold"
+                    ) }}
+
+                    {{ form.slogan(
+                    class="form-control",
+                    placeholder="Enter candidate slogan"
+                    ) }}
+
+                    {% for error in form.slogan.errors %}
+
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
                 </div>
+
+
+                <!-- Manifesto -->
 
                 <div class="mb-3">
-                    {{ form.manifesto.label(class="form-label") }}
-                    {{ form.manifesto(class="form-control") }}
+
+                    {{ form.manifesto.label(
+                    class="form-label fw-semibold"
+                    ) }}
+
+                    {{ form.manifesto(
+                    class="form-control",
+                    rows="6",
+                    placeholder="Enter candidate manifesto"
+                    ) }}
+
+                    {% for error in form.manifesto.errors %}
+
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
                 </div>
+
+
+                <!-- Symbol -->
 
                 <div class="mb-3">
-                    {{ form.status.label(class="form-label") }}
-                    {{ form.status(class="form-select") }}
+
+                    {{ form.symbol.label(
+                    class="form-label fw-semibold"
+                    ) }}
+
+                    {{ form.symbol(
+                    class="form-control",
+                    placeholder="Enter election symbol"
+                    ) }}
+
+                    {% for error in form.symbol.errors %}
+
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
                 </div>
 
-                {{ form.submit(class="btn btn-primary") }}
 
-                <a href="{{ url_for('main.manage_candidates', position_id=position.id) }}" class="btn btn-secondary">
+                <!-- Status -->
 
-                    Cancel
+                <div class="mb-4">
 
-                </a>
+                    {{ form.status.label(
+                    class="form-label fw-semibold"
+                    ) }}
+
+                    {{ form.status(
+                    class="form-select"
+                    ) }}
+
+                </div>
+
+
+                <!-- Actions -->
+
+                <div class="d-flex justify-content-end gap-2">
+
+                    <a href="{{ url_for(
+                        'main.manage_candidates',
+                        position_id=position.id
+                    ) }}" class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+
+                    {{ form.submit(
+                    class="btn btn-primary"
+                    ) }}
+
+                </div>
 
             </form>
 

@@ -84,37 +84,46 @@ class Position(db.Model):
     # -----------------------------------
     @property
     def candidate_count(self):
-        return len(self.candidates)
+        return sum(
+            1
+            for candidate in self.candidates
+            if candidate.is_active
+        )
 
 
     @property
     def is_filled(self):
-        """
-        Temporary until Candidate module (Day 13)
-        """
-        return False
+        return (
+            self.candidate_count >= self.max_candidates
+        )
 
 
     @property
     def remaining_slots(self):
-        """
-        Temporary until Candidate module (Day 13)
-        """
-        return self.max_candidates
+        return max(
+            self.max_candidates - self.candidate_count,
+            0
+        )
+
 
     @property
     def progress_percentage(self):
-        if self.max_candidates == 0:
+
+        if self.max_candidates <= 0:
             return 0
 
-        return round(
-            (self.candidate_count / self.max_candidates) * 100
+        return min(
+            round(
+                (self.candidate_count / self.max_candidates) * 100
+            ),
+            100
         )
+
 
     @property
     def badge_color(self):
 
-        if self.status == "archived":
+        if self.status == "archived" or not self.is_active:
             return "secondary"
 
         if self.is_filled:

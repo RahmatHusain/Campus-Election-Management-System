@@ -3167,344 +3167,6 @@ def candidate_dashboard():
         verified=""
     )
 
-
-@main.route(
-    "/admin/positions/<int:position_id>/candidates/create",
-    methods=["GET", "POST"]
-)
-@login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def create_candidate(position_id):
-
-    # --------------------------------------------------
-    # Load Position
-    # --------------------------------------------------
-
-    position = Position.query.get_or_404(position_id)
-
-    # --------------------------------------------------
-    # Get Election from Position
-    # --------------------------------------------------
-
-    election = Election.query.get_or_404(
-        position.election_id
-    )
-
-    # --------------------------------------------------
-    # Create Form
-    # --------------------------------------------------
-
-    form = CandidateForm()
-
-    # --------------------------------------------------
-    # Load Students
-    # --------------------------------------------------
-
-    students = Student.query.order_by(
-        Student.first_name.asc(),
-        Student.last_name.asc()
-    ).all()
-
-    form.student_id.choices = [
-        (
-            student.id,
-            f"{student.student_id} - "
-            f"{student.first_name} {student.last_name}"
-        )
-        for student in students
-    ]
-
-    # --------------------------------------------------
-    # Handle Submission
-    # --------------------------------------------------
-
-    if form.validate_on_submit():
-
-        # ----------------------------------------------
-        # Prevent Duplicate Student in Same Position
-        # ----------------------------------------------
-
-        duplicate = Candidate.query.filter(
-            Candidate.position_id == position.id,
-            Candidate.student_id == form.student_id.data,
-            Candidate.is_active.is_(True)
-        ).first()
-
-        if duplicate:
-
-            flash(
-                "This student is already a candidate "
-                "for this position.",
-                "danger"
-            )
-
-            return render_template(
-                "admin/candidates/create.html",
-                form=form,
-                position=position,
-                election=election
-            )
-
-        # ----------------------------------------------
-        # Check Candidate Limit
-        # ----------------------------------------------
-
-        candidate_count = Candidate.query.filter(
-            Candidate.position_id == position.id,
-            Candidate.is_active.is_(True)
-        ).count()
-
-        if (
-            position.max_candidates is not None
-            and candidate_count >= position.max_candidates
-        ):
-
-            flash(
-                "The maximum number of candidates "
-                "for this position has been reached.",
-                "danger"
-            )
-
-            return render_template(
-                "admin/candidates/create.html",
-                form=form,
-                position=position,
-                election=election
-            )
-
-        # ----------------------------------------------
-        # Create Candidate
-        # ----------------------------------------------
-
-        candidate = Candidate(
-            election_id=position.election_id,
-            position_id=position.id,
-            student_id=form.student_id.data,
-            slogan=form.slogan.data,
-            manifesto=form.manifesto.data,
-            symbol=form.symbol.data,
-            status="pending",
-            is_active=True
-        )
-        db.session.add(candidate)
-
-        # ----------------------------------------------
-        # Flush
-        # ----------------------------------------------
-        # Generates candidate.id before audit logging.
-
-        db.session.flush()
-
-        # ----------------------------------------------
-        # Audit Log
-        # ----------------------------------------------
-
-        log_action(
-            action="Create Candidate",
-            entity_type="Candidate",
-            entity_id=candidate.id,
-            description=(
-                f"Candidate created for position "
-                f"'{position.title}' in election "
-                f"'{election.title}'"
-            )
-        )
-
-        # ----------------------------------------------
-        # Commit
-        # ----------------------------------------------
-
-        db.session.commit()
-
-        flash(
-            "Candidate created successfully and "
-            "is pending approval.",
-            "success"
-        )
-
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=position.id
-            )
-        )
-
-    # --------------------------------------------------
-    # GET Request
-    # --------------------------------------------------
-
-    return render_template(
-        "admin/candidates/create.html",
-        form=form,
-        position=position,
-        election=election
-    )
-
-@main.route("/admin/candidates")
-@login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def manage_all_candidates():
-
-    page = request.args.get("page", 1, type=int)
-
-    search = request.args.get("search", "").strip()
-
-    election_id = request.args.get(
-        "election_id",
-        type=int
-    )
-
-    position_id = request.args.get(
-        "position_id",
-        type=int
-    )
-
-    status = request.args.get(
-        "status",
-        ""
-    ).strip().lower()
-
-    query = (
-        Candidate.query
-        .join(Candidate.student)
-        .join(Candidate.position)
-        .join(Candidate.election)
-    )
-
-    # ---------------------------------------------
-    # Search
-    # ---------------------------------------------
-
-    if search:
-
-        search_pattern = f"%{search}%"
-
-        query = query.filter(
-            db.or_(
-                Student.first_name.ilike(search_pattern),
-                Student.last_name.ilike(search_pattern),
-                Student.student_id.ilike(search_pattern)
-            )
-        )
-
-    # ---------------------------------------------
-    # Election filter
-    # ---------------------------------------------
-
-    if election_id:
-
-        query = query.filter(
-            Candidate.election_id == election_id
-        )
-
-    # ---------------------------------------------
-    # Position filter
-    # ---------------------------------------------
-
-    if position_id:
-
-        query = query.filter(
-            Candidate.position_id == position_id
-        )
-
-    # ---------------------------------------------
-    # Status filter
-    # ---------------------------------------------
-
-    allowed_statuses = {
-        "pending",
-        "approved",
-        "rejected",
-        "withdrawn"
-    }
-
-    if status in allowed_statuses:
-
-        query = query.filter(
-            Candidate.status == status
-        )
-
-    # ---------------------------------------------
-    # Pagination
-    # ---------------------------------------------
-
-    candidates = (
-        query
-        .order_by(
-            Candidate.created_at.desc(),
-            Candidate.id.desc()
-        )
-        .paginate(
-            page=page,
-            per_page=10,
-            error_out=False
-        )
-    )
-
-    # ---------------------------------------------
-    # Statistics
-    # ---------------------------------------------
-
-    stats = {
-        "total": Candidate.query.count(),
-
-        "pending": Candidate.query.filter_by(
-            status="pending"
-        ).count(),
-
-        "approved": Candidate.query.filter_by(
-            status="approved"
-        ).count(),
-
-        "rejected": Candidate.query.filter_by(
-            status="rejected"
-        ).count(),
-
-        "withdrawn": Candidate.query.filter_by(
-            status="withdrawn"
-        ).count(),
-
-        "archived": Candidate.query.filter_by(
-            is_active=False
-        ).count()
-    }
-
-    # ---------------------------------------------
-    # Filter dropdown data
-    # ---------------------------------------------
-
-    elections = (
-        Election.query
-        .order_by(Election.title.asc())
-        .all()
-    )
-
-    positions = (
-        Position.query
-        .order_by(Position.title.asc())
-        .all()
-    )
-
-    return render_template(
-        "admin/candidates/manage.html",
-
-        candidates=candidates,
-
-        stats=stats,
-
-        elections=elections,
-
-        positions=positions,
-
-        search=search,
-
-        election_id=election_id,
-
-        position_id=position_id,
-
-        status=status
-    )
-
 @main.route("/admin/positions/<int:position_id>/candidates")
 @login_required
 @role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
@@ -3584,8 +3246,30 @@ def manage_candidates(position_id):
     # --------------------------------------------------
 
     base_stats_query = Candidate.query.filter(
-        Candidate.position_id == position.id
+        Candidate.position_id == position.id,
+        Candidate.is_active.is_(True)
     )
+
+    stats = {
+        "total": base_stats_query.count(),
+
+        "approved": base_stats_query.filter(
+            Candidate.status == "approved"
+        ).count(),
+
+        "pending": base_stats_query.filter(
+            Candidate.status == "pending"
+        ).count(),
+
+        "rejected": base_stats_query.filter(
+            Candidate.status == "rejected"
+        ).count(),
+
+        "archived": Candidate.query.filter(
+            Candidate.position_id == position.id,
+            Candidate.is_active.is_(False)
+        ).count()
+    }
 
     stats = {
         "total": base_stats_query.count(),
@@ -3618,6 +3302,301 @@ def manage_candidates(position_id):
         stats=stats,
         search=search,
         status=status
+    )
+
+@main.route(
+    "/admin/positions/<int:position_id>/candidates/create",
+    methods=["GET", "POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def create_candidate(position_id):
+
+    # --------------------------------------------------
+    # Load Position
+    # --------------------------------------------------
+
+    position = Position.query.get_or_404(position_id)
+
+    # --------------------------------------------------
+    # Validate Position
+    # --------------------------------------------------
+
+    if not position.is_active or position.status != "active":
+        flash(
+            "Candidates cannot be added to an inactive position.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # Load Election
+    # --------------------------------------------------
+
+    election = Election.query.get_or_404(
+        position.election_id
+    )
+
+    # --------------------------------------------------
+    # Validate Election
+    # --------------------------------------------------
+
+    if not election.is_active:
+        flash(
+            "Candidates cannot be added because this election is inactive.",
+            "danger"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # Create Form
+    # --------------------------------------------------
+
+    form = CandidateForm()
+
+    # --------------------------------------------------
+    # Load Eligible Students
+    # --------------------------------------------------
+
+    students = (
+        Student.query
+        .filter(
+            Student.is_active.is_(True),
+            Student.is_verified.is_(True)
+        )
+        .order_by(
+            Student.first_name.asc(),
+            Student.last_name.asc()
+        )
+        .all()
+    )
+
+    form.student_id.choices = [
+        (
+            student.id,
+            f"{student.student_id} - "
+            f"{student.first_name} {student.last_name}"
+        )
+        for student in students
+    ]
+
+    # --------------------------------------------------
+    # Handle POST
+    # --------------------------------------------------
+
+    if form.validate_on_submit():
+
+        student = Student.query.get(
+            form.student_id.data
+        )
+
+        # --------------------------------------------------
+        # Student Exists
+        # --------------------------------------------------
+
+        if not student:
+
+            flash(
+                "Selected student does not exist.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        # --------------------------------------------------
+        # Student Eligibility
+        # --------------------------------------------------
+
+        if not student.is_active:
+
+            flash(
+                "Inactive students cannot become candidates.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        if not student.is_verified:
+
+            flash(
+                "Student must be verified before becoming a candidate.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        # --------------------------------------------------
+        # Check Candidate Limit
+        # --------------------------------------------------
+
+        candidate_count = Candidate.query.filter(
+            Candidate.position_id == position.id,
+            Candidate.is_active.is_(True)
+        ).count()
+
+        if candidate_count >= position.max_candidates:
+
+            flash(
+                f"This position allows a maximum of "
+                f"{position.max_candidates} candidates.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        # --------------------------------------------------
+        # Prevent Duplicate Candidate
+        # --------------------------------------------------
+
+        duplicate = Candidate.query.filter(
+            Candidate.position_id == position.id,
+            Candidate.election_id == election.id,
+            Candidate.student_id == student.id
+        ).first()
+
+        if duplicate:
+
+            flash(
+                "This student is already registered as a "
+                "candidate for this position.",
+                "warning"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        # --------------------------------------------------
+        # Create Candidate
+        # --------------------------------------------------
+
+        candidate = Candidate(
+            election_id=election.id,
+            position_id=position.id,
+            student_id=student.id,
+            slogan=form.slogan.data.strip()
+                if form.slogan.data else None,
+            manifesto=form.manifesto.data.strip()
+                if form.manifesto.data else None,
+            symbol=form.symbol.data.strip()
+                if form.symbol.data else None,
+            status=form.status.data or "pending",
+            is_active=True,
+            vote_count=0,
+            display_order=candidate_count + 1
+        )
+
+        db.session.add(candidate)
+
+        # Generate ID
+        db.session.flush()
+
+        # --------------------------------------------------
+        # Audit Log
+        # --------------------------------------------------
+
+        log_action(
+            action="Create Candidate",
+            entity_type="Candidate",
+            entity_id=candidate.id,
+            description=(
+                f"Candidate '{student.first_name} "
+                f"{student.last_name}' created for "
+                f"position '{position.title}' in "
+                f"election '{election.title}'."
+            )
+        )
+
+        # --------------------------------------------------
+        # Commit
+        # --------------------------------------------------
+
+        try:
+
+            db.session.commit()
+
+        except Exception:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Failed to create candidate"
+            )
+
+            flash(
+                "An unexpected error occurred while "
+                "creating the candidate.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/create.html",
+                form=form,
+                position=position,
+                election=election
+            )
+
+        # --------------------------------------------------
+        # Success
+        # --------------------------------------------------
+
+        flash(
+            "Candidate created successfully and is "
+            "pending approval.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # --------------------------------------------------
+    # GET
+    # --------------------------------------------------
+
+    return render_template(
+        "admin/candidates/create.html",
+        form=form,
+        position=position,
+        election=election
     )
 
 
