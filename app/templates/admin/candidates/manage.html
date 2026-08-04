@@ -337,15 +337,28 @@
 
                                 <ul class="dropdown-menu dropdown-menu-end">
 
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for(
-                            'main.view_candidate',
-                            candidate_id=candidate.id
-                        ) }}">
-                                            <i class="bi bi-eye me-2"></i>
-                                            View
+                                    <div class="btn-group">
+
+                                        <a href="{{ url_for(
+                                                'main.view_candidate',
+                                                candidate_id=candidate.id
+                                            ) }}" class="btn btn-sm btn-outline-info" title="View">
+
+                                            <i class="bi bi-eye">View</i>
+
                                         </a>
-                                    </li>
+
+
+                                        <a href="{{ url_for(
+                                                    'main.edit_candidate',
+                                                    candidate_id=candidate.id
+                                                ) }}" class="btn btn-sm btn-outline-primary" title="Edit">
+
+                                            <i class="bi bi-pencil">Edit</i>
+
+                                        </a>
+
+                                    </div>
 
                                     {% if candidate.status == "pending" %}
 

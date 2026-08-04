@@ -3598,7 +3598,191 @@ def create_candidate(position_id):
         position=position,
         election=election
     )
+@main.route(
+    "/admin/candidates/<int:candidate_id>/edit",
+    methods=["GET", "POST"]
+)
+@login_required
+@role_required(
+    User.SUPER_ADMIN,
+    User.ELECTION_OFFICER
+)
+def edit_candidate(candidate_id):
 
+    # ==================================================
+    # LOAD CANDIDATE
+    # ==================================================
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    # ==================================================
+    # LOAD RELATED POSITION
+    # ==================================================
+
+    position = Position.query.get_or_404(
+        candidate.position_id
+    )
+
+    # ==================================================
+    # LOAD RELATED ELECTION
+    # ==================================================
+
+    election = Election.query.get_or_404(
+        candidate.election_id
+    )
+
+    # ==================================================
+    # CREATE FORM
+    # ==================================================
+
+    form = CandidateForm()
+
+    # ==================================================
+    # HANDLE POST
+    # ==================================================
+
+    if form.validate_on_submit():
+
+        # ----------------------------------------------
+        # Store old values for audit
+        # ----------------------------------------------
+
+        old_slogan = candidate.slogan
+        old_manifesto = candidate.manifesto
+        old_symbol = candidate.symbol
+        old_status = candidate.status
+
+        # ----------------------------------------------
+        # Update allowed fields
+        # ----------------------------------------------
+
+        candidate.slogan = (
+            form.slogan.data.strip()
+            if form.slogan.data
+            else None
+        )
+
+        candidate.manifesto = (
+            form.manifesto.data.strip()
+            if form.manifesto.data
+            else None
+        )
+
+        candidate.symbol = (
+            form.symbol.data.strip()
+            if form.symbol.data
+            else None
+        )
+
+        candidate.status = form.status.data
+
+        # ----------------------------------------------
+        # Audit description
+        # ----------------------------------------------
+
+        changes = []
+
+        if old_slogan != candidate.slogan:
+            changes.append("slogan updated")
+
+        if old_manifesto != candidate.manifesto:
+            changes.append("manifesto updated")
+
+        if old_symbol != candidate.symbol:
+            changes.append("symbol updated")
+
+        if old_status != candidate.status:
+            changes.append(
+                f"status changed from "
+                f"'{old_status}' to "
+                f"'{candidate.status}'"
+            )
+
+        # ----------------------------------------------
+        # Only log actual changes
+        # ----------------------------------------------
+
+        if changes:
+
+            log_action(
+                action="Update Candidate",
+                entity_type="Candidate",
+                entity_id=candidate.id,
+                description=(
+                    f"Candidate #{candidate.id} updated: "
+                    + ", ".join(changes)
+                )
+            )
+
+        # ----------------------------------------------
+        # Commit safely
+        # ----------------------------------------------
+
+        try:
+
+            db.session.commit()
+
+        except Exception:
+
+            db.session.rollback()
+
+            current_app.logger.exception(
+                "Failed to update candidate %s",
+                candidate.id
+            )
+
+            flash(
+                "An unexpected error occurred while "
+                "updating the candidate.",
+                "danger"
+            )
+
+            return render_template(
+                "admin/candidates/edit.html",
+                form=form,
+                candidate=candidate,
+                position=position,
+                election=election
+            )
+
+        # ----------------------------------------------
+        # Success
+        # ----------------------------------------------
+
+        flash(
+            "Candidate updated successfully.",
+            "success"
+        )
+
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=position.id
+            )
+        )
+
+    # ==================================================
+    # GET REQUEST
+    # ==================================================
+
+    if request.method == "GET":
+
+        form.slogan.data = candidate.slogan
+        form.manifesto.data = candidate.manifesto
+        form.symbol.data = candidate.symbol
+        form.status.data = candidate.status
+
+    # ==================================================
+    # RENDER
+    # ==================================================
+
+    return render_template(
+        "admin/candidates/edit.html",
+        form=form,
+        candidate=candidate,
+        position=position,
+        election=election
+    )
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/approve",
@@ -3747,98 +3931,6 @@ def view_candidate(candidate_id):
         candidate=candidate
     )
 
-@main.route(
-    "/admin/candidates/<int:candidate_id>/edit",
-    methods=["GET", "POST"]
-)
-@login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def edit_candidate(candidate_id):
-
-    candidate = Candidate.query.get_or_404(candidate_id)
-
-    form = CandidateForm(obj=candidate)
-
-    # Load students
-    students = Student.query.order_by(
-        Student.first_name.asc(),
-        Student.last_name.asc()
-    ).all()
-
-    form.student_id.choices = [
-        (
-            student.id,
-            f"{student.student_id} - "
-            f"{student.first_name} {student.last_name}"
-        )
-        for student in students
-    ]
-
-    if form.validate_on_submit():
-
-        # Prevent assigning same student to another candidate
-        duplicate = Candidate.query.filter(
-            Candidate.position_id == candidate.position_id,
-            Candidate.student_id == form.student_id.data,
-            Candidate.id != candidate.id
-        ).first()
-
-        if duplicate:
-            flash(
-                "This student is already a candidate for this position.",
-                "danger"
-            )
-
-            return render_template(
-                "admin/candidates/edit.html",
-                form=form,
-                candidate=candidate,
-                position=candidate.position
-            )
-
-        candidate.student_id = form.student_id.data
-        candidate.slogan = form.slogan.data
-        candidate.manifesto = form.manifesto.data
-        candidate.status = form.status.data
-
-        # Only update symbol if your form actually has it
-        if hasattr(form, "symbol"):
-            candidate.symbol = form.symbol.data
-
-        candidate.updated_at = datetime.utcnow()
-
-        db.session.commit()
-
-        log_action(
-            action="Update Candidate",
-            entity_type="Candidate",
-            entity_id=candidate.id,
-            description=(
-                f"Candidate {candidate.id} updated "
-                f"for {candidate.position.title}"
-            )
-        )
-
-        db.session.commit()
-
-        flash(
-            "Candidate updated successfully.",
-            "success"
-        )
-
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=candidate.position_id
-            )
-        )
-
-    return render_template(
-        "admin/candidates/edit.html",
-        form=form,
-        candidate=candidate,
-        position=candidate.position
-    )
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/archive",
