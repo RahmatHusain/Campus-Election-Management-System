@@ -23,7 +23,7 @@ from flask import (
     abort,
     current_app
 )
-
+from app.forms.csrf_form import CandidateActionForm
 from app.decorators import role_required
 from flask import session
 from app.forms.auth_forms import RegisterForm, LoginForm
@@ -3188,6 +3188,8 @@ def manage_candidates(position_id):
 
     position = Position.query.get_or_404(position_id)
 
+     # CSRF-protected action form
+    action_form = CandidateActionForm()
     # --------------------------------------------------
     # Filters
     # --------------------------------------------------
@@ -3311,9 +3313,9 @@ def manage_candidates(position_id):
         candidates=candidates,
         stats=stats,
         search=search,
-        status=status
+        status=status,
+        action_form=action_form
     )
-
 @main.route(
     "/admin/positions/<int:position_id>/candidates/create",
     methods=["GET", "POST"]
@@ -3805,185 +3807,163 @@ def view_candidate(candidate_id):
     )
 
 @main.route(
-    "/admin/candidates/<int:candidate_id>/approve",
+    "/admin/candidates/<int:candidate_id>/withdraw",
     methods=["POST"]
 )
 @login_required
-@role_required(
-    User.SUPER_ADMIN,
-    User.ELECTION_OFFICER
-)
-def approve_candidate(candidate_id):
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def withdraw_candidate(candidate_id):
 
     candidate = Candidate.query.get_or_404(candidate_id)
 
-    position = Position.query.get_or_404(candidate.position_id)
-    election = Election.query.get_or_404(candidate.election_id)
-    student = Student.query.get_or_404(candidate.student_id)
-
-    # --------------------------------------------------
-    # DATA INTEGRITY
-    # --------------------------------------------------
-
-    if position.election_id != election.id:
-        current_app.logger.error(
-            "Candidate/election mismatch: candidate=%s position=%s election=%s",
-            candidate.id,
-            position.id,
-            election.id
-        )
-        abort(404)
-
-    # --------------------------------------------------
-    # STATUS VALIDATION
-    # --------------------------------------------------
-
-    if candidate.status != "pending":
+    # Candidate must be active
+    if not candidate.is_active:
         flash(
-            "Only pending candidates can be approved.",
+            "Inactive candidates cannot be withdrawn.",
             "warning"
         )
         return redirect(
             url_for(
                 "main.manage_candidates",
-                position_id=position.id
+                position_id=candidate.position_id
             )
         )
 
-    if not candidate.is_active:
+    # Only pending or approved candidates can be withdrawn
+    if candidate.status not in ("pending", "approved"):
         flash(
-            "Inactive candidates cannot be approved.",
-            "danger"
+            "This candidate cannot be withdrawn in its current status.",
+            "warning"
         )
         return redirect(
             url_for(
                 "main.manage_candidates",
-                position_id=position.id
+                position_id=candidate.position_id
             )
         )
 
-    # --------------------------------------------------
-    # STUDENT VALIDATION
-    # --------------------------------------------------
-
-    if not student.is_active:
-        flash(
-            "An inactive student cannot be approved as a candidate.",
-            "danger"
-        )
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=position.id
-            )
-        )
-
-    if not student.is_verified:
-        flash(
-            "The student must be verified before the candidate can be approved.",
-            "danger"
-        )
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=position.id
-            )
-        )
-
-    # --------------------------------------------------
-    # POSITION VALIDATION
-    # --------------------------------------------------
-
-    if not position.is_active or position.status != "active":
-        flash(
-            "Candidates cannot be approved for an inactive position.",
-            "danger"
-        )
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=position.id
-            )
-        )
-
-    # --------------------------------------------------
-    # ELECTION VALIDATION
-    # --------------------------------------------------
-
-    if not election.is_active:
-        flash(
-            "Candidates cannot be approved for an inactive election.",
-            "danger"
-        )
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=position.id
-            )
-        )
-
-    # --------------------------------------------------
-    # APPROVE
-    # --------------------------------------------------
-
-    candidate.status = "approved"
+    # Change candidate state
+    candidate.status = "withdrawn"
     candidate.updated_at = datetime.utcnow()
 
-    # --------------------------------------------------
-    # AUDIT LOG
-    # --------------------------------------------------
-
+    # Audit log
     log_action(
-        action="Approve Candidate",
+        action="Withdraw Candidate",
         entity_type="Candidate",
         entity_id=candidate.id,
         description=(
-            f"Candidate #{candidate.id} "
-            f"({student.first_name} {student.last_name}) "
-            f"approved for position '{position.title}' "
-            f"in election '{election.name}'"
+            f"Candidate withdrawn: "
+            f"{candidate.student.first_name} "
+            f"{candidate.student.last_name}"
         )
     )
 
-    # --------------------------------------------------
-    # DATABASE TRANSACTION
-    # --------------------------------------------------
-
     try:
         db.session.commit()
+
+        flash(
+            "Candidate withdrawn successfully.",
+            "success"
+        )
 
     except Exception:
         db.session.rollback()
 
         current_app.logger.exception(
-            "Failed to approve candidate %s",
+            "Failed to withdraw candidate %s",
             candidate.id
         )
 
         flash(
-            "An unexpected error occurred while approving the candidate.",
+            "Unable to withdraw candidate. Please try again.",
             "danger"
         )
-
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=position.id
-            )
-        )
-
-    flash(
-        "Candidate approved successfully.",
-        "success"
-    )
 
     return redirect(
         url_for(
             "main.manage_candidates",
-            position_id=position.id
+            position_id=candidate.position_id
         )
     )
 
+@main.route(
+    "/admin/candidates/<int:candidate_id>/reject",
+    methods=["POST"]
+)
+@login_required
+@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
+def reject_candidate(candidate_id):
+
+    candidate = Candidate.query.get_or_404(candidate_id)
+
+    # Prevent invalid state transitions
+    if not candidate.is_active:
+        flash(
+            "Inactive candidates cannot be rejected.",
+            "warning"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    if candidate.status not in ("pending", "approved"):
+        flash(
+            "This candidate cannot be rejected in its current status.",
+            "warning"
+        )
+        return redirect(
+            url_for(
+                "main.manage_candidates",
+                position_id=candidate.position_id
+            )
+        )
+
+    # Update candidate
+    candidate.status = "rejected"
+    candidate.updated_at = datetime.utcnow()
+
+    # Audit log
+    log_action(
+        action="Reject Candidate",
+        entity_type="Candidate",
+        entity_id=candidate.id,
+        description=(
+            f"Candidate rejected: "
+            f"{candidate.student.first_name} "
+            f"{candidate.student.last_name}"
+        )
+    )
+
+    try:
+        db.session.commit()
+
+        flash(
+            "Candidate rejected successfully.",
+            "success"
+        )
+
+    except Exception:
+        db.session.rollback()
+
+        current_app.logger.exception(
+            "Failed to reject candidate %s",
+            candidate.id
+        )
+
+        flash(
+            "Unable to reject candidate. Please try again.",
+            "danger"
+        )
+
+    return redirect(
+        url_for(
+            "main.manage_candidates",
+            position_id=candidate.position_id
+        )
+    )
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/archive",
@@ -3995,16 +3975,8 @@ def archive_candidate(candidate_id):
 
     candidate = Candidate.query.get_or_404(candidate_id)
 
-    # -----------------------------------------
-    # Prevent repeated archiving
-    # -----------------------------------------
-
     if not candidate.is_active:
-        flash(
-            "Candidate is already archived.",
-            "warning"
-        )
-
+        flash("Candidate is already archived.", "warning")
         return redirect(
             url_for(
                 "main.manage_candidates",
@@ -4012,21 +3984,7 @@ def archive_candidate(candidate_id):
             )
         )
 
-    # -----------------------------------------
-    # Preserve original state for audit
-    # -----------------------------------------
-
-    old_status = candidate.status
-
-    # -----------------------------------------
-    # Soft delete / archive
-    # -----------------------------------------
-
     candidate.is_active = False
-
-    # -----------------------------------------
-    # Audit Log
-    # -----------------------------------------
 
     log_action(
         action="Archive Candidate",
@@ -4035,38 +3993,13 @@ def archive_candidate(candidate_id):
         description=(
             f"Candidate archived: "
             f"{candidate.student.first_name} "
-            f"{candidate.student.last_name}. "
-            f"Previous status: {old_status}."
+            f"{candidate.student.last_name}"
         )
     )
 
-    # -----------------------------------------
-    # Commit
-    # -----------------------------------------
+    db.session.commit()
 
-    try:
-
-        db.session.commit()
-
-        flash(
-            "Candidate archived successfully.",
-            "success"
-        )
-
-    except Exception:
-
-        db.session.rollback()
-
-        current_app.logger.exception(
-            "Failed to archive candidate %s",
-            candidate.id
-        )
-
-        flash(
-            "Unable to archive candidate. "
-            "Please try again.",
-            "danger"
-        )
+    flash("Candidate archived successfully.", "success")
 
     return redirect(
         url_for(
@@ -4075,71 +4008,6 @@ def archive_candidate(candidate_id):
         )
     )
 
-@main.route(
-    "/admin/candidates/<int:candidate_id>/restore",
-    methods=["POST"]
-)
-@login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def restore_candidate(candidate_id):
-
-    candidate = Candidate.query.get_or_404(candidate_id)
-
-    if candidate.is_active:
-        flash(
-            "Candidate is already active.",
-            "warning"
-        )
-
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=candidate.position_id
-            )
-        )
-
-    candidate.is_active = True
-
-    log_action(
-        action="Restore Candidate",
-        entity_type="Candidate",
-        entity_id=candidate.id,
-        description=(
-            f"Candidate restored: "
-            f"{candidate.student.first_name} "
-            f"{candidate.student.last_name}."
-        )
-    )
-
-    try:
-
-        db.session.commit()
-
-        flash(
-            "Candidate restored successfully.",
-            "success"
-        )
-
-    except Exception:
-
-        db.session.rollback()
-
-        current_app.logger.exception(
-            "Failed to restore candidate %s",
-            candidate.id
-        )
-
-        flash(
-            "Unable to restore candidate.",
-            "danger"
-        )
-
-    return redirect(
-        url_for(
-            "main.manage_candidates",
-            position_id=candidate.position_id
-        )
-    )
 
 @main.route(
     "/admin/candidates/<int:candidate_id>/verify",
@@ -4180,61 +4048,6 @@ def verify_candidate(candidate_id):
             position_id=candidate.position_id
         )
     )    
-
-
-
-@main.route(
-    "/admin/candidates/<int:candidate_id>/archive",
-    methods=["POST"]
-)
-@login_required
-@role_required(User.SUPER_ADMIN, User.ELECTION_OFFICER)
-def archive_candidate(candidate_id):
-
-    candidate = Candidate.query.get_or_404(candidate_id)
-
-    # Already archived
-    if not candidate.is_active:
-        flash(
-            "Candidate is already archived.",
-            "info"
-        )
-
-        return redirect(
-            url_for(
-                "main.manage_candidates",
-                position_id=candidate.position_id
-            )
-        )
-
-    # Do not archive an active approved candidate accidentally
-    candidate.is_active = False
-    candidate.status = "withdrawn"
-    candidate.updated_at = datetime.utcnow()
-
-    log_action(
-        action="Archive Candidate",
-        entity_type="Candidate",
-        entity_id=candidate.id,
-        description=(
-            f"Candidate {candidate.id} archived from "
-            f"{candidate.position.title}"
-        )
-    )
-
-    db.session.commit()
-
-    flash(
-        "Candidate archived successfully.",
-        "success"
-    )
-
-    return redirect(
-        url_for(
-            "main.manage_candidates",
-            position_id=candidate.position_id
-        )
-    )
 
 
 

@@ -357,159 +357,158 @@
 
 
                         <!-- ACTIONS -->
+                        <!-- Actions -->
                         <td>
+                            <div class="dropdown">
 
-                            <ul class="dropdown-menu dropdown-menu-end">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                                    data-bs-toggle="dropdown">
 
-                                <!-- View -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for(
-               'main.view_candidate',
-               candidate_id=candidate.id
-           ) }}">
-                                        <i class="bi bi-eye me-2"></i>
-                                        View Candidate
-                                    </a>
-                                </li>
+                                    Actions
 
-                                <!-- Edit -->
-                                <li>
-                                    <a class="dropdown-item" href="{{ url_for(
-               'main.edit_candidate',
-               candidate_id=candidate.id
-           ) }}">
-                                        <i class="bi bi-pencil me-2"></i>
-                                        Edit Candidate
-                                    </a>
-                                </li>
+                                </button>
 
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
+                                <ul class="dropdown-menu dropdown-menu-end">
 
-                                <!-- Approve -->
-                                {% if candidate.is_active and candidate.status == "pending" %}
-                                <li>
-                                    <form method="POST" action="{{ url_for(
-                  'main.approve_candidate',
-                  candidate_id=candidate.id
-              ) }}">
+                                    <!-- View -->
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for(
+                   'main.view_candidate',
+                   candidate_id=candidate.id
+               ) }}">
 
-                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+                                            <i class="bi bi-eye me-2"></i>
+                                            View Candidate
 
-                                        <button type="submit" class="dropdown-item text-success"
-                                            onclick="return confirm('Approve this candidate?');">
-
-                                            <i class="bi bi-check-circle me-2"></i>
-                                            Approve Candidate
-
-                                        </button>
-
-                                    </form>
-                                </li>
-                                {% endif %}
+                                        </a>
+                                    </li>
 
 
-                                <!-- Reject -->
-                                {% if candidate.is_active and
-                                candidate.status in ["pending", "approved"] %}
-                                <li>
-                                    <form method="POST" action="{{ url_for(
-                  'main.reject_candidate',
-                  candidate_id=candidate.id
-              ) }}">
+                                    <!-- Edit -->
+                                    <li>
+                                        <a class="dropdown-item" href="{{ url_for(
+                   'main.edit_candidate',
+                   candidate_id=candidate.id
+               ) }}">
 
-                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+                                            <i class="bi bi-pencil me-2"></i>
+                                            Edit Candidate
 
-                                        <button type="submit" class="dropdown-item text-danger"
-                                            onclick="return confirm('Reject this candidate?');">
-
-                                            <i class="bi bi-x-circle me-2"></i>
-                                            Reject Candidate
-
-                                        </button>
-
-                                    </form>
-                                </li>
-                                {% endif %}
+                                        </a>
+                                    </li>
 
 
-                                <!-- Withdraw -->
-                                {% if candidate.is_active and
-                                candidate.status in ["pending", "approved"] %}
-                                <li>
-                                    <form method="POST" action="{{ url_for(
-                  'main.withdraw_candidate',
-                  candidate_id=candidate.id
-              ) }}">
+                                    {% if candidate.is_active and candidate.status == "pending" %}
 
-                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+                                    <li>
+                                        <hr class="dropdown-divider">
+                                    </li>
 
-                                        <button type="submit" class="dropdown-item text-warning"
-                                            onclick="return confirm('Withdraw this candidate?');">
+                                    <!-- Approve -->
+                                    <li>
 
-                                            <i class="bi bi-person-dash me-2"></i>
-                                            Withdraw Candidate
+                                        <form method="POST" action="{{ url_for(
+                      'main.approve_candidate',
+                      candidate_id=candidate.id
+                  ) }}">
 
-                                        </button>
+                                            {{ action_form.hidden_tag() }}
 
-                                    </form>
-                                </li>
-                                {% endif %}
+                                            <button type="submit" class="dropdown-item text-success"
+                                                onclick="return confirm('Approve this candidate?');">
 
+                                                <i class="bi bi-check-circle me-2"></i>
+                                                Approve
 
-                                <!-- Restore -->
-                                {% if not candidate.is_active %}
-                                <li>
-                                    <form method="POST" action="{{ url_for(
-                  'main.restore_candidate',
-                  candidate_id=candidate.id
-              ) }}">
+                                            </button>
 
-                                        {{ form.hidden_tag() if form is defined else csrf_token() }}
+                                        </form>
 
-                                        <button type="submit" class="dropdown-item text-primary"
-                                            onclick="return confirm('Restore this candidate?');">
+                                    </li>
 
-                                            <i class="bi bi-arrow-counterclockwise me-2"></i>
-                                            Restore Candidate
-
-                                        </button>
-
-                                    </form>
-                                </li>
-                                {% endif %}
+                                    {% endif %}
 
 
-                                <!-- Delete -->
-                                <li>
-                                    <hr class="dropdown-divider">
-                                </li>
+                                    {% if candidate.is_active and
+                                    candidate.status in ["pending", "approved"] %}
 
-                                {% if candidate.is_active %}
-                                <li>
-                                    <form method="POST" action="{{ url_for(
-              'main.archive_candidate',
-              candidate_id=candidate.id
-          ) }}" onsubmit="return confirm(
-              'Archive this candidate? The candidate will be removed from the active list but preserved in the system.'
-          );">
+                                    <!-- Reject -->
+                                    <li>
 
-                                        {{ csrf_token() }}
+                                        <form method="POST" action="{{ url_for(
+                      'main.reject_candidate',
+                      candidate_id=candidate.id
+                  ) }}">
 
-                                        <button type="submit" class="dropdown-item text-danger">
+                                            {{ action_form.hidden_tag() }}
 
-                                            <i class="bi bi-archive me-2"></i>
-                                            Archive Candidate
+                                            <button type="submit" class="dropdown-item text-danger"
+                                                onclick="return confirm('Reject this candidate?');">
 
-                                        </button>
+                                                <i class="bi bi-x-circle me-2"></i>
+                                                Reject
 
-                                    </form>
-                                </li>
-                                {% endif %}
+                                            </button>
 
-                            </ul>
+                                        </form>
 
+                                    </li>
+
+
+                                    <!-- Withdraw -->
+                                    <li>
+
+                                        <form method="POST" action="{{ url_for(
+                      'main.withdraw_candidate',
+                      candidate_id=candidate.id
+                  ) }}">
+
+                                            {{ action_form.hidden_tag() }}
+
+                                            <button type="submit" class="dropdown-item text-warning"
+                                                onclick="return confirm('Withdraw this candidate?');">
+
+                                                <i class="bi bi-person-dash me-2"></i>
+                                                Withdraw
+
+                                            </button>
+
+                                        </form>
+
+                                    </li>
+
+                                    {% endif %}
+
+
+                                    {% if candidate.is_active %}
+
+                                    <!-- Archive -->
+                                    <li>
+
+                                        <form method="POST" action="{{ url_for(
+                      'main.archive_candidate',
+                      candidate_id=candidate.id
+                  ) }}">
+
+                                            {{ action_form.hidden_tag() }}
+
+                                            <button type="submit" class="dropdown-item text-secondary"
+                                                onclick="return confirm('Archive this candidate?');">
+
+                                                <i class="bi bi-archive me-2"></i>
+                                                Archive
+
+                                            </button>
+
+                                        </form>
+
+                                    </li>
+
+                                    {% endif %}
+
+                                </ul>
+
+                            </div>
                         </td>
 
                     </tr>
